@@ -1,0 +1,4 @@
+﻿# resultados de las pruebas automáticas (capturas y trazas)
+pruebas/resultados/
+# copia de un solo archivo para publicar (se genera con herramientas\empaquetar.ps1)
+dist/

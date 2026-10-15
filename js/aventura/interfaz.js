@@ -1,0 +1,181 @@
+// Aventura: interfaz (diálogo, botones, equipo, mochila, línea de fases, tarjeta del líder)
+function advSay(t, done) { speak(t); typeText($('advText'), t, done); }
+function advToast(t) { const el = document.createElement('div'); el.className = 'adv-toast'; el.textContent = t; $('advToasts').appendChild(el); setTimeout(() => el.remove(), 3200); }
+function advButtons(list) {
+  $('advBtns').innerHTML = list.map((b, i) => `<button class="btn${b.ghost ? ' ghostbtn' : ''}" type="button" data-i="${i}"${b.off ? ' disabled' : ''}>${b.label}</button>`).join('');
+  // un toque = una acción: los botones desaparecen al pulsar (evita dobles toques)
+  $('advBtns').querySelectorAll('button').forEach(el => el.onclick = () => { const f = list[+el.dataset.i].fn; $('advBtns').innerHTML = ''; beep(660); f(); });
+}
+function spinUI(title, sub, segs, center, onLand) {
+  curBattle = null;
+  $('advStep').textContent = title; $('advRpm').textContent = '';
+  advWheel.set(segs, center); advWheel.enabled = true;
+  advWheel.onLand = r => { advWheel.enabled = false; onLand(r); renderAdv(); saveRun(); };
+  advWheel.onStart = () => { advButtons([]); advSay('Girando…'); };
+  advSay(introText ? introText + ' ' + sub : sub); introText = ''; advButtons([{ label: 'Girar', fn: () => advWheel.spin(1) }]);
+}
+// tarjeta del equipo con el mismo diseño que la Pokédex (fondo, número, sprite, nombre y tipos)
+function teamTile(m, i) {
+  const [n, , , , leg, myth] = BY_NUM.get(m.n), name = dname(m), ty = mtypes(m), sid = SPR.normal.get(mid(m)) ? mid(m) : n, sp = m.shiny && SPR.shiny.get(sid), pc = sp && sp.pc;
+  const c = pc ? pc[0] : TYPE_COLORS[ty[0]] || '#8592ab', c2 = pc ? pc[1] : TYPE_COLORS[ty[1]] || c, no = padN(n);
+  const sm = shinyMode; shinyMode = !!m.shiny; const cell = spriteCell(sid, ty); shinyMode = sm;
+  return `<span class="tmw${onWheel.has(m) ? ' on-wheel' : ''}"><button class="mon tmon on${FLYING.has(n) ? ' fly' : ''}${m.shiny ? ' shiny' : ''}" type="button" data-n="${n}" data-i="${i}" style="--c:${c};--c2:${c2};--dur:${(2.6 + (n * 37 % 13) / 10).toFixed(1)}s;--del:-${(n * 53 % 30) / 10}s">` +
+    `<span class="bg${no.length > 3 ? ' d4' : ''}" aria-hidden="true">${no}</span>` +
+    `<span class="top"><span class="no">Nº ${no}</span>${m.shiny ? '<small>✦ SHINY</small>' : leg ? '<small>LEG</small>' : myth ? '<small>SING</small>' : ''}</span>` +
+    cell + `<span class="nm">${name}</span><span class="ty">${ty.map(typeIcon).join('')}<em class="pw">P${power(n)}</em></span></button>` +
+    (run.team.length > 1 ? `<button class="tm-mv" type="button" data-out="${i}" title="Meter en la caja" aria-label="Meter ${name} en la caja">↓</button>` : '') + `</span>`;
+}
+// ---- Animación FLIP: los huecos que cambian de sitio se deslizan; los nuevos aparecen con un saltito ----
+function flipCapture(root, sel) { const m = new Map(); root.querySelectorAll(sel).forEach(el => { if (el._m) m.set(el._m, el.getBoundingClientRect()); }); return m; }
+function flipPlay(root, sel, before, pop) {
+  if (reduceMotion || !before.size) return;
+  root.querySelectorAll(sel).forEach(el => {
+    if (!el._m || !el.animate) return;
+    const r0 = before.get(el._m), r1 = el.getBoundingClientRect();
+    if (r0) { const dx = r0.left - r1.left, dy = r0.top - r1.top; if (Math.abs(dx) + Math.abs(dy) > 1) el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.2,.9,.25,1.12)' }); }
+    else if (pop) el.animate([{ transform: 'scale(.55)', opacity: 0 }, { transform: 'scale(1.07)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'ease-out' });
+  });
+}
+// dibujos de los objetos de la mochila
+const BAG_ICON = {
+  potion: '<svg viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="3" rx="1" class="cap"/><path d="M9.5 5.5h5v2.2l2.6 3.3c.4.5.6 1.1.6 1.7V19a2.5 2.5 0 0 1-2.5 2.5h-6.4A2.5 2.5 0 0 1 6.3 19v-6.3c0-.6.2-1.2.6-1.7l2.6-3.3z" class="glass"/><path d="M6.6 13.5h10.8V19a2.2 2.2 0 0 1-2.2 2.2H8.8A2.2 2.2 0 0 1 6.6 19z" class="liq"/><path d="M9 11.2h2" class="shine"/></svg>',
+  rope: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" class="ln"/><circle cx="12" cy="12" r="4.5" class="ln"/><path d="M19.5 12c0 3-1 6 2 8" class="ln"/></svg>',
+  shoes: '<svg viewBox="0 0 24 24"><path d="M3 15.5V9.5l4 1.5 3-3 3 4c2.5.5 6 1.2 7.5 2.6.6.6.5 1.9-.3 1.9H3z" class="liq"/><path d="M3 18.5h18" class="ln"/></svg>',
+  share: '<svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3" class="liq"/><text x="12" y="14.6" text-anchor="middle" font-size="6.4" font-weight="700" font-family="monospace" fill="#10131c">EXP</text></svg>',
+  ball: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" class="ln"/><path d="M3.5 12h17" class="ln"/><path d="M3.5 12a8.5 8.5 0 0 1 17 0z" class="liq"/><circle cx="12" cy="12" r="2.6" fill="var(--bg)" class="ln"/></svg>',
+};
+BAG_ICON.super = BAG_ICON.hyper = BAG_ICON.potion;
+// cómo se ve cada fase en la línea: un icono, un nombre corto y qué es
+const PH_ICON = {
+  home: '<svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8h-5v-5H9v5H4z"/></svg>',
+  trail: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6.5a3.5 3.5 0 0 0 0-7h-5a3.5 3.5 0 0 1 0-7H16"/></svg>',
+  medal: '<svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="5"/><path d="M8.5 3.5L12 9l3.5-5.5"/></svg>',
+  peak: '<svg viewBox="0 0 24 24"><path d="M3 19l6.5-11 4 6.5 2.5-3.5L21 19z"/></svg>',
+  star: '<svg viewBox="0 0 24 24"><path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/></svg>',
+  crown: '<svg viewBox="0 0 24 24"><path d="M4 18h16l-1.5-9-4.5 4-2-6-2 6-4.5-4z"/></svg>',
+  dot: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>',
+};
+const shortPlace = t => (t || '').replace(/^(la|el)\s+/, '').replace(/^(Pueblo|Ciudad|Isla|Villa|Meseta)\s+/, '');
+function phaseLook(p) {
+  if (p.kind === 'start') return { icon: PH_ICON.home, label: shortPlace(p.name), kind: 'Inicio' };
+  if (p.kind === 'leg') return { icon: PH_ICON.trail, label: '→ ' + shortPlace(p.to), kind: 'Camino' };
+  if (p.kind === 'prep') return { icon: PH_ICON.peak, label: shortPlace(REG().league || 'Liga').replace(/^(la|el)\s+/, ''), kind: 'Preparación' };
+  if (p.kind === 'gym' && p.role === 'champ') return { icon: PH_ICON.crown, label: p.leader, kind: 'Campeón' };
+  if (p.kind === 'gym' && p.role === 'elite') return { icon: PH_ICON.star, label: p.leader, kind: 'Alto Mando' };
+  if (p.kind === 'gym') { const sp = SPR.badge.get(p.badgeId);
+    return { icon: sp ? `<img src="${sp.u}" alt="">` : PH_ICON.medal, label: p.leader, kind: REG().trials ? 'Prueba' : 'Gimnasio', tc: TYPE_COLORS[p.typeName] || 'var(--kanto)' }; }
+  return { icon: PH_ICON.dot, label: shortPlace(p.name), kind: p.kind === 'route' ? 'Ruta' : p.kind === 'rival' ? 'Rival' : 'Ciudad' };
+}
+// la ventana de la línea del tiempo se centra en la parada actual (sin pasarse de los extremos)
+function placePath() {
+  const W = $('advPathWin'), P = $('advPath'), now = P.querySelector('.now') || P.lastElementChild; if (!W || !now) return;
+  const w = W.clientWidth, tot = P.scrollWidth, max = Math.max(0, tot - w);
+  const off = Math.max(0, Math.min(max, now.offsetLeft + now.offsetWidth / 2 - w / 2));
+  P.style.transform = `translateX(${-off}px)`;
+  W.style.setProperty('--fl', off > 1 ? '64px' : '0px'); W.style.setProperty('--fr', off < max - 1 ? '64px' : '0px');
+}
+// ---- La ruleta crece todo lo posible sin que el equipo, las medallas o el diario se salgan de la pantalla ----
+function fitAdv() {
+  if (state.scene !== 'adv' || !advWheel) return;
+  const st = document.querySelector('.adv-stage'), box = document.querySelector('.adv-wbox'), track = document.querySelector('.adv-track');
+  let sz;
+  if (matchMedia('(min-width: 900px) and (min-height: 560px)').matches) {
+    const cs = getComputedStyle(st);
+    const innerH = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    sz = Math.min(Math.min(innerH, box.clientWidth, 820) * .75, innerH - 2 * (track.offsetHeight + 6));   // ¾ del hueco, dejando sitio debajo para la línea de fases
+  } else if (innerWidth > 760) {
+    sz = Math.min(box.clientWidth, 460);
+  } else {
+    const wheelH = $('advWheel').offsetHeight, lead = $('advLeader').hidden ? 0 : $('advLeader').offsetHeight + 8;
+    const bs = getComputedStyle(document.body);
+    const rest = document.querySelector('.wrap').getBoundingClientRect().height + parseFloat(bs.paddingTop) + parseFloat(bs.paddingBottom) - wheelH;
+    sz = Math.min(box.clientWidth, innerHeight - rest) * .75;   // en el móvil, ¾ del hueco
+  }
+  sz = Math.max(innerWidth <= 760 ? 200 : 260, Math.floor(sz));
+  document.documentElement.style.setProperty('--wsz', sz + 'px');
+  advWheel.resize(); placePath();
+}
+function renderAdv() {
+  if (!run) return;
+  // línea del tiempo corta: un punto por parada (rombos = gimnasios) y el nombre de la actual debajo
+  const path = REG().path, cur = path[Math.min(run.step, path.length - 1)];
+  const lit = renderAdv.lastStep !== undefined && renderAdv.lastStep !== run.step && run.step > renderAdv.lastStep; renderAdv.lastStep = run.step;
+  if (lit && onWheel.size) wheelRelease();   // la próxima ruleta que salga (la de la nueva fase) se cambia con animación
+  $('advPath').innerHTML = path.map((p, i) => { const v = phaseLook(p);
+    return `<li class="${i < run.step ? 'ok' : i === run.step ? 'now' + (lit ? ' lit' : '') : ''}${v.tc ? ' gym' : ''}" title="${p.name}"${v.tc ? ` style="--tc:${v.tc}"` : ''}><span class="node">${v.icon}</span><span class="pl">${v.label}</span><span class="pk">${v.kind}</span></li>`; }).join('');
+  placePath();
+  const slots = [...run.team, ...Array(Math.max(0, 6 - run.team.length)).fill(null)];
+  const TM = $('advTeam');
+  // si el equipo no ha cambiado, no se vuelve a dibujar (así las animaciones de los Pokémon no se reinician)
+  const sig = run.team.map(m => [m.n, m.form || 0, m.shiny ? 1 : 0, onWheel.has(m) ? 1 : 0, m.nick || ''].join('.')).join('|') + '#' + SPR.normal.size + '.' + SPR.shiny.size + '.' + (run.bag.share ? 1 : 0);
+  const same = TM._sig === sig && [...TM.querySelectorAll('.tmw')].every((el, i) => el._m === run.team[i]);
+  if (!same) {
+    const before = flipCapture(TM, '.tmw');
+    TM.innerHTML = slots.map((m, i) => m ? teamTile(m, i) : '<span class="tm empty"></span>').join('');
+    TM.querySelectorAll('.tmw').forEach((el, i) => el._m = run.team[i]);
+    flipPlay(TM, '.tmw', before, true); TM._sig = sig;
+  }
+  $('advTeam').querySelectorAll('[data-n]').forEach(b => b.onclick = () => openTeamInfo(+b.dataset.i, b));
+  $('advTeam').querySelectorAll('[data-out]').forEach(b => b.onclick = () => moveMon(true, +b.dataset.out));
+  $('pcOpen').textContent = `Caja PC · ${boxList().length}`;
+  if (!$('pcShade').hidden) renderPC();
+  // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes
+  const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
+  $('advBag').innerHTML = (items.map(([k, v]) => `<span class="bag-slot" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${BAG_ICON[k] || BAG_ICON.potion}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
+    + (run.ball ? `<span class="bag-slot buff" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${BAG_ICON.ball}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
+    || '<span class="bag-empty">Mochila vacía</span>')
+    + (stolenList().length ? `<span class="bag-note">Robado por el ${VIL().name}: ${stolenList().map(mname).join(', ')}</span>` : '');
+  const best = getBest()[run.region];
+  $('advPoints').innerHTML = `<b>${run.points}</b><span>pts · ${rank(run.points)}</span>`; $('advPoints').title = `Puntos de la partida · rango ${rank(run.points)}${best ? ` · récord ${best}` : ''}`;
+  // estuche de medallas: las 8 de la región; las conseguidas brillan y las que faltan se ven apagadas
+  const gyms = REG().path.filter(p => p.badge);
+  $('advBadges').innerHTML = gyms.map(p => { const got = run.badges.includes(p.badge), sp = SPR.badge.get(p.badgeId);
+    return `<span class="bdg${got ? ' got' : ''}" title="${p.badge}${got ? '' : ' (por conseguir)'}">${sp ? `<img src="${sp.u}" alt="${p.badge}">` : `<i>◆</i>`}</span>`; }).join('')
+    ;
+  $('advLog').innerHTML = run.log.map(t => `<li>${t}</li>`).join('');
+  renderCard();
+}
+
+// ---- Tarjeta del líder: nombre, tipo, debilidades y resistencias (el hueco redondo será su sprite) ----
+const TYPES = Object.keys(CHART);
+const chip = t => `<span class="lchip" style="--tc:${TYPE_COLORS[t] || '#888'}">${t}</span>`;
+function leaderHTML(L) {
+  const T = L.typeName, done = (L.badge && run.badges.includes(L.badge)) || run.stepDone;
+  const weak = TYPES.filter(t => eff(t, [T]) > 1);       // tipos que le hacen mucho daño
+  const danger = TYPES.filter(d => eff(T, [d]) > 1);     // tipos que sufren con sus ataques
+  const role = L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? (/^Campeona/.test(L.name) ? 'Campeona' : 'Campeón') : REG().trials ? (/^Gran/.test(L.name) ? 'Kahuna' : 'Capitán') : `Líder · ${L.name}`;
+  const bsp = L.badgeId && SPR.badge.get(L.badgeId);
+  return { c: TYPE_COLORS[T], html: `<div class="lc-spr${bsp ? ' medal' : ''}">${phaseLook(L).icon}</div>
+    <div class="lc-top"><small>${role}${done ? ' · ✓ derrotado' : ''}</small><b>${L.leader}</b><div>${chip(T)}</div></div>
+    <div class="lc-rows">
+      <div class="lc-row"><em>Tienen ventaja los</em>${weak.map(chip).join('') || '—'}</div>
+      <div class="lc-row"><em>Tienen desventaja los</em>${danger.map(chip).join('') || '—'}</div>
+      <div class="lc-row lc-team">${teamMarks(T)}</div>
+    </div>` };
+}
+// tus Pokémon contra el tipo del líder: ▲ suma verdes (ventaja) · ▼ suma rojos (desventaja). Cambia al tocar el equipo o la caja.
+function teamMarks(T) {
+  if (!run.team.length) return '';
+  return '<em>Tu equipo</em>' + run.team.map(m => { const my = mtypes(m), a = my.some(t => eff(t, [T]) > 1), d = eff(T, my) > 1;
+    return `<span class="lmark ${a && !d ? 'up' : d && !a ? 'down' : a && d ? 'mix' : ''}" title="${mname(m)}">${mname(m)} ${a ? '▲' : ''}${d ? '▼' : ''}${!a && !d ? '·' : ''}</span>`; }).join('');
+}
+// tarjeta de contexto (siempre del mismo tamaño): líder en los combates, y en el camino adónde vas y qué hay
+function renderCard() {
+  const el = $('advLeader'); if (!el || !run) return;
+  const L = loc(), P = REG().path, nextGym = P.slice(run.step).find(p => p.kind === 'gym');
+  let c = 'var(--cyan)', html;
+  if (L.kind === 'gym') ({ c, html } = leaderHTML(L));
+  else {
+    const kind = { leg: 'Camino', prep: 'Preparación', start: 'Inicio', route: 'Ruta', city: 'Ciudad', rival: 'Rival' }[L.kind] || '';
+    const places = (L.local || []).map(k => `<span class="lchip" style="--tc:#ff9f43">${EVENTS[k].label}</span>`).join('');
+    html = `<div class="lc-spr">${phaseLook(L).icon}</div>
+      <div class="lc-top"><small>${kind}${L.to ? ' · hacia ' + L.to : ''}</small><b>${L.name}</b></div>
+      <div class="lc-rows">
+        ${L.local ? `<div class="lc-row"><em>Sitios</em>${places || '—'}</div>` : ''}
+        ${nextGym ? `<div class="lc-row"><em>Próximo</em><span class="lc-txt">${nextGym.role === 'elite' ? 'Alto Mando · ' : nextGym.role === 'champ' ? 'Campeón · ' : ''}${nextGym.leader}</span>${chip(nextGym.typeName)}</div>` : ''}
+        <div class="lc-row"><em>Medallas</em><span class="lc-txt">${run.badges.length} / 8</span></div>
+      </div>`;
+  }
+  el.style.setProperty('--c', c); el.innerHTML = html; el.hidden = false;
+  if ($('leadTab')) $('leadTab').textContent = L.kind === 'gym' ? (L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? 'Campeón' : REG().trials ? 'Prueba' : 'Líder') : L.kind === 'leg' ? 'Ruta' : L.kind === 'prep' ? 'Meseta' : 'Zona';
+}

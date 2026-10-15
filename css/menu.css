@@ -1,0 +1,74 @@
+/* Menú principal y Jugar: tarjetas, ruleta de generaciones, generación elegida e historial */
+/* ---- Tarjetas (menú principal y generaciones) ---- */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.card {
+  --c: var(--cyan);
+  position: relative; overflow: hidden; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+  padding: 20px 20px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 210px;
+  transition: border-color .25s, background .25s, transform .25s;
+}
+.card::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 32px; background: var(--c); box-shadow: 0 0 14px var(--c); transition: width .35s cubic-bezier(.2,.7,.2,1); }
+.card.active { border-color: color-mix(in srgb, var(--c) 55%, transparent); background: color-mix(in srgb, var(--c) 6%, transparent); transform: translateY(-2px); }
+.card.active::before { width: 100%; }
+.ghost { position: absolute; right: -6px; bottom: -26px; font-family: var(--f-display); font-weight: 300; font-size: 140px; line-height: 1; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--c) 35%, transparent); pointer-events: none; }
+.row-top { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; color: var(--fg-soft); }
+.row-top .gen { color: var(--c); }
+.region { font-family: var(--f-display); font-size: 34px; font-weight: 500; line-height: 1; letter-spacing: .01em; }
+.games { font-size: 13px; color: var(--fg-soft); }
+.dex { margin-top: auto; display: flex; flex-direction: column; gap: 8px; position: relative; }
+.dex-line { height: 2px; background: var(--line); position: relative; border-radius: 2px; }
+.dex-line i { position: absolute; top: 0; bottom: 0; background: var(--c); box-shadow: 0 0 8px var(--c); border-radius: 2px; }
+.dex-meta { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 11px; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
+.dex-meta b { color: var(--fg); font-weight: 500; }
+.card:disabled { cursor: not-allowed; --c: var(--lock); border-style: dashed; opacity: .7; }
+.card:disabled .region { color: var(--lock); }
+
+/* ---- «Que decida la ruleta» ---- */
+.cta {
+  display: flex; align-items: center; gap: 20px; padding: 18px 22px; cursor: pointer; text-align: left; font: inherit; color: inherit;
+  background: linear-gradient(90deg, rgba(var(--glow-rgb),.07), transparent 70%); border: 1px solid var(--line-2); border-radius: 4px;
+  transition: border-color .25s, background .25s;
+}
+.cta.active { border-color: var(--cyan); background: linear-gradient(90deg, rgba(var(--glow-rgb),.13), transparent 80%); }
+.cta canvas { width: 56px; height: 56px; flex: none; }
+.cta .t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cta .t1 { font-family: var(--f-display); font-size: 20px; font-weight: 500; letter-spacing: .02em; }
+.cta .t2 { font-size: 13px; color: var(--fg-soft); }
+.cta .arrow { margin-left: auto; font-family: var(--f-mono); font-size: 12px; letter-spacing: .18em; color: var(--cyan); flex: none; }
+/* ---- Generación elegida ---- */
+.chosen { --c: var(--cyan); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; overflow: hidden; }
+.chosen .left { padding: 28px; border-right: 1px solid var(--line); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 230px; }
+.chosen .left .ghost { font-size: 200px; bottom: -40px; }
+.chosen .gen { font-family: var(--f-mono); font-size: 12px; letter-spacing: .2em; color: var(--c); }
+.chosen .region { font-size: 52px; margin-top: 6px; }
+.chosen .right { padding: 28px; }
+.stats { display: grid; grid-template-columns: auto 1fr; gap: 12px 20px; margin: 0; font-variant-numeric: tabular-nums; }
+.stats dt { font-family: var(--f-mono); font-size: 11px; letter-spacing: .16em; color: var(--fg-soft); text-transform: uppercase; padding-top: 3px; }
+.stats dd { margin: 0; font-size: 15px; }
+.wip { font-family: var(--f-mono); font-size: 11px; letter-spacing: .2em; color: var(--fg-soft); text-align: center; border: 1px dashed var(--line-2); border-radius: 4px; padding: 14px; margin: 0; }
+
+@media (max-width: 640px) {
+  .stage { grid-template-columns: 1fr; padding: 18px; }
+  .chosen { grid-template-columns: 1fr; }
+  .chosen .left { border-right: 0; border-bottom: 1px solid var(--line); min-height: 180px; }
+  .chosen .region { font-size: 40px; }
+  .cta { flex-wrap: wrap; }
+  .cta .arrow { margin-left: 0; }
+}
+/* ---- Historial de partidas de la región ---- */
+.hist { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.hist-empty { margin: 0; font-size: 13px; color: var(--fg-soft); }
+.hist-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; }
+.hist-row { --hc: #3fbf6f; border: 1px solid color-mix(in srgb, var(--hc) 45%, var(--line)); border-left: 4px solid var(--hc); border-radius: 8px; padding: 10px 12px; background: color-mix(in srgb, var(--hc) 8%, var(--panel)); display: flex; flex-direction: column; gap: 8px; }
+.hist-row.lost { --hc: #e5484d; }
+.hist-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.hist-head b { color: var(--hc); font-size: 14px; }
+.hist-head span { font: 500 10px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--fg-soft); }
+.hist-head .hist-pts { margin-left: auto; color: var(--fg); }
+.hist-team { display: flex; flex-wrap: wrap; gap: 6px; }
+.hist-mon { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px 2px 2px; border-radius: 999px; border: 1px solid var(--line-2); font-size: 12px; }
+.hist-mon img { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
+.hist-mon .ph { width: 12px; height: 12px; margin: 8px; transform: rotate(45deg); border-radius: 3px; background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); }
+.hist-mon em { font-style: normal; }
+.hist-mon.shiny { border-color: #ffd84a; } .hist-mon.shiny em { color: #ffd84a; }

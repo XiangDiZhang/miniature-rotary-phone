@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ruleta Pokémon</title>
+  <meta name="description" content="Juego de aventura Pokémon decidido por ruletas, con Pokédex completa de las nueve generaciones.">
+  <meta name="theme-color" content="#0b0f1a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2714%27 fill=%27%230b0f1a%27 stroke=%27%237fd6ff%27 stroke-width=%272%27/%3E%3Cpath d=%27M16 2a14 14 0 0 1 14 14H2A14 14 0 0 1 16 2z%27 fill=%27%23ff5a46%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%274.5%27 fill=%27%23e7edf8%27 stroke=%27%230b0f1a%27 stroke-width=%272%27/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;600&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;600&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="css/pokedex.css">
+  <link rel="stylesheet" href="css/ficha.css">
+  <link rel="stylesheet" href="css/aventura.css">
+  <link rel="stylesheet" href="css/caja-pc.css">
+  <link rel="stylesheet" href="css/cinematicas.css">
+  <link rel="stylesheet" href="css/opciones.css">
+  <link rel="stylesheet" href="css/interaccion.css">
+
+  <!-- El orden importa: cada archivo solo usa lo que han definido los anteriores -->
+  <script src="js/datos/tipos.js" defer></script>
+  <script src="js/datos/pokedex.js" defer></script>
+  <script src="js/datos/descripciones.js" defer></script>
+  <script src="js/datos/habilidades.js" defer></script>
+  <script src="js/datos/formas.js" defer></script>
+  <script src="js/datos/pokedex-regionales.js" defer></script>
+  <script src="js/datos/regiones.js" defer></script>
+  <script src="js/datos/eventos.js" defer></script>
+  <script src="js/datos/reglas.js" defer></script>
+  <script src="js/nucleo/utilidades.js" defer></script>
+  <script src="js/nucleo/ajustes.js" defer></script>
+  <script src="js/nucleo/audio.js" defer></script>
+  <script src="js/nucleo/texto.js" defer></script>
+  <script src="js/ui/escenas.js" defer></script>
+  <script src="js/ui/iconos-tipo.js" defer></script>
+  <script src="js/ruletas/tema.js" defer></script>
+  <script src="js/ruletas/giro.js" defer></script>
+  <script src="js/ruletas/ruleta-generaciones.js" defer></script>
+  <script src="js/ruletas/ruleta.js" defer></script>
+  <script src="js/ui/menu.js" defer></script>
+  <script src="js/pokedex/coleccion.js" defer></script>
+  <script src="js/pokedex/lista.js" defer></script>
+  <script src="js/pokedex/desplazamiento.js" defer></script>
+  <script src="js/pokedex/ficha.js" defer></script>
+  <script src="js/aventura/partida.js" defer></script>
+  <script src="js/aventura/combate.js" defer></script>
+  <script src="js/aventura/interfaz.js" defer></script>
+  <script src="js/aventura/caja-pc.js" defer></script>
+  <script src="js/aventura/equipo.js" defer></script>
+  <script src="js/aventura/animaciones.js" defer></script>
+  <script src="js/aventura/cinematicas.js" defer></script>
+  <script src="js/aventura/capturas.js" defer></script>
+  <script src="js/aventura/sucesos.js" defer></script>
+  <script src="js/aventura/flujo.js" defer></script>
+  <script src="assets/sprites/normales.js" defer></script>
+  <script src="assets/sprites/shiny.js" defer></script>
+  <script src="assets/sprites/medallas.js" defer></script>
+  <script src="js/recursos/sprites.js" defer></script>
+  <script src="js/opciones.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow" id="eyebrow">Menú principal</div>
+      <h1>Ruleta <b>Pokémon</b></h1>
+    </div>
+    <div class="head-actions">
+      <button class="sound" id="homeBtn" type="button" hidden>← MENÚ</button>
+      <button class="sound" id="soundBtn" type="button" aria-pressed="true">SONIDO · ON</button>
+      <button class="sound" id="themeBtn" type="button">TEMA · OSCURO</button>
+      <button class="sound fs-btn" id="fsBtn" type="button" aria-pressed="false" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+    </div>
+  </header>
+
+  <!-- MENÚ PRINCIPAL -->
+  <section class="scene" id="scene-home">
+    <p class="label">Menú</p>
+    <div class="grid" id="home">
+      <button class="card home-opt" type="button" data-go="dex" style="--c:#ff5a46">
+        <span class="ghost">01</span>
+        <div class="row-top"><span class="gen">01</span><span>CONSULTAR</span></div>
+        <div><div class="region">Pokédex</div><div class="games">Todos los Pokémon de todas las generaciones</div></div>
+        <div class="dex">
+          <div class="dex-line"><i style="left:0;width:100%"></i></div>
+          <div class="dex-meta"><span>1025 especies</span><span><b>ENTRAR</b> →</span></div>
+        </div>
+      </button>
+      <button class="card home-opt" type="button" data-go="menu" style="--c:#f2c14e">
+        <span class="ghost">02</span>
+        <div class="row-top"><span class="gen">02</span><span>PARTIDA</span></div>
+        <div><div class="region">Jugar</div><div class="games">Elige generación o deja que decida la ruleta</div></div>
+        <div class="dex">
+          <div class="dex-line"><i style="left:0;width:66%"></i></div>
+          <div class="dex-meta"><span>Gen I · Gen II</span><span><b>ENTRAR</b> →</span></div>
+        </div>
+      </button>
+      <button class="card home-opt" type="button" data-go="options" style="--c:#7fd6ff">
+        <span class="ghost">03</span>
+        <div class="row-top"><span class="gen">03</span><span>AJUSTES</span></div>
+        <div><div class="region">Opciones</div><div class="games">Sonido y ajustes del juego</div></div>
+        <div class="dex">
+          <div class="dex-line"><i style="left:0;width:33%"></i></div>
+          <div class="dex-meta"><span>Sonido</span><span><b>ENTRAR</b> →</span></div>
+        </div>
+      </button>
+    </div>
+    <p class="hint">FLECHAS · MOVER &nbsp;&nbsp; ENTER · ELEGIR</p>
+  </section>
+
+  <!-- POKÉDEX: filtros a la izquierda y cuadro con desplazamiento propio -->
+  <section class="scene" id="scene-dex" hidden>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="typeDefs"></defs></svg>
+    <aside class="dex-side" id="dexSide" aria-label="Filtros de la Pokédex">
+    <div class="side-head"><span>FILTROS</span><button class="side-close" id="sideClose" type="button" aria-label="Cerrar filtros">×</button></div>
+    <div class="dex-tools">
+      <div class="tool-row">
+        <input class="search" id="dexSearch" type="search" placeholder="Buscar nombre o número…" autocomplete="off">
+        <select class="sel" id="dexScope" aria-label="Pokédex"></select>
+      </div>
+      <div class="tool-row">
+        <div class="seg" id="dexGens" role="group" aria-label="Generación"></div>
+        <div class="seg" id="dexClass" role="group" aria-label="Categoría"></div>
+        <button class="clear-btn" id="dexClear" type="button" hidden>LIMPIAR ×</button>
+      </div>
+      <div class="types" id="dexTypes" role="group" aria-label="Tipos (hasta 2)"></div>
+      <div class="sprite-bar">
+        <button class="chip" id="shinyBtn" type="button" aria-pressed="false">✦ SHINY · OFF</button>
+      </div>
+    </div>
+    <p class="dex-count" id="dexCount"></p>
+    </aside>
+    <div class="dex-main frame" id="dexBox">
+      <p class="dex-sub" id="dexSub" hidden></p>
+      <div class="fade-edge top" id="fadeTop" aria-hidden="true"></div><div class="fade-edge bot" id="fadeBot" aria-hidden="true"></div>
+      <div class="dex-view" id="dexView" tabindex="0" aria-label="Pokémon (arrastra, usa la rueda o las flechas)">
+        <ul class="dex-grid" id="dexList"></ul>
+      </div>
+      <div class="rail" id="dexRail" aria-hidden="true">
+        <div class="rail-track" id="railTrack"><div class="rail-ticks" id="railTicks"></div></div>
+        <div class="rail-thumb" id="railThumb"><span class="rail-bubble" id="railBubble"></span></div>
+      </div>
+    </div>
+  </section>
+  <button class="side-tab" id="sideTab" type="button" aria-controls="dexSide">FILTROS</button>
+  <!-- FICHA DE POKÉMON (ventana) -->
+  <div class="info-shade" id="infoShade" hidden>
+    <article class="info frame" id="info" role="dialog" aria-modal="true" aria-labelledby="infoName">
+      <div class="info-bar">
+        <button class="info-nav" id="infoPrev" type="button" aria-label="Anterior">‹</button>
+        <span class="info-pos" id="infoPos"></span>
+        <button class="info-nav" id="infoNext" type="button" aria-label="Siguiente">›</button>
+        <button class="info-close" id="infoClose" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div class="info-grid">
+        <section class="info-hero" id="infoHero"></section>
+        <section class="info-body" id="infoBody"></section>
+      </div>
+    </article>
+  </div>
+  <div class="side-shade" id="sideShade"></div>
+
+  <!-- OPCIONES -->
+  <section class="scene" id="scene-options" hidden>
+    <p class="label">Opciones</p>
+    <div class="opt-list">
+      <div class="opt-row"><div class="l"><b>Sonido</b><span>Efectos al moverte, al girar y al ganar</span></div><button class="toggle" id="optSound" type="button" aria-pressed="true">ON</button></div>
+      <div class="opt-row"><div class="l"><b>Tema</b><span>Oscuro o claro</span></div><button class="toggle" id="optTheme" type="button" aria-pressed="true">OSCURO</button></div>
+      <div class="opt-row"><div class="l"><b>Modo</b><span>Usuario: la Pokédex se completa capturando en tus partidas · Desarrollador: todo desbloqueado</span></div><button class="toggle" id="optMode" type="button" aria-pressed="false">USUARIO</button></div>
+      <div class="opt-row"><div class="l"><b>Animaciones</b><span>Pokémon con vida, deslizamientos y efectos</span></div><button class="toggle" id="optMotion" type="button" aria-pressed="true">ON</button></div>
+      <div class="opt-row"><div class="l"><b>Velocidad del texto</b><span>Lo rápido que se escriben los diálogos: lenta, normal, rápida o al instante</span></div><button class="toggle" id="optTSpeed" type="button">NORMAL</button></div>
+      <div class="opt-row"><div class="l"><b>Locutor</b><span>Una voz lee en alto el texto de la aventura (usa la voz de tu sistema)</span></div><button class="toggle" id="optTts" type="button" aria-pressed="false">OFF</button></div>
+      <div class="opt-row"><div class="l"><b>Hall de la Fama</b><span>Vuelve a ver la cinemática con tu último equipo campeón</span></div><button class="toggle" id="optHof" type="button">VER</button></div>
+      <div class="opt-row"><div class="l"><b>Derrota</b><span>Ver la animación de cuando pierdes (con tu último equipo)</span></div><button class="toggle" id="optLose" type="button">VER</button></div>
+    </div>
+    <p class="wip">MÁS OPCIONES PRÓXIMAMENTE</p>
+  </section>
+
+  <!-- JUGAR: selección de generación -->
+  <section class="scene" id="scene-menu" hidden>
+    <div class="frame dialog"><span class="who">PROF.</span><span class="txt" id="menuText"></span></div>
+    <p class="label">Generaciones</p>
+    <div class="grid" id="grid"></div>
+    <button class="cta" id="rouletteCard" type="button">
+      <canvas id="wheelIco" width="112" height="112" aria-hidden="true"></canvas>
+      <span class="t"><span class="t1">Que decida la ruleta</span><span class="t2">¿No te decides? Gira y acepta lo que salga.</span></span>
+      <span class="arrow">GIRAR →</span>
+    </button>
+    <p class="hint">FLECHAS · MOVER &nbsp;&nbsp; ENTER · ELEGIR &nbsp;&nbsp; ESC · VOLVER</p>
+  </section>
+
+  <!-- JUGAR: ruleta de generaciones -->
+  <section class="scene" id="scene-roulette" hidden>
+    <div class="frame stage">
+      <div class="wheel-box"><canvas id="wheel" aria-label="Ruleta de generaciones"></canvas></div>
+      <div class="side">
+        <p class="label">Ruleta</p>
+        <div class="readout" id="readout">Listo</div>
+        <p class="sub" id="rouletteText"></p>
+        <div class="legend" id="legend"></div>
+        <div class="btns" id="rouletteBtns">
+          <button class="btn" id="spinBtn" type="button">Girar</button>
+          <button class="btn ghostbtn" id="backBtn" type="button">Volver</button>
+        </div>
+        <div class="btns" id="resultBtns" hidden>
+          <button class="btn" id="acceptBtn" type="button">Adelante</button>
+          <button class="btn ghostbtn" id="respinBtn" type="button">Otra vez</button>
+          <button class="btn ghostbtn" id="menuBtn" type="button">← Menú</button>
+        </div>
+        <p class="drag-hint">Agárrala para lanzarla tú · o para frenarla en marcha</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- JUGAR: generación elegida (empezar o continuar la aventura e historial) -->
+  <section class="scene" id="scene-chosen" hidden>
+    <div class="frame dialog"><span class="who">PROF.</span><span class="txt" id="chosenText"></span></div>
+    <div class="frame chosen" id="chosenCard">
+      <div class="left">
+        <span class="ghost" id="chosenGhost">I</span>
+        <span class="gen" id="chosenGen">GENERACIÓN I</span>
+        <span class="region" id="chosenRegion">Kanto</span>
+      </div>
+      <div class="right">
+        <dl class="stats">
+          <dt>Pokédex</dt><dd id="chosenRange">Nº 001–151</dd>
+          <dt>Especies</dt><dd id="chosenCount">151</dd>
+          <dt>Año</dt><dd id="chosenYear">1996</dd>
+          <dt>Juegos</dt><dd id="chosenGames">Rojo · Azul · Amarillo</dd>
+          <dt>Iniciales</dt><dd>Planta · Fuego · Agua</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="btns" id="advEntry"></div>
+    <div class="hist" id="advHist"></div>
+    <div class="btns"><button class="btn ghostbtn" id="changeBtn" type="button">← Cambiar generación</button></div>
+  </section>
+
+  <!-- AVENTURA: ruleta, diálogo, línea de fases, paneles de equipo / mochila / diario y Caja PC -->
+  <section class="scene" id="scene-adv" hidden>
+    <div class="frame stage adv-stage">
+      <div class="wheel-box adv-wbox"><canvas id="advWheel" class="adv-wheel" aria-label="Ruleta de la aventura"></canvas>
+        <div class="adv-track"><div class="adv-pathwin" id="advPathWin"><ol class="adv-path" id="advPath"></ol></div></div></div>
+      <div class="side">
+        <div class="leader-card" id="advLeader" hidden></div>
+        <div class="m-team-slot" id="mTeamSlot"></div>
+        <p class="label" id="advStep">Aventura</p>
+        <span class="extra-chip" id="advExtra" hidden></span>
+        <div class="readout adv-rpm" id="advRpm"></div>
+        <p class="adv-text" id="advText"></p>
+        <div class="btns" id="advBtns"></div>
+        <p class="drag-hint">Toca la ruleta para girar o continuar · o agárrala y lánzala tú</p>
+      </div>
+    </div>
+    <button class="lead-tab" id="leadTab" type="button">Líder</button><div class="lead-shade" id="leadShade"></div>
+    <div class="adv-tabs" id="advTabs" role="tablist"><button type="button" data-tab="0">Equipo</button><button type="button" data-tab="1">Mochila</button><button type="button" data-tab="2">Diario</button></div>
+    <div class="adv-grid" id="advGrid" data-tab="0">
+      <div class="frame adv-card" data-card="0"><div class="card-head"><p class="label">Equipo · combaten</p><button class="mini-btn pc-open" id="pcOpen" type="button">Caja PC</button></div><div class="adv-team" id="advTeam"></div></div>
+      <div class="frame adv-card adv-scroll bag-card" data-card="1"><div class="card-head"><p class="label">Mochila</p><div class="adv-points" id="advPoints"></div></div><div class="adv-bag" id="advBag"></div><div class="adv-badges" id="advBadges"></div></div>
+      <div class="frame adv-card" data-card="2"><div class="card-head"><p class="label">Diario</p><button class="mini-btn adv-new" id="advNew" type="button">Nueva partida</button></div><ul class="adv-log" id="advLog"></ul></div>
+    </div>
+    <div class="adv-toasts" id="advToasts" aria-live="polite"></div>
+    <div class="pc-shade" id="pcShade" hidden>
+      <section class="pc frame" role="dialog" aria-modal="true" aria-label="Caja PC">
+        <header class="pc-bar"><span class="pc-ico" aria-hidden="true"></span><div class="pc-title"><b>Caja PC</b><small>Sistema de almacenamiento Pokémon</small></div><span class="pc-count" id="pcCount"></span><button class="info-close" id="pcClose" type="button" aria-label="Cerrar">×</button></header>
+        <div class="pc-body">
+          <div class="pc-col pc-party"><p class="pc-tag"><span>Equipo</span><em>combaten</em></p><div class="pc-grid team" id="pcTeam"></div></div>
+          <div class="pc-col pc-boxcol"><p class="pc-tag box"><span>◂</span><span>Caja 1</span><span>▸</span><em>no combaten</em></p><div class="pc-grid box" id="pcBox"></div></div>
+        </div>
+        <p class="pc-hint">Agarra un Pokémon y suéltalo en otro hueco, o tócalo y después toca dónde va.</p>
+      </section>
+    </div>
+  </section>
+</div>
+
+</body>
+</html>

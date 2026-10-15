@@ -1,0 +1,84 @@
+/* Caja PC: equipo (6 huecos) y caja (30 huecos); se arrastra o se toca origen y destino */
+.pc-shade { position: fixed; inset: 0; z-index: 85; background: rgba(4,7,14,.62); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 20px; animation: fadeIn .2s ease both; }
+.pc { width: min(1080px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; overflow-x: hidden; border-radius: 14px; border-color: color-mix(in srgb, var(--cyan) 40%, var(--line));
+  background:
+    radial-gradient(700px 260px at 15% -20%, color-mix(in srgb, var(--cyan) 14%, transparent), transparent 70%),
+    radial-gradient(600px 300px at 110% 120%, color-mix(in srgb, var(--johto) 10%, transparent), transparent 70%), var(--bg);
+  box-shadow: 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.04); animation: popIn .28s cubic-bezier(.2,.85,.25,1) both; }
+
+/* barra de título */
+.pc-bar { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--line); background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 60%); }
+.pc-bar b { font-family: var(--f-display); font-size: 24px; font-weight: 500; }
+.pc-bar .info-close { margin-left: 0; }
+.pc-ico { width: 38px; height: 30px; flex: none; position: relative; border: 2px solid var(--cyan); border-radius: 5px; background: linear-gradient(160deg, color-mix(in srgb, var(--cyan) 30%, transparent), transparent); box-shadow: 0 0 12px color-mix(in srgb, var(--cyan) 45%, transparent); }
+.pc-ico::before { content: ""; position: absolute; left: 50%; bottom: -8px; width: 14px; height: 4px; transform: translateX(-50%); border-radius: 2px; background: var(--cyan); }
+.pc-ico::after { content: ""; position: absolute; right: 4px; top: 4px; width: 5px; height: 5px; border-radius: 50%; background: #7ee0a1; box-shadow: 0 0 6px #7ee0a1; animation: pulse 1.6s ease-in-out infinite; }
+.pc-title { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+.pc-title small { font-family: var(--f-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--fg-soft); }
+.pc-count { margin-left: auto; margin-right: auto; font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; color: var(--fg-soft); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--panel); white-space: nowrap; }
+
+/* equipo a la izquierda, caja a la derecha */
+.pc-body { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; padding: 18px; }
+.pc-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pc-tag { margin: 0; display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--fg); }
+.pc-tag em { font-style: normal; font-size: 10px; color: var(--fg-soft); margin-left: auto; letter-spacing: .14em; }
+.pc-tag.box { justify-content: flex-start; }
+.pc-tag.box span:first-child, .pc-tag.box span:nth-child(3) { color: var(--cyan); opacity: .7; }
+.pc-grid { display: grid; gap: 6px; }
+.pc-grid.team { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--kanto) 45%, var(--line-2));
+  background: radial-gradient(circle at 50% 50%, transparent 0 22px, color-mix(in srgb, var(--kanto) 10%, transparent) 23px 25px, transparent 26px),
+    linear-gradient(180deg, color-mix(in srgb, var(--kanto) 12%, transparent) 0 50%, color-mix(in srgb, var(--fg) 4%, transparent) 50% 100%); }
+.pc-grid.box { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--cyan) 35%, var(--line-2));
+  background: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--cyan) 22%, transparent) 1px, transparent 1.5px) 0 0 / 16px 16px,
+    linear-gradient(160deg, color-mix(in srgb, var(--cyan) 10%, transparent), color-mix(in srgb, #6a3fc0 10%, transparent)); }
+.pc-hint { margin: 0; padding: 0 18px 16px; font-size: 13px; color: var(--fg-soft); }
+
+/* cada hueco: número de fondo, tipos, sprite y nombre */
+.pc-slot { --c: var(--line-2); position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 70%, transparent); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; transition: transform .15s, box-shadow .2s, border-color .2s; }
+.pc-slot:not(.empty) { isolation: isolate; overflow: hidden; border-color: color-mix(in srgb, var(--c) 45%, var(--line)); background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--c) 26%, transparent), transparent 70%), color-mix(in srgb, var(--bg) 75%, transparent); }
+.pc-slot:not(.empty):hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.3), 0 0 0 1px var(--c); }
+.pc-slot.empty { cursor: pointer; border-style: dashed; background: radial-gradient(circle at 50% 50%, transparent 0 7px, color-mix(in srgb, var(--fg) 7%, transparent) 8px 9px, transparent 10px), linear-gradient(180deg, transparent 0 calc(50% - .5px), color-mix(in srgb, var(--fg) 6%, transparent) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)); background-size: 34px 34px, 34px 100%; background-repeat: no-repeat; background-position: center; }
+.pc-slot > img { width: 70%; height: 70%; margin-top: -2%; object-fit: contain; image-rendering: pixelated; pointer-events: none; }
+.pc-slot .ph { width: 30%; height: 30%; transform: rotate(45deg); border-radius: 4px; background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); opacity: .8; pointer-events: none; }
+.pc-slot small { position: absolute; left: 2px; right: 2px; bottom: 5px; font-size: 11px; font-weight: 600; line-height: 1.1; text-align: center; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.pc-grid.team .pc-slot small { font-size: 12px; }
+.pc-slot .pc-bg { position: absolute; right: 2px; bottom: 14%; font: 300 clamp(22px, 2.6vw, 38px)/1 var(--f-display); color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--c) 45%, transparent); z-index: -1; pointer-events: none; }
+.pc-slot .pc-bg.d4 { font-size: clamp(18px, 2vw, 30px); }
+.pc-slot .pc-no { position: absolute; top: 5px; left: 7px; font: 500 9px var(--f-mono); letter-spacing: .08em; color: var(--c); pointer-events: none; }
+.pc-slot .pc-ty { position: absolute; top: 4px; right: 5px; display: flex; gap: 2px; pointer-events: none; }
+.pc-slot .pc-ty .ti { width: 15px; height: 15px; }
+.pc-slot.shiny { box-shadow: 0 0 10px rgba(255,216,74,.3); }
+.pc-slot.shiny small { color: #ffd84a; }
+
+/* elegir, levantar y soltar (misma sensación que en el equipo) */
+.pc-slot.sel { outline: 2px solid var(--cyan); outline-offset: 1px; transform: scale(1.05); }
+.pc-slot.over { outline: 2px dashed var(--johto); outline-offset: 1px; }
+.pc-slot.holding { transform: scale(1.06); box-shadow: 0 10px 24px rgba(0,0,0,.4), 0 0 0 1px var(--c); transition: transform .18s cubic-bezier(.2,.9,.3,1.4), box-shadow .18s; }
+.pc-slot.src { opacity: .25; outline: 2px dashed var(--cyan); outline-offset: -2px; }
+.pc-lift { position: fixed !important; z-index: 120; pointer-events: none; margin: 0; aspect-ratio: auto !important; animation: ghostLift .2s cubic-bezier(.2,.9,.3,1.4) both; box-shadow: 0 18px 40px rgba(0,0,0,.5), 0 0 0 1px var(--c), 0 0 22px color-mix(in srgb, var(--c) 45%, transparent) !important; }
+.pc-lift.pc-err { box-shadow: 0 0 0 2px #e5484d, 0 0 26px rgba(229,72,77,.7) !important; filter: saturate(.6); }
+/* vista previa del intercambio: el que estaba ahí se aparta hacia tu hueco */
+.pc-slot > img, .pc-slot > .ph, .pc-slot > small { transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s; }
+.pc-slot.swap-prev { overflow: visible; z-index: 3; }
+.pc-slot.swap-prev > img, .pc-slot.swap-prev > .ph { transform: translate(var(--dx), var(--dy)) scale(.85); opacity: .75; }
+.pc-slot.swap-prev > small { opacity: 0; }
+.pc-slot.landed { animation: landPop .42s cubic-bezier(.2,.9,.3,1.5); }
+body.pc-dragging, body.pc-dragging * { cursor: grabbing !important; }
+
+@media (max-width: 760px) {
+  .pc-shade { padding: 8px; }
+  .pc { max-height: calc(100dvh - 16px); }
+  .pc-bar { padding: 10px 12px; gap: 10px; }
+  .pc-bar b { font-size: 20px; }
+  .pc-title small { display: none; }
+  .pc-ico { width: 30px; height: 24px; }
+  .pc-count { padding: 4px 8px; }
+  .pc-body { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px; }
+  .pc-grid.team { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 8px; }
+  .pc-grid.box { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; padding: 8px; }
+  .pc-slot small { font-size: 9px; }
+  .pc-grid.team .pc-slot small { font-size: 10.5px; }
+  .pc-slot .pc-no { font-size: 7.5px; top: 3px; left: 4px; }
+  .pc-slot .pc-ty .ti { width: 11px; height: 11px; }
+  .pc-slot .pc-bg { display: none; }
+}

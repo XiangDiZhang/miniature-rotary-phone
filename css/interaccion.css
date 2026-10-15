@@ -1,0 +1,24 @@
+/* Respuesta al ratón y al dedo (va al final para mandar sobre el resto) */
+@media (hover: hover) {
+  .sound:hover { color: var(--fg); border-color: var(--fg-soft); }
+  .card:hover:not(:disabled) { border-color: color-mix(in srgb, var(--c) 55%, transparent); background: color-mix(in srgb, var(--c) 6%, transparent); transform: translateY(-2px); }
+  .card:hover:not(:disabled)::before { width: 100%; }
+  .cta:hover { border-color: var(--cyan); background: linear-gradient(90deg, rgba(var(--glow-rgb),.13), transparent 80%); }
+  .btn:hover:not(:disabled) { box-shadow: 0 0 22px rgba(var(--glow-rgb),.35); }
+  .btn.ghostbtn:hover:not(:disabled) { border-color: var(--fg-soft); box-shadow: none; }
+  .dex-view:not(.grab) .mon:hover { border-color: color-mix(in srgb, var(--c) 55%, transparent); background: color-mix(in srgb, var(--c) 6%, transparent); transform: translateY(-2px); }
+  .mon:hover::before { width: 100%; }
+  .dex-view:not(.grab) .mon:hover::after { opacity: .28; }
+  .dex-view:not(.grab) .mon:hover .bob > * { animation: hop2 .5s cubic-bezier(.3,.7,.4,1) 1; }
+  .seg button:hover { color: var(--fg); }
+  .clear-btn:hover { color: var(--fg); border-color: var(--fg-soft); }
+  .tbtn:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--t) 30%, transparent); }
+  .rail:hover .rail-tick span { opacity: 1; }
+  .rail:hover .rail-thumb { width: 12px; }
+  .info-nav:hover, .info-close:hover { border-color: var(--c); color: var(--c); }
+  .evo-card:hover { border-color: var(--c); }
+  .ab:hover { border-color: var(--c); }
+}
+/* respuesta táctil al pulsar */
+.card:active:not(:disabled), .cta:active { transform: scale(.98); border-color: color-mix(in srgb, var(--c, var(--cyan)) 60%, transparent); }
+.btn:active, .chip:active, .tbtn:active, .evo-card:active, .ab:active, .seg button:active { transform: scale(.95); }
