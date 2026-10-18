@@ -67,6 +67,17 @@ function evoHTML(n, formId) {
   if (!tags.length) return line(base);
   return `<div class="evo-fam"><p class="evo-fam-h">${ids.length < 2 ? 'No evoluciona · forma normal' : 'Forma normal'}</p>${line(base)}</div>${regional.join('')}`;
 }
+// la línea evolutiva va siempre en una fila: si no cabe con el método al lado de cada tarjeta, lo pone encima («tight»),
+// y si ni así, deja partir los nombres («tighter»). Se mide de nuevo al cambiar el tamaño de la ventana.
+function fitEvo(root) {
+  (root || document).querySelectorAll('.evo').forEach(e => {
+    e.classList.remove('tight', 'tighter');
+    const over = () => e.firstElementChild.scrollWidth > e.clientWidth + 1;
+    if (over()) e.classList.add('tight');
+    if (over()) e.classList.add('tighter');
+  });
+}
+addEventListener('resize', () => { if (infoOpen) fitEvo($('infoBody')); });
 function effHTML(types) {
   const mult = {};
   Object.keys(CHART).forEach(att => { mult[att] = types.reduce((m, d) => m * (CHART[att][d] ?? 1), 1); });
@@ -174,6 +185,7 @@ function openInfo(n, from, formId, peek, keep) {
     <div><h3>Línea evolutiva y variantes</h3>${evoHTML(n, formId || 0)}</div>
     <div><h3>Daño que recibe</h3>${effHTML(ty)}</div>`;
   if (peek) {
+    requestAnimationFrame(() => fitEvo(BODY));
     peek.root.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
     peek.root.querySelectorAll('.bar i').forEach(i => i.style.width = i.dataset.w + '%');
     requestAnimationFrame(() => centerBeam(peek.hero));
@@ -183,7 +195,7 @@ function openInfo(n, from, formId, peek, keep) {
   const idx = navIdx(), len = navNs().length;
   $('infoPos').textContent = idx >= 0 ? `${infoNav ? 'Tus Pokémon · ' : ''}${idx + 1} / ${len}` : '';
   $('infoPrev').disabled = idx <= 0; $('infoNext').disabled = idx < 0 || idx >= len - 1;
-  $('infoShade').hidden = false;
+  $('infoShade').hidden = false; fitEvo(BODY);   // se mide ya visible
   requestAnimationFrame(() => $('infoBody').querySelectorAll('.bar i').forEach(i => i.style.width = i.dataset.w + '%'));
   // evoluciones y variantes de la línea: la ficha nueva conserva el aspecto de esta (shiny o normal)
   const sh = infoSh;

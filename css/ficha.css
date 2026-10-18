@@ -85,14 +85,14 @@
 .abil-box { margin: 6px 0 0; padding: 7px 10px; border-left: 2px solid var(--c); background: color-mix(in srgb, var(--c) 7%, transparent); border-radius: 0 4px 4px 0; display: flex; flex-direction: column; gap: 3px; font-size: 13px; line-height: 1.4; animation: fadeIn .2s ease both; }
 .abil-box b { font-size: 13px; } .abil-box b small { color: var(--fg-soft); font-weight: 400; }
 /* línea evolutiva: columnas por etapa, y al lado de cada evolución cómo se consigue. Todas las etapas en una sola fila
-   (nunca salta de línea): si no caben, se estrechan el texto del método y las variantes, que se reparten en más filas */
-.evo { container-type: inline-size; }
-.evo-in { display: flex; align-items: flex-start; gap: 6px; flex-wrap: nowrap; min-width: 0; }
-.evo-col { display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 0 1 auto; }
-.evo-step { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.evo-m { display: flex; flex-direction: column; align-items: center; flex: 0 1 76px; min-width: 42px; font-family: var(--f-mono); font-size: 9px; line-height: 1.3; color: var(--fg-soft); text-align: center; overflow-wrap: break-word; }
+   (nunca salta de línea): si no caben, se estrechan el texto del método y las variantes, que se reparten en más filas.
+   Las tarjetas nunca se estrechan (no se montan unas encima de otras); si aun así no cabe, fitEvo() la pasa a «tight» */
+.evo-in { display: flex; align-items: flex-start; gap: 6px; flex-wrap: nowrap; }
+.evo-col { display: flex; flex-direction: column; gap: 5px; flex: 0 1 auto; }
+.evo-step { display: flex; align-items: center; gap: 6px; }
+.evo-m { display: flex; flex-direction: column; align-items: center; flex: 0 1 76px; min-width: 44px; font-family: var(--f-mono); font-size: 9px; line-height: 1.3; color: var(--fg-soft); text-align: center; }
 .evo-m::before { content: "→"; font-size: 16px; color: var(--c); }
-.evo-card { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 3px 8px 3px 3px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); cursor: pointer; color: inherit; font: inherit; text-align: left; }
+.evo-card { display: flex; align-items: center; gap: 6px; padding: 3px 8px 3px 3px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); cursor: pointer; color: inherit; font: inherit; text-align: left; }
 .evo-card.cur { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
 .evo-card.locked { cursor: default; opacity: .8; }
 .evo-card.locked .th img { filter: brightness(0); }
@@ -100,7 +100,7 @@
 .evo-card .th img { width: 34px; height: 34px; object-fit: contain; } .evo-card .th img.px { image-rendering: pixelated; }
 .evo-card .th .ph { width: 18px; height: 18px; transform: rotate(45deg); border-radius: 3px; background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); opacity: .7; }
 .evo-card .th { flex: none; }
-.evo-card .tx { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; overflow-wrap: break-word; }
+.evo-card .tx { display: flex; flex-direction: column; line-height: 1.2; }
 .evo-card .tx small { font-family: var(--f-mono); font-size: 10px; color: var(--fg-soft); }
 .empty-note { color: var(--fg-soft); font-size: 13px; }
 /* daño que recibe */
@@ -139,16 +139,16 @@
 }
 
 /* variantes de cada especie de la línea evolutiva (megas, Gigamax, regionales y otras formas), debajo de su tarjeta */
-.evo-node { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
-.evo-vars { display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px; min-width: 0; }
-.evo-var { min-width: 0; }
-/* línea estrecha (móvil, o muchas etapas): el método va encima de la tarjeta en vez de al lado, y así cabe todo en una fila */
-@container (max-width: 430px) {
-  .evo-step { flex-direction: column; align-items: flex-start; gap: 3px; }
-  .evo-m { flex: none; min-width: 0; flex-direction: row; gap: 4px; text-align: left; max-width: 100%; }
-  .evo-m::before { font-size: 13px; line-height: 1; }
-  .evo-in > .evo-col:first-child { padding-top: 15px; }   /* a la altura de las tarjetas que llevan el método encima */
-}
+.evo-node { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.evo-vars { display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px; }
+/* línea que no cabe con el método al lado (móvil, o muchas etapas): el método va encima de la tarjeta, y así cabe todo en una fila */
+.evo.tight .evo-step { flex-direction: column; align-items: flex-start; gap: 3px; }
+.evo.tight .evo-m { flex: none; min-width: 0; flex-direction: row; gap: 4px; text-align: left; }
+.evo.tight .evo-m::before { font-size: 13px; line-height: 1; }
+.evo.tight .evo-in > .evo-col:first-child { padding-top: 15px; }   /* a la altura de las tarjetas que llevan el método encima */
+/* último recurso (nombres muy largos en una pantalla muy estrecha): los nombres se parten en varias líneas */
+.evo.tighter .evo-col, .evo.tighter .evo-node, .evo.tighter .evo-step, .evo.tighter .evo-card { min-width: 0; }
+.evo.tighter .evo-card .tx { min-width: 0; overflow-wrap: anywhere; }
 .evo-card .tx small { white-space: nowrap; }
 .evo-var { display: flex; align-items: center; gap: 4px; padding: 2px 6px 2px 2px; border: 1px dashed var(--line); border-radius: 6px; background: transparent; color: inherit; font: 500 10px var(--f-mono); cursor: pointer; text-align: left; line-height: 1.15; }
 .evo-var .th { width: 26px; height: 26px; display: grid; place-items: center; flex: none; }
