@@ -290,7 +290,7 @@ function initAdv() {
   try { let raf = 0; const ro = new ResizeObserver(() => { if (state.scene === 'adv' && (matchMedia(PHONE_V).matches || matchMedia(PHONE_H).matches)) { cancelAnimationFrame(raf); raf = requestAnimationFrame(fitAdv); } });
     ['.adv-wbox', '.adv-stage', '.adv-stage .side'].forEach(s => { const el = document.querySelector(s); if (el) ro.observe(el); }); } catch (e) {}
   // móvil: los datos del líder/ruta van en un panel lateral (como los filtros de la Pokédex) y el equipo se ve siempre debajo de la ruleta
-  const mq = matchMedia(PHONE_V);   // (en horizontal, el móvil usa el diseño del ordenador)
+  const mq = matchMedia(`${PHONE_V}, ${PHONE_H}`);   // móvil, en vertical o en horizontal: el equipo va bajo la ruleta y lo demás, en paneles
   const placeTeam = () => {
     const card = document.querySelector('[data-card="0"]');
     if (mq.matches) { $('mTeamSlot').appendChild(card); if ($('advGrid').dataset.tab === '0') $('advGrid').dataset.tab = '1'; }

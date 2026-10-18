@@ -579,7 +579,7 @@ img.stone.px { image-rendering: pixelated; }
   body.wide-adv h1 { font-size: 17px; margin: 0; white-space: nowrap; }
   body.wide-adv .head-actions { gap: 5px; }
   body.wide-adv .head-actions .sound { padding: 4px 9px; font-size: 9px; }
-  #scene-adv:not([hidden]) { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.85fr) minmax(210px, 1fr); gap: 8px; }
+  #scene-adv:not([hidden]) { flex: 1 1 auto; min-height: 0; }
   .adv-stage { display: grid !important; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 8px 12px; min-height: 0; height: 100%; align-items: stretch; overflow: hidden; }
   .adv-stage .adv-wbox { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; min-height: 0; height: 100%; }
   .adv-track { width: var(--wsz, 220px); }
@@ -599,8 +599,6 @@ img.stone.px { image-rendering: pixelated; }
   .adv-stage #advBtns { min-height: 34px; gap: 6px; }
   .adv-stage #advBtns .btn { padding: 8px 14px; font-size: 10px; }
   .extra-chip { margin: 0; font-size: 9.5px; padding: 1px 8px; }
-  /* la columna de la derecha: equipo (3 × 2), mochila y diario, cada uno con su hueco */
-  .adv-grid { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); gap: 6px; height: 100%; min-height: 0; }
   .adv-card { padding: 6px 8px; gap: 4px; min-height: 0; overflow: hidden; }
   .adv-card .card-head .label { font-size: 8.5px; letter-spacing: .14em; gap: 6px; }
   .card-ico { width: 20px; height: 20px; } .card-ico svg { width: 13px; height: 13px; }
@@ -623,7 +621,6 @@ img.stone.px { image-rendering: pixelated; }
   .lg { gap: 6px; padding: 2px 6px 2px 2px; } .lg-ic { width: 24px; height: 24px; } .lg-ic > img { width: 24px; height: 24px; } .lg-ic > img.lgm { width: 28px; height: 28px; margin-top: -3px; }
   .lg-b { width: 13px; height: 13px; right: -4px; bottom: -3px; } .lg-b img { width: 11px; height: 11px; }
   .lg.pts { padding-left: 30px; font-size: 10px; } .lg.place { font-size: 8.5px; }
-  .adv-tabs, .lead-tab, .lead-shade, .m-team-slot, .m-rail { display: none !important; }
 }
 
 /* ---- El líder en el escenario (solo en el ordenador: ver el bloque de escritorio) ---- */
@@ -698,3 +695,57 @@ img.stone.px { image-rendering: pixelated; }
 .adv-leadfig .lf-row, .adv-playerfig .lf-row { pointer-events: auto; cursor: help; }
 /* (la columna de la derecha deja pasar el ratón donde no hay nada, para que llegue a los entrenadores de detrás) */
 @media (min-width: 900px) and (min-height: 560px) { .adv-stage .side { pointer-events: none; } .adv-stage .side > *, .adv-stage .adv-say > * { pointer-events: auto; } }
+
+/* ==== Móvil en horizontal: como en vertical, la mochila, el diario y la caja de información salen en paneles centrados al tocar
+   los botones flotantes de la izquierda; el escenario ocupa todo: ruleta | equipo compacto, texto y botones ==== */
+@media (orientation: landscape) and (max-height: 520px) {
+  .m-team-slot { display: block; }
+  .m-team-slot > .adv-card { display: flex !important; padding: 10px 12px; gap: 8px; height: auto; }
+  .m-team-slot .card-head .label { font-size: 9.5px; white-space: nowrap; }
+  .m-team-slot .adv-team { height: 150px; flex: none; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  .m-team-slot .adv-team .mon.tmon { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); padding: 6px 26px 5px 7px; }
+  .m-team-slot .adv-team .mon.tmon .nm { grid-column: 1; grid-row: 1; font-size: 11px; max-width: 70%; }
+  .m-team-slot .adv-team .mon.tmon .ty { grid-column: 1; grid-row: 2; padding-right: 0; }
+  .m-team-slot .adv-team .mon.tmon .ty .ti { width: 14px; height: 14px; }
+  .m-team-slot .adv-team .mon.tmon .sp { position: absolute; top: 6px; left: 60%; height: calc(100% - 14px); width: auto; aspect-ratio: 1; transform: translateX(-50%); grid-column: auto; grid-row: auto; }
+  .m-team-slot .adv-team .mon.tmon .sp img { transform: translate(calc((.5 - var(--sx, .5)) * 100%), calc(var(--fb, 0) * 100% - 4px)); }
+  .m-team-slot .adv-team .mon.tmon .bg { display: block; top: auto; bottom: -4px; right: -2px; font-size: 28px; }
+  .m-team-slot .adv-team .mon.tmon .pw { display: block; position: absolute; right: 6px; top: 5px; font-size: 8.5px; margin: 0; }
+  .m-team-slot .adv-team .tm-mv { width: 20px; height: 20px; bottom: 4px; right: 4px; font-size: 11px; }
+  body.wide-adv .m-rail { position: fixed; z-index: 70; left: 8px; top: calc(env(safe-area-inset-top, 0px) + 84px); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  body.wide-adv .m-rail .lead-tab, .adv-tabs button { flex: none; position: relative; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; border-radius: 50%; transform: none; rotate: none; writing-mode: horizontal-tb;
+    border: 1px solid color-mix(in srgb, var(--cyan) 45%, var(--line-2)); background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 10px color-mix(in srgb, var(--cyan) 20%, transparent); color: var(--fg); }
+  .adv-tabs { position: static; flex-direction: column; gap: 6px; padding: 0; border: 0; border-radius: 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+  .adv-tabs button.on, body.lead-open .m-rail .lead-tab { background: color-mix(in srgb, var(--cyan) 22%, var(--bg)); border-color: var(--cyan); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 25%, transparent), 0 6px 18px rgba(0,0,0,.45); }
+  .m-rail .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .m-rail .tab-ico, .m-rail .tab-ico svg { width: 21px; height: 21px; display: block; }
+  .m-rail .tab-ico svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--cyan) 40%, transparent)); }
+  /* los paneles (líder / ruta, mochila y diario) salen centrados en la pantalla */
+  .adv-grid { left: 10px; right: 10px; top: 50%; bottom: auto; height: min(440px, 64vh); transform: translate(0, -50%) scale(.94); }
+  .adv-grid.open { transform: translate(0, -50%); }
+  .adv-grid > .adv-card { box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+  .leader-card { left: 50%; right: auto; width: min(360px, calc(100vw - 20px)); border-radius: 12px; border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+    transform: translate(-50%, -50%) scale(.92); opacity: 0; visibility: hidden; box-shadow: 0 14px 40px rgba(0,0,0,.5);
+    transition: transform .3s cubic-bezier(.2,.85,.25,1), opacity .2s, visibility 0s .3s; }
+  .leader-card, .adv-grid { z-index: 72; } body.lead-open .lead-shade { z-index: 71; }   /* por encima de los botones flotantes */
+  body.lead-open .leader-card { transform: translate(-50%, -50%); opacity: 1; visibility: visible; transition: transform .3s cubic-bezier(.2,.85,.25,1), opacity .2s; }
+  #scene-adv:not([hidden]) { display: flex; flex-direction: column; }
+  .adv-stage { flex: 1 1 auto; padding: 6px 12px 6px 54px; }
+  body.wide-adv .m-rail { top: 50%; transform: translateY(-50%); }
+  body.wide-adv .m-rail .lead-tab, .adv-tabs button { width: 34px; height: 34px; }
+  .m-team-slot > .adv-card { padding: 5px 7px; gap: 3px; } .m-team-slot .card-head { display: none; }
+  .m-team-slot .adv-team { height: 116px; }   /* (hay sitio: sprites más grandes) */
+  .adv-grid { width: min(560px, calc(100vw - 80px)); left: 50%; right: auto; height: calc(var(--app-h, 100dvh) - 40px); transform: translate(-50%, -50%) scale(.94); }
+  .adv-grid.open { transform: translate(-50%, -50%); }
+  .leader-card { max-height: calc(var(--app-h, 100dvh) - 30px); }
+  .lead-shade { display: none; } body.lead-open .lead-shade { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.45); }
+  .adv-grid { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: none; position: fixed; top: 50%; bottom: auto;
+    opacity: 0; visibility: hidden; pointer-events: none; transition: transform .32s cubic-bezier(.2,.85,.25,1), opacity .22s, visibility 0s .32s; }
+  .adv-grid.open { opacity: 1; visibility: visible; pointer-events: auto; transition: transform .32s cubic-bezier(.2,.85,.25,1), opacity .22s; }
+  .adv-grid > .adv-card { display: none; height: 100%; padding: 10px 12px; gap: 6px; overflow: hidden; background: var(--bg); }
+  .adv-grid[data-tab="1"] > [data-card="1"], .adv-grid[data-tab="2"] > [data-card="2"] { display: flex; }
+  .leader-card { position: fixed; top: 50%; height: auto; overflow-y: auto; margin: 0; padding: 12px 14px; background: color-mix(in srgb, var(--c) 10%, var(--bg)); }
+  .adv-stage .side .leader-card { margin-top: 0; }
+  .adv-tabs { display: flex; } .adv-tabs button[data-tab="0"] { display: none; }
+}
