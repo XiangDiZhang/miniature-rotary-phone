@@ -264,7 +264,8 @@ function initAdv() {
   addEventListener('resize', () => { if (state.scene === 'adv') fitAdv(); });
   // en el móvil, la caja de la ruleta tiene el alto que sobra: si cambia (texto más largo, otra fila de botones…), la ruleta se ajusta
   // (también cuando cambia lo de debajo de la ruleta: más o menos texto, otra fila de botones…)
-  try { const ro = new ResizeObserver(() => { if (state.scene === 'adv' && (matchMedia(PHONE_V).matches || matchMedia(PHONE_H).matches)) fitAdv(); });
+  // (en el fotograma siguiente: si no, al cambiar el tamaño dentro del aviso, el navegador avisa de un bucle)
+  try { let raf = 0; const ro = new ResizeObserver(() => { if (state.scene === 'adv' && (matchMedia(PHONE_V).matches || matchMedia(PHONE_H).matches)) { cancelAnimationFrame(raf); raf = requestAnimationFrame(fitAdv); } });
     ['.adv-wbox', '.adv-stage', '.adv-stage .side'].forEach(s => { const el = document.querySelector(s); if (el) ro.observe(el); }); } catch (e) {}
   // móvil: los datos del líder/ruta van en un panel lateral (como los filtros de la Pokédex) y el equipo se ve siempre debajo de la ruleta
   const mq = matchMedia(PHONE_V);   // (en horizontal, el móvil usa el diseño del ordenador)
