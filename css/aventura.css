@@ -286,10 +286,10 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
 .adv-points b { font-family: var(--f-mono); font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--johto); }
 .adv-points span { font-family: var(--f-mono); font-size: 9px; letter-spacing: .12em; color: var(--fg-soft); text-transform: uppercase; }
 .adv-bag { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; flex: 1; min-height: 0; padding: 5px 3px 3px; margin: -5px -3px 0; }
-.bag-slot { --c: var(--fg-soft); position: relative; width: 68px; padding: 8px 4px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--c) 35%, var(--line)); background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%), color-mix(in srgb, var(--bg) 60%, transparent); transition: transform .15s, box-shadow .2s; }
+.bag-slot { --c: var(--fg-soft); position: relative; width: 88px; padding: 10px 5px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--c) 35%, var(--line)); background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%), color-mix(in srgb, var(--bg) 60%, transparent); transition: transform .15s, box-shadow .2s; }
 .bag-slot:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,.3), 0 0 0 1px var(--c); }
 .bag-slot.buff { border-style: dashed; }
-.bag-ico { width: 30px; height: 30px; display: grid; place-items: center; filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--c) 50%, transparent)); }
+.bag-ico { width: 44px; height: 44px; display: grid; place-items: center; filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--c) 50%, transparent)); }
 .bag-ico svg { width: 100%; height: 100%; overflow: visible; }
 .bag-ico .glass { fill: color-mix(in srgb, var(--fg) 10%, transparent); stroke: color-mix(in srgb, var(--fg) 55%, transparent); stroke-width: 1.2; }
 .bag-ico .liq { fill: var(--c); }
@@ -344,10 +344,10 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
   .adv-team { flex: 1; min-height: 0; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .bag-card { overflow: hidden; gap: 10px; }
   .bag-card .adv-bag { overflow-y: auto; scrollbar-width: thin; gap: 6px; }
-  .bag-card .bag-slot { width: 54px; padding: 6px 3px 5px; gap: 3px; border-radius: 9px; }
-  .bag-card .bag-ico { width: 24px; height: 24px; }
-  .bag-card .bag-nm { font-size: 8.5px; }
-  .bag-card .bag-n { font-size: 9px; top: 3px; right: 3px; }
+  .bag-card .bag-slot { width: 84px; padding: 7px 4px 6px; gap: 4px; border-radius: 12px; }   /* casi nunca hay más de 5 objetos: van grandes (y caben dos filas) */
+  .bag-card .bag-ico { width: 40px; height: 40px; }
+  .bag-card .bag-nm { font-size: 10.5px; }
+  .bag-card .bag-n { font-size: 10px; top: 4px; right: 4px; }
 }
 
 
@@ -613,8 +613,8 @@ img.stone.px { image-rendering: pixelated; }
   .adv-team .tm-mv { width: 18px; height: 18px; bottom: 2px; right: 2px; } .adv-team .tm-mv svg.pcbox { width: 12px; height: 12px; }
   .adv-team .tm-tool { width: 17px; height: 17px; padding: 2px; }
   .bag-card .adv-bag { overflow-y: auto; gap: 4px; }
-  .bag-card .bag-slot { width: 40px; padding: 4px 2px; gap: 2px; border-radius: 8px; }
-  .bag-card .bag-ico { width: 18px; height: 18px; } .bag-card .bag-nm { font-size: 7px; } .bag-card .bag-n { font-size: 8px; top: 1px; right: 1px; }
+  .bag-card .bag-slot { width: 58px; padding: 5px 3px; gap: 2px; border-radius: 9px; }
+  .bag-card .bag-ico { width: 30px; height: 30px; } .bag-card .bag-nm { font-size: 7px; } .bag-card .bag-n { font-size: 8px; top: 1px; right: 1px; }
   .adv-points { padding: 1px 7px; } .adv-points b { font-size: 11px; } .adv-points span { font-size: 7.5px; }
   .adv-badges { padding-top: 4px; gap: 3px; } .adv-badges .bdg { max-width: 22px; }
   .adv-log { flex: 1; min-height: 0; font-size: 11px; gap: 3px; }
