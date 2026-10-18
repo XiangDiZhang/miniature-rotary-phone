@@ -9,6 +9,15 @@ function moveMon(toBox, i) {
   if (curBattle && advWheel.enabled) curBattle();
 }
 
+// icono de la Caja PC: una caja de almacenamiento con el emblema de la Poké Ball (no hay sprite oficial en la carpeta de sprites)
+const PC_BOX_SVG = '<svg class="pcbox" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h17v10.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z" class="bx"/><path d="M2.5 5.2h19a.8.8 0 0 1 .8.8v2.6a.4.4 0 0 1-.4.4H2.1a.4.4 0 0 1-.4-.4V6a.8.8 0 0 1 .8-.8z" class="lid"/><path d="M9.5 7.1h5" class="hd"/>'
+  + '<path d="M8.2 15a3.8 3.8 0 0 1 7.6 0z" fill="#ff5a46"/><path d="M8.2 15a3.8 3.8 0 0 0 7.6 0z" fill="#f4f6fb"/><path d="M8.2 15h7.6" stroke="#10131c" stroke-width="1.1"/><circle cx="12" cy="15" r="1.3" fill="#f4f6fb" stroke="#10131c" stroke-width="1"/></svg>';
+// botón de la caja (en la tarjeta del equipo): icono, cuántos hay y los tres primeros que guardas, en miniatura
+function pcButtonHTML() {
+  const list = boxList(), peek = list.slice(0, 3).map(m => { const r = monSprite(m); return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : ''; }).join('');
+  return `${PC_BOX_SVG}<span class="pc-lbl">Caja PC</span><b class="pc-n">${list.length}</b>${peek ? `<span class="pc-peek">${peek}</span>` : ''}`;
+}
+
 // ---- Ventana de la Caja PC: arrastrar (ratón o dedo) o tocar origen y destino ----
 let pcSel = null;
 const pcGet = (w, i) => w === 'team' ? run.team[i] : run.box[i];
@@ -117,5 +126,7 @@ function closePC() { $('pcShade').hidden = true; pcSel = null; }
   };
   addEventListener('pointerup', up); addEventListener('pointercancel', () => up());
   $('pcOpen').onclick = openPC; $('pcClose').onclick = closePC;
+  $('pcShade').querySelector('.pc-ico').innerHTML = PC_BOX_SVG;
+  const tag = $('pcShade').querySelector('.pc-tag.box'); if (tag) tag.insertAdjacentHTML('afterbegin', `<i class="pc-tag-ico">${PC_BOX_SVG}</i>`);
   addEventListener('keydown', e => { if (e.key === 'Escape' && !$('pcShade').hidden) { e.stopImmediatePropagation(); closePC(); } }, true);
 })();

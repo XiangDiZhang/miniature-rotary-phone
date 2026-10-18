@@ -1,7 +1,7 @@
 // Reglas de la partida: puntos, probabilidades, ruletas de aventura y formas de combate
 // Puntos de la partida: solo son la puntuación (no se gastan en nada)
 const PTS = { capture: 50, shiny: 500, legend: 1000, win: 100, rival: 150, rocket: 150, evolve: 80, badge: 300, elite: 400, champ: 1500 };
-const EVO_CHANCES = [1 / 4, 1 / 3, 1 / 2, 1];        // ruleta tras cada victoria: si falla, la siguiente es más fácil… hasta que es segura
+const EVO_CHANCES = [1 / 3, 1 / 2, 1];               // ruleta tras cada victoria: si falla, la siguiente es más fácil… hasta que es segura
 // ---- Captura según la rareza (ratio de captura oficial) y lo que has avanzado ----
 // Ruleta de 12 quesitos. Base por rareza; cada medalla suma un poco, con un tope para que nunca sea regalado.
 const CAP_N = 12;
@@ -94,8 +94,10 @@ const gmaxForms = m => transformsOf(m, 'gmax');
 // ---- Pociones de premio: mejoran con las medallas (0-2: Poción · 3-5: Superpoción · 6+: Hiperpoción) ----
 const potionTier = (b = run.badges.length) => b >= 6 ? 'hyper' : b >= 3 ? 'super' : 'potion';
 
-// ---- Primeros combates más fáciles: quesitos verdes extra hasta la 2.ª medalla ----
-const ROOKIE_BONUS = b => b < 1 ? 2 : b < 2 ? 1 : 0;
+// ---- Primeros combates más fáciles (hasta la 2.ª medalla, es decir, los dos primeros líderes y lo de antes):
+// quesitos verdes extra y la fuerza del rival cuenta la mitad ----
+const ROOKIE_BONUS = b => b < 1 ? 3 : b < 2 ? 2 : 0;
+const ROOKIE_FOE = b => b < 2 ? 1 : 2;              // quesitos rojos por cada punto de poder medio del rival
 
 // 1 % de que el Pokémon capturado sea shiny: ya no hay ruleta, simplemente aparece (con su sonido especial)
 const SHINY_RATE = 1 / 100;
@@ -103,7 +105,7 @@ const SHINY_RATE = 1 / 100;
 // ===== Ruleta de aventura (Johto): inspirada en la Ruleta Pokémon original =====
 // Cada tramo entre gimnasios tiene varias tiradas; cada quesito es un suceso del camino.
 const ADV_ACTS = [
-  { k: 'capture', label: 'Capturar', color: '#7ac74c', w: 5 },
+  { k: 'capture', label: 'Capturar', color: '#7ac74c', w: 8 },
   { k: 'trainer', label: 'Entrenador', color: '#ff5a46', w: 2 },
   { k: 'shop', label: 'Tienda', color: '#6390f0', w: 1.5 },
   { k: 'straight', label: 'Paseo', color: '#8592ab', w: 1 },
@@ -123,7 +125,7 @@ const ADV_ACTS = [
 ];
 // primer camino: ruleta sencilla, como el inicio de la aventura de la web
 const START_ACTS = [
-  { k: 'capture', label: 'Capturar', color: '#7ac74c', w: 4 },
+  { k: 'capture', label: 'Capturar', color: '#7ac74c', w: 6 },
   { k: 'catchTwo', label: 'Capturar dos', color: '#62b33a', w: 1.6 },
   { k: 'catchThree', label: 'Capturar tres', color: '#4f9a2d', w: 0.8 },
   { k: 'trainer', label: 'Entrenador', color: '#ff5a46', w: 2 },

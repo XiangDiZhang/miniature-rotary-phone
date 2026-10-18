@@ -7,7 +7,7 @@ function advStart(fresh, region) {
   renderAdv(); fitAdv(); requestAnimationFrame(fitAdv); advNext();
 }
 function advNext() {
-  $('advExtra').hidden = true; saveRun(); renderAdv();
+  advNow = null; $('advExtra').hidden = true; saveRun(); renderAdv();
   if (run.over) return phaseGameOver();
   const L = loc();
   if (L.kind === 'start' && !run.team.length) return phaseStarter();
@@ -103,8 +103,8 @@ function finish() {
   run.stepDone = true; advNext();
 }
 
-// ---- Evolución tras ganar: 1/4, luego 1/3, luego 1/2… y a la cuarta es segura ----
-// Tras ganar un combate SIEMPRE sale la ruleta de evolución (1/4, 1/3, 1/2… y a la cuarta, segura).
+// ---- Evolución tras ganar: 1/3, luego 1/2… y a la tercera es segura ----
+// Tras ganar un combate SIEMPRE sale la ruleta de evolución (1/3, 1/2… y a la tercera, segura).
 // Si cae en "¡Evolución!" pero nadie de tu equipo puede evolucionar, en su lugar recibes una poción (mejor cuantas más medallas tengas).
 // quesitos de «¿quién evoluciona?»: tus Pokémon (el elegido no se sube al centro: entra directo en la cinemática desde su quesito)
 const evoSegs = list => list.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m, noCenter: 1 }));
@@ -114,7 +114,7 @@ function potionInstead(msg) {
 }
 function phaseEvolve() {
   const cands = run.team.filter(canEvolve);
-  const fails = run.evoFails || 0, ch = EVO_CHANCES[Math.min(3, fails)];
+  const fails = run.evoFails || 0, ch = EVO_CHANCES[Math.min(EVO_CHANCES.length - 1, fails)];
   const who = () => {
     if (!cands.length) return potionInstead('¡Tocaba evolución, pero ningún Pokémon de tu equipo puede evolucionar! En su lugar recibes');
     if (cands.length === 1) return evolve(cands[0]);
@@ -140,7 +140,8 @@ function resolveEvo(m, cb) {
   if (opts.length === 1) return evoVariant(m, opts[0], cb);
   const from = toCenter(m);
   spinUI(`Evolución · ${mname(m)}`, 'Puede evolucionar de varias formas. ¿Cuál será?',
-    opts.map(o => { const nm = mname(o); return { label: nm, n: o.form || o.n, shiny: m.shiny, color: TYPE_COLORS[mtypes(o)[0]], short: nm, o }; }), 'EVOLUCIÓN', r => evoVariant(m, r.o, cb));
+    opts.map(o => { const nm = mname(o); return { label: nm, n: o.form || o.n, shiny: m.shiny, color: TYPE_COLORS[mtypes(o)[0]], short: nm, o }; }), 'EVOLUCIÓN', r => evoVariant(m, r.o, cb),
+    { txt: `Evoluciona ${mname(m)}`, n: mid(m), shiny: m.shiny });
   flyToCenter(m, from);
 }
 const alcId = (cream, sweet) => cream === 'vanilla-cream' && sweet === 'strawberry' ? 0 : (VARIANTS.find(v => v[3] === `869-${cream}-${sweet}-sweet`) || [0])[0];
@@ -148,7 +149,7 @@ function evoVariant(m, o, cb) {
   const V = !o.form && EVO_VARIANTS[o.n];
   if (!V) return cb(o);
   const seg = (f, label) => ({ label, short: label, n: f || o.n, shiny: m.shiny, color: TYPE_COLORS[(f ? formRec(f)[1][2] : ptypes(o.n))[0]], f });
-  const wheel = (title, sub, segs, then) => { const from = toCenter(m); spinUI(title, sub, segs, 'VARIANTE', then); flyToCenter(m, from); };
+  const wheel = (title, sub, segs, then) => { const from = toCenter(m); spinUI(title, sub, segs, 'VARIANTE', then, { txt: `${mname(m)} evoluciona en ${pname(o.n)}`, n: mid(m), shiny: m.shiny }); flyToCenter(m, from); };
   if (V === 'alcremie')   // Alcremie: primero la crema y después el confite
     return wheel('Evolución · Alcremie: la crema', `${mname(m)} va a evolucionar en Alcremie. ¿Con qué crema se cubrirá? (luego, el confite)`,
       ALC_CREAM.map(([c, nm]) => seg(alcId(c, 'strawberry'), nm)), r => {
@@ -236,7 +237,7 @@ function phaseGym() {
 }
 // cine = se ha visto el Hall de la Fama: al cerrarlo se vuelve al inicio (los puntos y el rango ya salían en él)
 function phaseEnd(cine) {
-  run.stepDone = true; saveHistory(true);
+  run.stepDone = true; saveHistory(true); advNow = null;
   if (run.record === undefined) { run.record = saveBest(); saveRun(); }
   if (cine === true) return goMenu();
   $('advStep').textContent = 'Fin de la aventura'; advWheel.enabled = false;

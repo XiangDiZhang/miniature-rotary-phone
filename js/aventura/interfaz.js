@@ -8,8 +8,10 @@ function advButtons(list) {
   $('advBtns').querySelectorAll('button').forEach(el => el.onclick = () => { const f = list[+el.dataset.i].fn; $('advBtns').innerHTML = ''; beep(660); f(); if (advWheel) advWheel.draw(); });
   if (advWheel) advWheel.draw();     // el botón del centro de la ruleta cambia (GIRAR / SEGUIR)
 }
-function spinUI(title, sub, segs, center, onLand) {
+// now (opcional): qué está pasando, para la tarjeta de información ({ txt, n, shiny }); si no, se deduce del título
+function spinUI(title, sub, segs, center, onLand, now) {
   curBattle = null; $('advPotion').hidden = true;   // la etiqueta de la poción solo se ve en su combate
+  advNow = now || nowFrom(title); renderCard();
   $('advStep').textContent = title; $('advRpm').textContent = '';
   advWheel.set(segs, center); advWheel.enabled = true;
   advWheel.onLand = r => { advWheel.enabled = false; onLand(r); renderAdv(); saveRun(); };
@@ -25,7 +27,7 @@ function teamTile(m, i) {
     `<span class="bg${no.length > 3 ? ' d4' : ''}" aria-hidden="true">${no}</span>` +
     `<span class="top"><span class="no">Nº ${no}</span>${m.shiny ? '<small>✦ SHINY</small>' : leg ? '<small>LEG</small>' : myth ? '<small>SING</small>' : ''}</span>` +
     cell + `<span class="nm">${name}</span><span class="ty">${ty.map(typeIcon).join('')}<em class="pw">P${mpower(m)}</em></span></button>` +
-    (run.team.length > 1 ? `<button class="tm-mv" type="button" data-out="${i}" title="Meter en la caja" aria-label="Meter ${name} en la caja">↓</button>` : '') + toolsHTML(m, i) + `</span>`;
+    (run.team.length > 1 ? `<button class="tm-mv" type="button" data-out="${i}" title="Meter en la caja" aria-label="Meter ${name} en la caja">${PC_BOX_SVG}</button>` : '') + toolsHTML(m, i) + `</span>`;
 }
 // megapiedra y Banda Dinamax equipadas: esquina inferior izquierda de la ficha; en combate brillan y se pueden pulsar
 const GEM_SVG = '<svg viewBox="0 0 24 24"><path d="M7 3h10l4 6-9 12L3 9z" class="gem"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12" class="ln"/></svg>';
@@ -143,7 +145,7 @@ function renderAdv() {
     TM.querySelectorAll('[data-out]').forEach(b => b.onclick = () => moveMon(true, +b.dataset.out));
     TM.querySelectorAll('[data-tool]').forEach(b => b.onclick = e => { e.stopPropagation(); transformMon(run.team[+b.dataset.i], b.dataset.tool); });
   }
-  $('pcOpen').textContent = `Caja PC · ${boxList().length}`;
+  const pcb = pcButtonHTML(); if ($('pcOpen')._h !== pcb) { $('pcOpen')._h = pcb; $('pcOpen').innerHTML = pcb; $('pcOpen').setAttribute('aria-label', `Caja PC: ${boxList().length} Pokémon`); }
   if (!$('pcShade').hidden) renderPC();
   // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
@@ -176,8 +178,69 @@ function renderAdv() {
       return `<span class="bdg${got ? ' got' : ''}" title="${p.badge}${got ? '' : ' (por conseguir)'}">${sp ? `<img src="${sp.u}" alt="${p.badge}">` : `<i>◆</i>`}</span>`; }).join('');
   }
   const lg = run.log.join('\n');
-  if ($('advLog')._k !== lg) { $('advLog')._k = lg; $('advLog').innerHTML = run.log.map(t => `<li>${t}</li>`).join(''); }
+  if ($('advLog')._k !== lg) { $('advLog')._k = lg; $('advLog').innerHTML = run.log.map(logHTML).join(''); }
   renderCard();
+}
+
+// ---- Diario visual: cada entrada con su icono (el Pokémon del que habla y, en la esquina, el objeto o la acción),
+// los puntos como fichas pequeñas y la llegada a cada sitio como separador (cómo se dibuja cada emoji: LOG_ICONS de eventos.js) ----
+const LOG_SVG = {
+  dmax: DMAX_SVG,
+  skull: '<svg viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-5 14.2V20h3v-2h4v2h3v-2.8A8 8 0 0 0 12 3z" class="f"/><circle cx="9" cy="11" r="1.8" class="h"/><circle cx="15" cy="11" r="1.8" class="h"/></svg>',
+  vs: '<svg viewBox="0 0 24 24"><path d="M4 4l10 10M20 4L10 14M6 16l-2 4M18 16l2 4M8 14l2 2M16 14l-2 2" class="l"/></svg>',
+  trade: '<svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3" class="l"/></svg>',
+  alert: '<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z" class="f"/><path d="M12 10v5M12 18v.5" class="h l"/></svg>',
+  multi: '<svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 12-5l2 2M19 12a7 7 0 0 1-12 5l-2-2M19 4v5h-5M5 20v-5h5" class="l"/></svg>',
+  walk: '<svg viewBox="0 0 24 24"><ellipse cx="8" cy="15" rx="2.6" ry="4" class="f"/><ellipse cx="16" cy="9" rx="2.6" ry="4" class="f"/></svg>',
+  cave: '<svg viewBox="0 0 24 24"><path d="M2 20l6-12 3 4 3-6 8 14z" class="f"/><path d="M9 20a3 3 0 0 1 6 0" class="h"/></svg>',
+};
+const itemImg = k => { const r = SPR.item && SPR.item.get(k); return r ? `<img class="px" src="${r.u}" alt="">` : ''; };
+let LOG_RX = null, LOG_NAMES = null;
+// el Pokémon del que habla una entrada (por su nombre); last: el último que se nombra
+function logMon(t, last) {
+  if (!LOG_RX) {
+    const rows = [...BY_NUM.values()]; LOG_NAMES = new Map(rows.map(r => [r[1], r[0]]));
+    const names = rows.map(r => r[1]).sort((a, b) => b.length - a.length).map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    LOG_RX = new RegExp(`(?<![\\p{L}])(${names.join('|')})(?![\\p{L}])`, 'gu');
+  }
+  const ms = [...t.matchAll(LOG_RX)]; return ms.length ? LOG_NAMES.get(ms[last ? ms.length - 1 : 0][1]) : 0;
+}
+function logHTML(t) {
+  const em0 = (t.match(/^[^\p{L}\p{N}¡¿«(+-]+/u) || [''])[0], em = em0.trim(), tx = t.slice(em0.length);
+  const L = LOG_ICONS[em] || { mon: 1 };
+  if (L.pts) { const m = tx.match(/^([+-]?\d+) puntos · (.*)$/); if (m) return `<li class="lg pts${+m[1] < 0 ? ' neg' : ''}"><b>${+m[1] > 0 ? '+' : ''}${m[1].replace(/^\+/, '')}</b><span>${m[2]}</span></li>`; }
+  if (L.place) return `<li class="lg place" style="--c:${L.c}"><span class="lg-pin">${itemImg(L.spr)}</span><span>${tx}</span></li>`;
+  const n = L.mon ? logMon(tx, L.mon === 'last') : 0, sh = /★|✦|shiny/i.test(tx);
+  const k = L.item && Object.keys(ITEMS).find(k => tx.includes(ITEMS[k].name)), it = k ? bagIcon(k) : '';
+  const deco = it || (L.spr && itemImg(L.spr)) || (L.svg && LOG_SVG[L.svg]) || '';
+  const r = n && ((sh && SPR.shiny.get(n)) || SPR.normal.get(n));
+  const main = r ? `<img class="lgm${r.px ? ' px' : ''}" src="${r.u}" alt="">` : deco || `<em>${em || '•'}</em>`;
+  return `<li class="lg${L.dim ? ' dim' : ''}${sh ? ' sh' : ''}" style="--c:${L.c || 'var(--cyan)'}"><span class="lg-ic">${main}${r && deco ? `<i class="lg-b">${deco}</i>` : ''}</span><span class="lg-tx">${tx}</span></li>`;
+}
+
+// ---- Qué está pasando ahora (la tarjeta de información lo enseña arriba): se pone con cada ruleta y se borra al cambiar de parada ----
+let advNow = null;
+function nowFrom(title) {
+  // a = lo primero («Captura», «Gimnasio»…), b = lo último (el sitio puede llevar « · » dentro: «Rutas 1 · 22 · Pokémon salvaje»)
+  const i = title.indexOf(' · '), j = title.lastIndexOf(' · '), a = i < 0 ? title : title.slice(0, i), b = j < 0 ? '' : title.slice(j + 3);
+  if (b === 'Pokémon salvaje') return { txt: 'Buscando Pokémon salvajes' };
+  if (b === 'Tu primer Pokémon') return { txt: 'Eligiendo tu primer Pokémon' };
+  if (/^Ruleta de (aventura|evento)/.test(b)) return { txt: b };
+  if (/^(Gimnasio|Alto Mando|Rival|Campe)/.test(a)) return { txt: `Combatiendo contra ${b || a}` };
+  switch (a) {
+    case 'Captura': return { txt: `Capturando a ${b}` };
+    case 'Forma': return { txt: `¿Qué forma tiene ${b}?` };
+    case 'Legendario': return { txt: `¡Ha aparecido ${b}!` };
+    case 'Evolución': return { txt: b === '¿Quién?' ? '¿Quién evoluciona?' : b === '¿Habrá suerte?' ? '¿Habrá evolución?' : /^Alcremie/.test(b) ? 'Evolucionando a Alcremie' : `Evoluciona ${b}` };
+    case 'Repartir Exp.': return { txt: 'Repartir Exp.: ¿quién más evoluciona?' };
+    case 'Megapiedra': return { txt: 'Repartiendo una megapiedra' };
+    case 'Intercambio': return { txt: b === '¿A quién das?' ? 'Intercambio: ¿a quién das?' : 'Intercambio: ¿qué recibes?' };
+    case 'Huevo': return { txt: 'Eclosionando un huevo' };
+    case 'Objeto': return { txt: 'Buscando un objeto' };
+    case 'Guardería': return { txt: 'En la Guardería' };
+    case 'Fósil': return { txt: 'Reviviendo un fósil' };
+  }
+  return { txt: b || a };
 }
 
 // ---- Tarjeta del líder: nombre, tipo, debilidades y resistencias (el hueco redondo será su sprite) ----
@@ -188,9 +251,9 @@ function leaderHTML(L) {
   const weak = TYPES.filter(t => eff(t, [T]) > 1);       // tipos que le hacen mucho daño
   const danger = TYPES.filter(d => eff(T, [d]) > 1);     // tipos que sufren con sus ataques
   const role = L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? (/^Campeona/.test(L.name) ? 'Campeona' : 'Campeón') : REG().trials ? (/^Gran/.test(L.name) ? 'Kahuna' : 'Capitán') : `Líder · ${L.name}`;
-  const bsp = badgeSpr(L);
-  return { c: TYPE_COLORS[T], html: `<div class="lc-spr${bsp ? ' medal' : ''}">${phaseLook(L).icon}</div>
-    <div class="lc-top"><small>${role}${done ? ' · ✓ derrotado' : ''}</small><b>${L.leader}</b><div>${chip(T)}</div></div>
+  const bsp = badgeSpr(L), N = advNow, ni = nowImg(N);
+  return { c: TYPE_COLORS[T], html: `<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
+    <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div>${chip(T)}</div></div>
     <div class="lc-rows">
       <div class="lc-row"><em>Tienen ventaja los</em>${weak.map(chip).join('') || '—'}</div>
       <div class="lc-row"><em>Tienen desventaja los</em>${danger.map(chip).join('') || '—'}</div>
@@ -206,6 +269,10 @@ function teamMarks(foe, T) {
     const tip = `${mname(m)}: sus ataques ${xTxt(x.off)} de media · recibe ${xTxt(x.def)}`;
     return `<span class="lmark ${a && !d ? 'up' : d && !a ? 'down' : a && d ? 'mix' : ''}" title="${tip}">${mname(m)} ${'▲'.repeat(a)}${'▼'.repeat(d)}${!a && !d ? '·' : ''}</span>`; }).join('');
 }
+// sprite del Pokémon de lo que está pasando (el que intentas capturar, el que evoluciona, el as del rival…)
+const nowImg = N => { const r = N && N.n && ((N.shiny && SPR.shiny.get(N.n)) || SPR.normal.get(N.n)); return r ? `<img src="${r.u}" alt=""${r.px ? '' : ' class="hd"'}>` : null; };
+// línea de «ahora»: un punto que late y el texto (en la tarjeta del líder, lo que pasa; en el camino, dónde estás)
+const nowLine = (N, where) => `<small class="lc-now"><i></i>${where || N.txt}</small>`;
 // tarjeta de contexto (siempre del mismo tamaño): líder en los combates, y en el camino adónde vas y qué hay
 function renderCard() {
   const el = $('advLeader'); if (!el || !run) return;
@@ -215,14 +282,17 @@ function renderCard() {
   else {
     const kind = { leg: 'Camino', prep: 'Preparación', start: 'Inicio', route: 'Ruta', city: 'Ciudad', rival: 'Rival' }[L.kind] || '';
     const places = (L.local || []).map(k => `<span class="lchip" style="--tc:#ff9f43">${EVENTS[k].label}</span>`).join('');
-    html = `<div class="lc-spr">${phaseLook(L).icon}</div>
-      <div class="lc-top"><small>${kind}${L.to ? ' · hacia ' + L.to : ''}</small><b>${L.name}</b></div>
+    // lo que está pasando va en grande (Capturando a Pikachu…) y el sitio, encima en pequeño
+    const N = advNow, ni = nowImg(N);
+    html = `<div class="lc-spr${ni ? ' lc-mon' : ''}">${ni || phaseLook(L).icon}</div>
+      <div class="lc-top">${N ? `${nowLine(N, `${kind} · ${L.name}`)}<b class="lc-doing">${N.txt}</b>` : `<small>${kind}${L.to ? ' · hacia ' + L.to : ''}</small><b>${L.name}</b>`}</div>
       <div class="lc-rows">
         ${L.local ? `<div class="lc-row"><em>Sitios</em>${places || '—'}</div>` : ''}
         ${nextGym ? `<div class="lc-row"><em>Próximo</em><span class="lc-txt">${nextGym.role === 'elite' ? 'Alto Mando · ' : nextGym.role === 'champ' ? 'Campeón · ' : ''}${nextGym.leader}</span>${chip(nextGym.typeName)}</div>` : ''}
         <div class="lc-row"><em>Medallas</em><span class="lc-txt">${run.badges.length} / 8</span></div>
       </div>`;
   }
-  el.style.setProperty('--c', c); el.innerHTML = html; el.hidden = false;
+  el.style.setProperty('--c', c); el.hidden = false;
+  if (el._h !== html) { el._h = html; el.innerHTML = html; }   // (renderAdv la llama mucho: solo se redibuja si cambia)
   if ($('leadTab')) $('leadTab').textContent = L.kind === 'gym' ? (L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? 'Campeón' : REG().trials ? 'Prueba' : 'Líder') : L.kind === 'leg' ? 'Ruta' : L.kind === 'prep' ? 'Meseta' : 'Zona';
 }

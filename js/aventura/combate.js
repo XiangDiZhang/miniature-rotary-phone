@@ -51,9 +51,10 @@ function battleSegs(foe, base, types) {
   for (let i = 0; i < base; i++) Rd.push({ label: 'Derrota' });
   for (let i = 0; i < rd; i++) Rd.push({ label: 'Derrota' });
   // la fuerza del rival: su poder medio × 2 en quesitos rojos (no es lo mismo un Gastly que un Gengar)
-  const foePw = foe.length ? foe.reduce((a, n) => a + power(n), 0) / foe.length : 1, fpN = Math.round(foePw * 2);
+  // (en los primeros combates, hasta la 2.ª medalla, cuenta la mitad)
+  const foePw = foe.length ? foe.reduce((a, n) => a + power(n), 0) / foe.length : 1, fk = ROOKIE_FOE(run.badges.length), fpN = Math.max(1, Math.round(foePw * fk));
   for (let i = 0; i < fpN; i++) Rd.push({ label: 'Derrota' });
-  notes.push(`Fuerza del rival +${fpN}`);
+  notes.push(`Fuerza del rival +${fpN}${fk < 2 ? ' (rival novato)' : ''}`);
   for (let i = 0; i < tr; i++) Rd.push({ label: 'Derrota' });
   if (tr) notes.push(`▼ Tipos en contra +${tr} (${mu.filter(x => x.r).map(x => `${mname(x.m)} ${x.def >= 1.5 ? 'recibe ' + xTxt(x.def) : 'apenas hace daño'}`).join(', ')})`);
   if (rd) notes.push(`Dificultad +${rd}`);
@@ -159,7 +160,7 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
       pot = null; renderPotion(null);
       if (!disguise && run.team.some(m => m.n === 778)) { disguise = true; again = true; note = '¡El Disfraz de Mimikyu te da otra oportunidad!'; log('👻 ¡El Disfraz de Mimikyu aguanta el golpe!'); return advSay('¡El Disfraz de Mimikyu se rompe, pero aguanta el golpe! Una oportunidad más.', () => advButtons([{ label: 'Volver a girar', fn: show }])); }
       end(); gameOver(who);
-    });
+    }, { txt: `${again ? 'Revancha' : 'Combatiendo'} contra ${title.split(' · ').pop()}`, n: foe.length ? foe[foe.length - 1] : null });   // en la tarjeta, el Pokémon fuerte del rival
     curBattle = show;
     if (pot && again) renderPotion(pot, retries + 1);   // spinUI la oculta: vuelve a salir mientras dure la poción
     renderAdv();          // la megapiedra y la banda se encienden mientras se puede usar
@@ -167,7 +168,7 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
   show();
 }
 function gameOver(who) {
-  run.over = true; run.lostTo = who; run.record = saveBest(); saveHistory(false);
+  run.over = true; run.lostTo = who; run.record = saveBest(); saveHistory(false); advNow = null;
   log(`☠️ Derrota contra ${who}. Fin de la partida.`); renderAdv(); saveRun();
   advButtons([]); $('advStep').textContent = 'Fin de la partida'; advWheel.enabled = false;
   if (reduceMotion) return phaseGameOver();

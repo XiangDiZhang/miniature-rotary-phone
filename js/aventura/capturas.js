@@ -33,7 +33,7 @@ function encounter(n, legend, shiny, cont) {
   const segs = [{ label: baseFormName(n) + (shiny ? ' ★' : ''), short: baseFormName(n), n, shiny, color: TYPE_COLORS[ptypes(n)[0]], form: 0 },
     ...fl.map(f => { const nm = formLabel(n, f); return { label: nm + (shiny ? ' ★' : ''), short: nm, n: f[0], shiny, color: TYPE_COLORS[f[2][0]], form: f[0] }; })];
   advSay(`¡Un ${pname(n)}${shiny ? ' shiny' : ''}! Esta especie tiene ${segs.length} formas… ¿cuál es la que tienes delante?`, () => advButtons([{ label: 'Ver qué forma es', fn: () =>
-    spinUI(`Forma · ${pname(n)}`, `Todas las formas tienen la misma probabilidad (${pct(1 / segs.length)} cada una).`, segs, 'FORMA', r => cont(r.form)) }]));
+    spinUI(`Forma · ${pname(n)}`, `Todas las formas tienen la misma probabilidad (${pct(1 / segs.length)} cada una).`, segs, 'FORMA', r => cont(r.form), { txt: `¿Qué forma tiene ${pname(n)}?`, n, shiny }) }]));
 }
 function throwBall(n, legend = false, shiny, form = 0, sure = false) {
   if (shiny === undefined) shiny = Math.random() < SHINY_RATE;
@@ -53,7 +53,7 @@ function throwBall(n, legend = false, shiny, form = 0, sure = false) {
           if (r.ok) return caught(n, shiny, legend, form);
           log(`💨 ${pname(n)}: ${r.label.toLowerCase()}.`);
           advSay(r.say(pname(n)) + (legend ? ' Se ha perdido en el horizonte…' : ''), goOn);
-        });
+        }, { txt: `Capturando a ${nm0}${shiny ? ' ★' : ''}`, n: form || n, shiny });
     } }]));
 }
 function caught(n, shiny, legend, form) {
@@ -63,7 +63,7 @@ function caught(n, shiny, legend, form) {
     const segs = [{ label: baseFormName(n), short: baseFormName(n), n, color: TYPE_COLORS[ptypes(n)[0]], form: 0 },
       ...fl.map(f => { const nm = formLabel(n, f); return { label: nm, short: nm, n: f[0], color: TYPE_COLORS[f[2][0]], form: f[0] }; })];
     return advSay(`¡${pname(n)} tiene ${segs.length} formas distintas! ¿Cuál te ha tocado?`, () => advButtons([{ label: 'Girar la ruleta de formas', fn: () =>
-      spinUI(`Forma · ${pname(n)}`, `Todas las formas tienen la misma probabilidad (${pct(1 / segs.length)} cada una).`, segs, 'FORMA', r => caught(n, shiny, legend, r.form)) }]));
+      spinUI(`Forma · ${pname(n)}`, `Todas las formas tienen la misma probabilidad (${pct(1 / segs.length)} cada una).`, segs, 'FORMA', r => caught(n, shiny, legend, r.form), { txt: `¿Qué forma tiene tu ${pname(n)}?`, n, shiny }) }]));
   }
   const m = addMon(n, shiny); if (form) m.form = form;
   const inTeam = run.team.includes(m), nm = mname(m);
@@ -105,7 +105,7 @@ function legendEncounter(n, shiny) {
           addPoints(PTS.rival, `${pname(n)} derrotado`);
           advSay(`¡Has vencido a ${pname(n)}! Se retira… pero tu equipo ha aprendido mucho. ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));
         }, ' Perder contra un legendario no acaba la partida.', () => { log(`💨 ${pname(n)} te supera y se marcha.`); advSay(`${pname(n)} es demasiado fuerte y se marcha. Tu aventura sigue.`, goOn); });
-      }) }]));
+      }, { txt: `¡Ha aparecido ${pname(n)}!`, n, shiny }) }]));
 }
 // Pokémon salvajes: SIEMPRE aleatorios de la región (Kanto 1-151, Johto 152-251), sin legendarios (esos tienen su hueco dorado)
 function regionPool(filter = () => true, legends = false) { const [a, b] = REG().range, out = []; for (let n = a; n <= b; n++) if ((legends || !isLegend(n)) && filter(n)) out.push(n); return out; }

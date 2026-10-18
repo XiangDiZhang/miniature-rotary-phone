@@ -238,3 +238,25 @@ const ITEMS = {
 };
 // spr: icono del objeto (nombre del archivo de items de PokeAPI, en assets/sprites/objetos.js); sin icono, se dibuja (BAG_ICON)
 const BALL_SPR = { spr: 'level-ball' };   // Ball de Kurt
+
+// ---- Diario: cada entrada empieza por un emoji que dice qué ha pasado; aquí, cómo se dibuja ----
+// spr: objeto de la esquina (o el icono, si no sale ningún Pokémon) · svg: dibujo propio · c: color
+// mon: busca un Pokémon en el texto (last = el último: «A ha evolucionado a B», «Cambias A por B») · item: busca un objeto de la mochila
+// place: llegada a un sitio (separador) · pts: puntos
+const LOG_ICONS = {
+  '📍': { place: 1, spr: 'town-map', c: '#5ad1c8' },
+  '🎉': { mon: 1, spr: 'poke-ball', c: '#ffd84a' }, '🎯': { mon: 1, spr: 'poke-ball', c: '#7ac74c' },
+  '🌿': { mon: 1, spr: 'poke-ball', c: '#7ac74c' }, '💨': { mon: 1, spr: 'poke-ball', c: '#8592ab', dim: 1 },
+  '✨': { mon: 'last', spr: 'rare-candy', c: '#ffd84a' }, '🔸': { spr: 'everstone', c: '#8592ab' },
+  '🧪': { item: 1, spr: 'potion', c: '#b46cff' }, '💊': { item: 1, spr: 'potion', c: '#b46cff' },
+  '🎒': { item: 1, spr: 'dowsing-machine', c: '#b46cff' }, '🍬': { spr: 'rare-candy', c: '#5ad1c8' }, '🍵': { spr: 'tea', c: '#7ac74c' },
+  '⚪': { spr: 'level-ball', c: '#e0a040' }, '🪢': { spr: 'escape-rope', c: '#c9a36a' },
+  '💎': { mon: 1, spr: 'key-stone', c: '#5ad1c8' }, '↩️': { mon: 1, spr: 'key-stone', c: '#8592ab' }, '🔴': { mon: 1, svg: 'dmax', c: '#ff2d55' },
+  '🥚': { mon: 1, spr: 'mystery-egg', c: '#f2e27a' }, '🌟': { mon: 1, spr: 'master-ball', c: '#ffd84a' },
+  '🦒': { mon: 1, spr: 'safari-ball', c: '#7ac74c' }, '🦴': { mon: 1, spr: 'old-amber', c: '#c9b37e' }, '🥋': { mon: 1, spr: 'black-belt', c: '#c22e28' },
+  '🎰': { mon: 1, item: 1, spr: 'coin-case', c: '#ffd84a' }, '🎁': { mon: 1, item: 1, spr: 'poke-ball', c: '#ff9f43' },
+  '🔄': { mon: 'last', svg: 'trade', c: '#5ad1c8' }, '🚨': { mon: 1, svg: 'alert', c: '#a33ea1' },
+  '☠️': { svg: 'skull', c: '#ff5a46' }, '😤': { svg: 'vs', c: '#d0505a' }, '💢': { svg: 'vs', c: '#ff5a46' },
+  '🔁': { svg: 'multi', c: '#e0a040' }, '🚶': { svg: 'walk', c: '#8592ab' }, '🌑': { svg: 'cave', c: '#5b6478' },
+  '⭐': { pts: 1 }, '▼': { pts: 1 },
+};

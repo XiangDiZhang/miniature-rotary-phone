@@ -10,9 +10,11 @@
 .pc-bar { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--line); background: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 60%); }
 .pc-bar b { font-family: var(--f-display); font-size: 24px; font-weight: 500; }
 .pc-bar .info-close { margin-left: 0; }
-.pc-ico { width: 38px; height: 30px; flex: none; position: relative; border: 2px solid var(--cyan); border-radius: 5px; background: linear-gradient(160deg, color-mix(in srgb, var(--cyan) 30%, transparent), transparent); box-shadow: 0 0 12px color-mix(in srgb, var(--cyan) 45%, transparent); }
-.pc-ico::before { content: ""; position: absolute; left: 50%; bottom: -8px; width: 14px; height: 4px; transform: translateX(-50%); border-radius: 2px; background: var(--cyan); }
-.pc-ico::after { content: ""; position: absolute; right: 4px; top: 4px; width: 5px; height: 5px; border-radius: 50%; background: #7ee0a1; box-shadow: 0 0 6px #7ee0a1; animation: pulse 1.6s ease-in-out infinite; }
+/* icono: la caja con el emblema de la Poké Ball (PC_BOX_SVG de caja-pc.js) y una luz verde de «encendido» */
+.pc-ico { width: 42px; height: 42px; flex: none; position: relative; display: grid; place-items: center; }
+.pc-ico svg { width: 100%; height: 100%; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cyan) 50%, transparent)); }
+.pc-ico::after { content: ""; position: absolute; right: 2px; top: 4px; width: 6px; height: 6px; border-radius: 50%; background: #7ee0a1; box-shadow: 0 0 6px #7ee0a1; animation: pulse 1.6s ease-in-out infinite; }
+.pc-tag-ico { display: inline-grid; width: 18px; height: 18px; } .pc-tag-ico svg { width: 100%; height: 100%; }
 .pc-title { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
 .pc-title small { font-family: var(--f-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--fg-soft); }
 .pc-count { margin-left: auto; margin-right: auto; font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; color: var(--fg-soft); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--panel); white-space: nowrap; }
@@ -23,7 +25,7 @@
 .pc-tag { margin: 0; display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--fg); }
 .pc-tag em { font-style: normal; font-size: 10px; color: var(--fg-soft); margin-left: auto; letter-spacing: .14em; }
 .pc-tag.box { justify-content: flex-start; }
-.pc-tag.box span:first-child, .pc-tag.box span:nth-child(3) { color: var(--cyan); opacity: .7; }
+.pc-tag.box span:nth-of-type(1), .pc-tag.box span:nth-of-type(3) { color: var(--cyan); opacity: .7; }
 .pc-grid { display: grid; gap: 6px; }
 .pc-grid.team { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--kanto) 45%, var(--line-2));
   background: radial-gradient(circle at 50% 50%, transparent 0 22px, color-mix(in srgb, var(--kanto) 10%, transparent) 23px 25px, transparent 26px),
@@ -71,7 +73,7 @@ body.pc-dragging, body.pc-dragging * { cursor: grabbing !important; }
   .pc-bar { padding: 10px 12px; gap: 10px; }
   .pc-bar b { font-size: 20px; }
   .pc-title small { display: none; }
-  .pc-ico { width: 30px; height: 24px; }
+  .pc-ico { width: 32px; height: 32px; }
   .pc-count { padding: 4px 8px; }
   .pc-body { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px; }
   .pc-grid.team { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 8px; }

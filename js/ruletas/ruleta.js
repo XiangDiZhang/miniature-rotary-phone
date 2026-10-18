@@ -11,6 +11,14 @@ function fitFont(ctx, text, maxW, fs) {
   ctx.font = `600 ${Math.max(9, Math.floor(fs * maxW / w))}px "Chakra Petch", system-ui, sans-serif`;
 }
 const clip = (ctx, t, maxW) => { while (ctx.measureText(t).width > maxW && t.length > 3) t = t.slice(0, -2) + '…'; return t; };
+// Pokémon de dos tipos: su quesito lleva los dos colores (mitad y mitad). Solo si el quesito va con el color de su primer tipo
+// (los de captura, combate… tienen su propio color y no se tocan)
+function dualColor(s) {
+  if (!s.n && !s.m) return null;
+  let ty = null;
+  try { ty = s.m ? mtypes(s.m) : s.n > 10000 ? (formRec(s.n) || [0, [0, 0, null]])[1][2] : ptypes(s.n); } catch (e) { return null; }
+  return ty && ty[1] && s.color === TYPE_COLORS[ty[0]] && TYPE_COLORS[ty[1]] !== s.color ? TYPE_COLORS[ty[1]] : null;
+}
 // El dibujo va en dos partes para que girar y arrastrar no pesen:
 //  · una capa con lo que no cambia mientras gira (colores, brillos, separadores y textos), dibujada una vez y luego solo rotada;
 //  · encima, en cada fotograma, los sprites (con sus saltitos cuando está parada), el centro y la flecha.
@@ -37,7 +45,7 @@ class Wheel {
   set(segs, center = '?') {
     if (this === advWheel) { wheelRelease(this.keepM); }
     const tot = segs.reduce((a, s) => a + (s.w || 1), 0); let acc = 0;
-    this.segs = segs.map(s => { const a = (s.w || 1) / tot * TAU, o = { ...s, a0: acc, arc: a }; acc += a; return o; });
+    this.segs = segs.map(s => { const a = (s.w || 1) / tot * TAU, o = { ...s, a0: acc, arc: a, color2: s.color2 || dualColor(s) }; acc += a; return o; });
     this.glow = -1; this.center = center; this.centerColor = null; this.centerImg = null; this.rot = Math.random() * TAU;
     this.keepM = null; this.centerM = null; this.dirty = true;
     this.pokemon = this.segs.some(s => s.n);
@@ -63,17 +71,23 @@ class Wheel {
     this.segs.forEach((s, i) => {
       const a0 = s.a0 - Math.PI / 2, a1 = a0 + s.arc, lit = i === this.glow;
       s._sp0 = null;
+      // partes de color del quesito: una, o dos mitades si el Pokémon tiene dos tipos
+      const half = a0 + s.arc / 2, parts = s.color2 ? [[a0, half, s.color], [half, a1, s.color2]] : [[a0, a1, s.color]];
       if (many) {
-        ctx.fillStyle = hexA(s.color, lit ? .55 : .16); ctx.beginPath(); ctx.arc(c, c, R, a0, a1); ctx.arc(c, c, inner, a1, a0, true); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = s.color; ctx.lineWidth = lit ? 6 : 3; ctx.beginPath(); ctx.arc(c, c, R - 3, a0, a1 + .002); ctx.stroke();
+        parts.forEach(([b0, b1, col]) => {
+          ctx.fillStyle = hexA(col, lit ? .55 : .16); ctx.beginPath(); ctx.arc(c, c, R, b0, b1); ctx.arc(c, c, inner, b1, b0, true); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = col; ctx.lineWidth = lit ? 6 : 3; ctx.beginPath(); ctx.arc(c, c, R - 3, b0, b1 + .002); ctx.stroke();
+        });
         return;
       }
-      const grad = ctx.createRadialGradient(c, c, inner, c, c, R);
-      grad.addColorStop(0, hexA(s.color, 0)); grad.addColorStop(1, hexA(s.color, lit ? .38 : .12));
-      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c, c, R, a0, a1); ctx.arc(c, c, inner, a1, a0, true); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = s.color; ctx.lineWidth = lit ? 5 : 3; ctx.shadowColor = s.color; ctx.shadowBlur = lit ? 18 : 8;
       const gap = Math.min(.035, s.arc * .15);
-      ctx.beginPath(); ctx.arc(c, c, R - 3, a0 + gap, a1 - gap); ctx.stroke(); ctx.shadowBlur = 0;
+      parts.forEach(([b0, b1, col], k) => {
+        const grad = ctx.createRadialGradient(c, c, inner, c, c, R);
+        grad.addColorStop(0, hexA(col, 0)); grad.addColorStop(1, hexA(col, lit ? .38 : .12));
+        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c, c, R, b0, b1 + (k < parts.length - 1 ? .002 : 0)); ctx.arc(c, c, inner, b1, b0, true); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = col; ctx.lineWidth = lit ? 5 : 3; ctx.shadowColor = col; ctx.shadowBlur = lit ? 18 : 8;
+        ctx.beginPath(); ctx.arc(c, c, R - 3, k ? b0 : b0 + gap, k === parts.length - 1 ? b1 - gap : b1); ctx.stroke(); ctx.shadowBlur = 0;
+      });
       ctx.strokeStyle = W.div; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(c + Math.cos(a0) * inner, c + Math.sin(a0) * inner); ctx.lineTo(c + Math.cos(a0) * (R - 8), c + Math.sin(a0) * (R - 8)); ctx.stroke();
       // contenido de la casilla

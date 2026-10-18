@@ -66,6 +66,12 @@ body.wide-adv .wrap { max-width: 1120px; }
 .lc-top { display: flex; flex-direction: column; justify-content: center; min-width: 0; gap: 3px; }
 .lc-top small { font-family: var(--f-mono); font-size: 9px; letter-spacing: .14em; color: var(--fg-soft); text-transform: uppercase; }
 .lc-top b { font-size: 19px; font-weight: 600; line-height: 1.1; }
+/* lo que está pasando ahora: punto que late, y en el camino el texto en grande (Capturando a Pikachu…) */
+.lc-top small.lc-now { display: flex; align-items: center; gap: 6px; color: color-mix(in srgb, var(--c) 70%, var(--fg)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-now i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); animation: pulse 1.4s ease-in-out infinite; }
+.lc-top b.lc-doing { font-size: 17px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; animation: fadeIn .3s ease both; }
+.lc-spr.lc-mon { background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--c) 28%, transparent), color-mix(in srgb, var(--c) 6%, transparent) 70%); }
+.lc-spr.lc-mon img { width: 118%; height: 118%; } .lc-spr.lc-mon img.hd { image-rendering: auto; }
 .lc-rows { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 5px; }
 .lc-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .lc-row > em { font-style: normal; font-family: var(--f-mono); font-size: 9px; letter-spacing: .12em; color: var(--fg-soft); text-transform: uppercase; min-width: 0; margin-right: 2px; }
@@ -90,9 +96,51 @@ body.wide-adv .wrap { max-width: 1120px; }
 .card-head .label { flex: 1; min-width: 0; }
 .card-head .mini-btn { flex: none; align-self: center; padding: 5px 10px; font-size: 10px; }
 .pc-open { margin-top: 0; align-self: flex-start; color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 60%, transparent); }
+/* icono de la Caja PC (caja con el emblema de la Poké Ball) */
+svg.pcbox .bx { fill: color-mix(in srgb, var(--cyan) 22%, var(--panel)); stroke: var(--cyan); stroke-width: 1.2; }
+svg.pcbox .lid { fill: color-mix(in srgb, var(--cyan) 45%, var(--panel)); stroke: var(--cyan); stroke-width: 1.2; }
+svg.pcbox .hd { stroke: color-mix(in srgb, var(--cyan) 30%, var(--bg)); stroke-width: 1.4; stroke-linecap: round; }
+.card-head .mini-btn.pc-open { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 5px; }
+.pc-open svg.pcbox { width: 20px; height: 20px; flex: none; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--cyan) 45%, transparent)); }
+.pc-open .pc-n { font: 600 11px var(--f-mono); color: var(--bg); background: var(--cyan); border-radius: 999px; padding: 0 6px; line-height: 1.5; }
+.pc-peek { display: inline-flex; margin-left: 2px; }
+.pc-peek img { width: 22px; height: 22px; object-fit: contain; margin-left: -7px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); } .pc-peek img:first-child { margin-left: 0; }
+.pc-peek img.px { image-rendering: pixelated; }
+.pc-open:hover svg.pcbox { animation: boxBob .5s ease; }
+@keyframes boxBob { 40% { transform: translateY(-2px) rotate(-6deg); } }
+.tm-mv svg.pcbox { width: 16px; height: 16px; }
+.m-team-slot .adv-team .tm-mv svg.pcbox { width: 13px; height: 13px; }
 .adv-new { align-self: flex-start; margin-top: 0; }
-.adv-log { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--fg-soft); overflow: auto; display: flex; flex-direction: column; gap: 6px; scrollbar-width: thin; }
+.adv-log { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--fg-soft); overflow: auto; display: flex; flex-direction: column; gap: 5px; scrollbar-width: thin; }
 .adv-log li:first-child { color: var(--fg); }
+/* diario visual: icono (Pokémon con el objeto en la esquina), puntos en fichas y separadores por sitio */
+.lg { --c: var(--cyan); display: flex; align-items: center; gap: 9px; min-width: 0; padding: 3px 8px 3px 3px; border-radius: 8px; border-left: 2px solid color-mix(in srgb, var(--c) 70%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--c) 10%, transparent), transparent 70%); line-height: 1.3; }
+.adv-log li.lg:first-child { background: linear-gradient(90deg, color-mix(in srgb, var(--c) 22%, transparent), transparent 80%); animation: lgIn .45s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes lgIn { from { opacity: 0; transform: translateX(-10px); } }
+.lg-ic { position: relative; flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--c) 30%, transparent), transparent 72%); }
+.lg-ic > img { width: 34px; height: 34px; object-fit: contain; } .lg-ic > img.lgm { width: 40px; height: 40px; margin-top: -4px; }
+.lg-ic img.px { image-rendering: pixelated; } .lg-ic > em { font-style: normal; font-size: 18px; }
+.lg-ic > svg, .lg-b svg { width: 22px; height: 22px; color: var(--c); }
+.lg-ic svg .f, .lg-b svg .f { fill: color-mix(in srgb, var(--c) 75%, transparent); } .lg-ic svg .h, .lg-b svg .h { fill: var(--bg); }
+.lg-ic svg .l, .lg-b svg .l { fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lg-ic svg .gem, .lg-b svg .gem { fill: color-mix(in srgb, var(--c) 70%, transparent); stroke: var(--c); stroke-width: 1.2; }
+.lg-ic svg .ln, .lg-b svg .ln { fill: none; stroke: #fff; stroke-width: 1.2; stroke-linejoin: round; }
+.lg-b { position: absolute; right: -5px; bottom: -4px; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: var(--bg); border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); }
+.lg-b img { width: 16px; height: 16px; object-fit: contain; } .lg-b svg { width: 12px; height: 12px; }
+.lg-tx { min-width: 0; overflow-wrap: anywhere; }
+.lg.dim .lg-ic > img.lgm { opacity: .55; filter: grayscale(.6); }
+.lg.sh .lg-ic { background: radial-gradient(circle at 50% 60%, rgba(255,216,74,.45), transparent 72%); }
+.lg.sh .lg-tx { color: #ffe27a; }
+/* puntos: una ficha pequeña, sin icono */
+.lg.pts { gap: 7px; padding: 0 0 0 44px; border: 0; background: none; font-size: 11.5px; }
+.lg.pts b { flex: none; font: 600 10.5px var(--f-mono); color: #ffd84a; padding: 1px 7px; border-radius: 999px; background: rgba(255,216,74,.12); border: 1px solid rgba(255,216,74,.35); }
+.lg.pts.neg b { color: #ff8a7a; background: rgba(255,90,70,.1); border-color: rgba(255,90,70,.35); }
+.adv-log li.lg.pts:first-child { background: none; }
+/* llegada a un sitio: separador con el Mapa */
+.lg.place { margin-top: 4px; padding: 2px 0; border: 0; border-radius: 0; background: none; gap: 7px; font: 500 10px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--c); }
+.lg.place::after { content: ""; flex: 1; height: 1px; background: color-mix(in srgb, var(--c) 35%, transparent); }
+.adv-log li.lg.place:first-child { background: none; }
+.lg-pin { flex: none; width: 20px; height: 20px; display: grid; place-items: center; } .lg-pin img { width: 20px; height: 20px; image-rendering: pixelated; }
 .adv-toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 90; pointer-events: none; }
 .adv-toast { background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 30px rgba(0,0,0,.35); animation: toastIn .35s cubic-bezier(.2,.8,.2,1) both, toastOut .4s ease 2.8s forwards; white-space: nowrap; }
 @keyframes toastIn { from { transform: translateY(14px) scale(.95); opacity: 0; } }
