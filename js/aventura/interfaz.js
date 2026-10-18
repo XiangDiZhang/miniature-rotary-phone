@@ -450,6 +450,7 @@ function renderCard() {
     const pf = $('advPlayerFig');
     if (pf) { const pu = ls.length ? playerTrainerSpr() : null, ph = pu ? `<span class="lf-glow"></span><span class="lf-row n1"><img src="${pu}" alt=""></span>` : '';
       pf.hidden = !pu; if (pf._h !== ph) { pf._h = ph; pf.innerHTML = ph; groundSprites(pf.querySelector('.lf-row'), pf.querySelector('.lf-glow')); }
+      placeVs();
       const pr = pf.querySelector('.lf-row'); if (pr) pr.dataset.tip = `${trainerName()}: tú. Entrenador de ${REG().name}, en busca de las medallas y la Liga.`; }
   }
   // pestaña del móvil: un botón redondo con icono (medalla en los combates de gimnasio y liga, mapa en el resto); el nombre, para los lectores de pantalla
@@ -483,6 +484,17 @@ function headTop(big) {
   imgs.forEach(im => { if (!(im.complete && im.naturalWidth)) im.addEventListener('load', go, { once: true }); });
   go();
 }
+// «VS» en medio de tu entrenador y el rival (solo cuando salen los dos)
+function placeVs() {
+  const vs = $('advVs'), fo = $('advLeadFig'), pf = $('advPlayerFig'), st = document.querySelector('.adv-stage'); if (!vs || !st) return;
+  const on = fo && pf && !fo.hidden && !pf.hidden && pf.offsetParent && fo.offsetParent;
+  vs.hidden = !on; if (!on) return;
+  requestAnimationFrame(() => {
+    const s = st.getBoundingClientRect(), a = pf.getBoundingClientRect(), b = fo.getBoundingClientRect();
+    vs.style.left = ((a.right + b.left) / 2 - s.left) + 'px'; vs.style.top = ((a.top + a.bottom) / 2 - s.top) + 'px';
+  });
+}
+addEventListener('resize', () => { if (typeof state !== 'undefined' && state.scene === 'adv') placeVs(); });
 function groundSprites(row, glow) {
   if (!row) return;
   const imgs = [...row.querySelectorAll('img')];
