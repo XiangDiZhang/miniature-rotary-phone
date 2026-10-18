@@ -234,9 +234,11 @@ function phaseGym() {
       () => L.badge ? advButtons([{ label: 'Continuar →', fn: () => gymRewards(() => advSay('¿Habrá evolución?', evo)) }]) : evo());
   }, '', null, L.typeName);
 }
-function phaseEnd() {
+// cine = se ha visto el Hall de la Fama: al cerrarlo se vuelve al inicio (los puntos y el rango ya salían en él)
+function phaseEnd(cine) {
   run.stepDone = true; saveHistory(true);
   if (run.record === undefined) { run.record = saveBest(); saveRun(); }
+  if (cine === true) return goMenu();
   $('advStep').textContent = 'Fin de la aventura'; advWheel.enabled = false;
   const team = run.team.map(m => (m.shiny ? '✦ ' : '') + mname(m)).join(', ');
   advSay(`${REG().end()} ${run.points} puntos (rango ${rank(run.points)}).${run.record ? ' ¡Nuevo récord!' : ''} Medallas: ${run.badges.length}. Tu equipo: ${team}.`, () => advButtons([

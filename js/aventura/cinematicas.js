@@ -25,7 +25,7 @@ function loseScreen(who, done, team) {
   sh.innerHTML = `<div class="hall-blur lose-blur"></div><div class="hall-stage lose-stage">
       ${team.map((m, i) => `<div class="hall-mon lose-mon" style="--x:${HALL.slots[at[i]]}%;--y:${HALL.top}%;--i:${i}"><div class="lose-sp">${hallSprite(m, 'spr')}</div><span class="hall-tag">${dname(m)}</span></div>`).join('')}
     </div><div class="lose-rain">${rain}</div>
-    <div class="lose-txt"><small>${who ? 'Contra ' + who : 'Fin del viaje'}</small><span>Tus Pokémon se han debilitado…</span></div>
+    <div class="lose-txt"><small>${who ? 'Contra ' + who : 'Fin del viaje'}</small><span>Tus Pokémon se han debilitado…</span>${done && run ? `<em>${run.points} puntos · rango ${rank(run.points)}${run.record ? ' · ¡nuevo récord!' : ''}</em>` : ''}</div>
     <div class="lose-end"><button class="btn" type="button">Continuar</button></div><span class="hof-skip">Toca para saltar</span>`;
   document.body.appendChild(sh);
   loseMusic();
@@ -33,7 +33,7 @@ function loseScreen(who, done, team) {
   mons.forEach((el, i) => setTimeout(() => { el.classList.add('down'); beep(150 - i * 8, .25, .05, 'sine'); }, 1400 + i * 650));
   const finale = () => { mons.forEach(el => el.classList.add('down')); sh.classList.add('done'); };
   const tm = setTimeout(finale, 1400 + mons.length * 650 + 600);
-  const close = () => { clearTimeout(tm); sh.classList.add('out'); setTimeout(() => { sh.remove(); done && done(); }, 500); };
+  const close = () => { clearTimeout(tm); sh.classList.add('out'); setTimeout(() => { sh.remove(); done && done(true); }, 500); };   // true: se ha visto la cinemática
   sh.querySelector('.lose-end button').onclick = e => { e.stopPropagation(); close(); };
   sh.addEventListener('click', () => { if (!sh.classList.contains('done')) finale(); });
 }
@@ -77,7 +77,7 @@ function hallOfFame(done, data) {
     const r = sh.querySelector('.hof-end b').getBoundingClientRect(); setTimeout(() => shinyBurst(r.left + r.width / 2, r.top + r.height / 2), 500);
   };
   const tm = setTimeout(finale, Math.max(1200 + team.length * 900 + 3600, crownIn * 1000));
-  const close = () => { clearTimeout(tm); sh.classList.add('out'); setTimeout(() => { sh.remove(); done && done(); }, 500); };
+  const close = () => { clearTimeout(tm); sh.classList.add('out'); setTimeout(() => { sh.remove(); done && done(true); }, 500); };   // true: se ha visto la cinemática
   sh.querySelector('.hof-end button').onclick = e => { e.stopPropagation(); close(); };
   sh.addEventListener('click', () => { if (!sh.classList.contains('crowned')) finale(); });
 }
