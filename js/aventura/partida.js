@@ -102,9 +102,10 @@ function renderHistory(region) {
 function fitHistory() {
   const v = document.querySelector('#advHist .hist-view'); if (!v || state.scene !== 'chosen') return;
   const top = v.getBoundingClientRect().top + scrollY;
-  let h = Math.max(140, Math.floor(innerHeight - top - 22)); v.style.height = h + 'px';
+  // (las medidas de la pantalla van con el zoom de los menús; la altura se pone en px de la página: se divide por él)
+  const z = uiZ(); let h = Math.max(140, Math.floor((innerHeight - top - 22) / z)); v.style.height = h + 'px';
   // lo que quede por debajo (márgenes de la página) también cuenta: se descuenta para que la página no se desplace
-  const over = document.documentElement.scrollHeight - innerHeight; if (over > 0) v.style.height = Math.max(140, h - over) + 'px';
+  const over = document.documentElement.scrollHeight - innerHeight; if (over > 0) v.style.height = Math.max(140, h - Math.ceil(over / z)) + 'px';
 }
 addEventListener('resize', fitHistory);
 // el historial se arrastra con el ratón como la Pokédex (con el dedo ya se desplaza solo), con inercia al soltar

@@ -82,6 +82,8 @@ body {
   min-height: 100vh;
 }
 .wrap { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+/* menús fuera de la partida, más grandes en el ordenador: más anchos y con zoom según la pantalla (--mz, setMenuZoom de js/ui/escenas.js) */
+@media (min-width: 1100px) { body.menu-z .wrap { max-width: 1000px; zoom: var(--mz, 1); } }
 :focus-visible { outline: 1px solid var(--cyan); outline-offset: 4px; }
 /* las barras de desplazamiento solo se ven en la Pokédex */
 html:not(.dexmode), html:not(.dexmode) body, html:not(.dexmode) body * { scrollbar-width: none; }

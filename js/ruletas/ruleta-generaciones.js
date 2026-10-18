@@ -94,7 +94,7 @@ let WSIZE = 360;
 function sizeWheel() {
   const w = Math.max(220, Math.round(cv.getBoundingClientRect().width) || 360);
   WSIZE = w;
-  $("wheelHub").style.width = (2 * ((w / 2 - 18) * 0.42 - 18)) + "px";   // el botón es el círculo central entero
+  $("wheelHub").style.width = (2 * ((w / 2 - 18) * 0.42 - 18)) / uiZ() + "px";   // el botón es el círculo central entero (en px de la página, sin el zoom de los menús)
   const dpr = Math.min(3, window.devicePixelRatio || 1);
   cv.width = w * dpr; cv.height = w * dpr;
   drawWheel();

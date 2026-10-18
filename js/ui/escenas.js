@@ -20,12 +20,26 @@ $('soundBtn').onclick = () => {
   soundOn = !soundOn; syncSound(); beep(880);
 };
 
+// ---- Menús más grandes en el ordenador ----
+// Fuera de la partida (inicio, selección de región, generación elegida, opciones, partidas en curso y ruleta) todo se
+// agranda con la pantalla (zoom del bloque central, --mz): a 1920 × 1080, un 25 % más. En pantallas pequeñas y en el móvil, igual que siempre.
+// uiZ(): el zoom que tiene ahora la página (para lo que se mide en JS y se vuelve a poner en px: el botón de la ruleta, el historial)
+const MENU_SCENES = ['home', 'menu', 'chosen', 'options', 'saves', 'roulette'];
+let MZ = 1;
+function setMenuZoom() {
+  MZ = innerWidth >= 1100 ? Math.max(1, Math.min(1.6, innerWidth / 1250, innerHeight / 860)) : 1;
+  document.documentElement.style.setProperty('--mz', MZ.toFixed(3));
+}
+const uiZ = () => document.body.classList.contains('menu-z') ? MZ : 1;
+setMenuZoom(); addEventListener('resize', setMenuZoom);
+
 // ---- Escenas ----
 function show(scene) {
   state.scene = scene;
   if (scene !== 'dex' && typeof endDexPick === 'function') endDexPick(true);   // sales de la Pokédex: se acaba el «modo elegir» del Modo Test
   ['home', 'dex', 'options', 'menu', 'saves', 'roulette', 'chosen', 'adv'].forEach(s => $('scene-' + s).hidden = s !== scene);
   document.body.classList.toggle('wide-adv', scene === 'adv');
+  document.body.classList.toggle('menu-z', MENU_SCENES.includes(scene));
   if (scene !== 'adv' && advWheel) advWheel.stop();
   $('homeBtn').hidden = scene === 'home';
   $('eyebrow').textContent = SCENE_TITLES[scene] || '';
