@@ -5,7 +5,7 @@
   const cancel = () => { if (!d) return; clearTimeout(d.timer); d.w.classList.remove('holding'); d = null; };
   T.addEventListener('click', e => { if (eatClick) { e.stopPropagation(); e.preventDefault(); eatClick = false; } }, true);
   T.addEventListener('pointerdown', e => {
-    if (e.button > 0 || e.target.closest('.tm-mv')) return;
+    if (e.button > 0 || e.target.closest('.tm-mv, .tm-tool')) return;
     const w = e.target.closest('.tmw'); if (!w || !run || run.team.length < 2 || advWheel.spinning) return;
     d = { w, id: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, on: false, held: false, touch: e.pointerType !== 'mouse' };
     d.timer = setTimeout(() => { if (d && !d.on) { d.held = true; w.classList.add('holding'); beep(440, .04, .02); try { navigator.vibrate && navigator.vibrate(12); } catch (_) {} } }, 260);

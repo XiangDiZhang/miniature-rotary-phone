@@ -22,10 +22,47 @@ const REGIONAL_EVO = new Set([862, 863, 864, 865, 866, 867, 902, 903, 904, 980])
 const BOX_N = 30;
 
 // ---- Formas: regionales (Corsola de Galar…) y variantes naturales (Basculin raya blanca, tallas de Pumpkaboo…) ----
-const CAPTURE_FORMS = new Set([10016, 10247, 10004, 10005, 10025, 10027, 10028, 10029, 10030, 10031, 10032, 10123, 10124, 10125, 10126, 10152, 10184, 10191, 10186, 10248, 10254, 10257, 10258, 10259, 10260, 10261, 10262, 10255, 10263]);
-const BASE_FORM_NAME = { 550: 'Raya Roja', 413: 'Tronco Planta', 678: 'Macho', 710: 'Tamaño Normal', 711: 'Tamaño Normal', 741: 'Estilo Apasionado', 745: 'Forma Diurna', 849: 'Forma Aguda', 892: 'Estilo Brusco', 876: 'Macho', 902: 'Macho', 916: 'Macho', 925: 'Familia de cuatro', 931: 'Plumaje verde', 978: 'Forma curvada', 982: 'Binodular', 999: 'Forma cofre' };
+const CAPTURE_FORMS = new Set([10016, 10247, 10004, 10005, 10025, 10027, 10028, 10029, 10030, 10031, 10032, 10123, 10124, 10125, 10126, 10152, 10184, 10191, 10186, 10248, 10254, 10257, 10258, 10259, 10260, 10261, 10262, 10255, 10263,
+  ...VARIANTS.filter(v => v[2] === 666).map(v => v[0])]);   // los motivos de Vivillon
+const BASE_FORM_NAME = { 550: 'Raya Roja', 413: 'Tronco Planta', 678: 'Macho', 710: 'Tamaño Normal', 711: 'Tamaño Normal', 741: 'Estilo Apasionado', 745: 'Forma Diurna', 849: 'Forma Aguda', 892: 'Estilo Brusco', 876: 'Macho', 902: 'Macho', 916: 'Macho', 925: 'Familia de cuatro', 931: 'Plumaje verde', 978: 'Forma curvada', 982: 'Binodular', 999: 'Forma cofre', 666: 'Motivo Floral', 869: 'Crema de Vainilla · Confite Fresa' };
 // evoluciones que solo hace una forma concreta
 const REG_REQ = { 862: 10175, 863: 10161, 864: 10173, 865: 10166, 866: 10168, 867: 10179, 902: 10247, 903: 10235, 904: 10234, 980: 10253 };
+// evoluciones con varias variantes: al evolucionar, una ruleta decide cuál sale (0 = forma normal).
+// Alcremie va en dos tiradas: primero la crema y luego el confite (ver evoVariant en flujo.js).
+const EVO_VARIANTS = {
+  413: [0, 10004, 10005],                   // Wormadam: tronco planta, arena o basura
+  666: [0, ...VARIANTS.filter(v => v[2] === 666).map(v => v[0])],   // Vivillon: 20 motivos
+  678: [0, 10025],                          // Meowstic macho o hembra
+  745: [0, 10126, 10152],                   // Lycanroc diurno, nocturno o crepuscular
+  849: [0, 10184],                          // Toxtricity agudo o grave
+  869: 'alcremie',
+  892: [0, 10191],                          // Urshifu brusco o fluido
+  902: [0, 10248],                          // Basculegion macho o hembra
+  916: [0, 10254],                          // Oinkologne macho o hembra
+  925: [0, 10257],                          // Maushold: familia de cuatro o de tres
+  982: [0, 10255],                          // Dudunsparce binodular o trinodular
+};
+
+// ---- Megaevolución y Dinamax/Gigamax ----
+// Megapiedra: al ganar a un líder de gimnasio, uno de tus Pokémon que pueda megaevolucionar recibe la suya (la lleva equipada).
+// Gigamax: los Pokémon con forma Gigamax oficial reciben la Banda Dinamax en el primer gimnasio que superes después de conseguirlos.
+// En combate se pulsa la piedra (o la banda) de su ficha: se transforma solo durante ese giro. Un Pokémon transformado vale +1 de poder.
+const MEGA_FORM_ONLY = { 10326: 10025, 10323: 10258, 10324: 10259, 10318: -1, 10296: 10061 };   // megas que pide una forma concreta (-1: ninguna de la partida)
+const GMAX_FORM_ONLY = { 10228: 10184, 10227: 10191 };                                         // Toxtricity grave, Urshifu fluido
+// el resto de megas y gigamax son de la forma normal (ni regionales ni otras formas, salvo las variantes de Alcremie)
+function transformsOf(m, cls) {
+  const only = cls === 'mega' ? MEGA_FORM_ONLY : GMAX_FORM_ONLY, form = m.bf !== undefined ? m.bf : (m.form || 0);
+  const plain = !form || (m.n === 869 && form >= 20000);
+  return (FORMS[m.n] || []).filter(f => f[8] === cls && (only[f[0]] !== undefined ? only[f[0]] === form : plain)).map(f => f[0]);
+}
+const megaForms = m => transformsOf(m, 'mega');
+const gmaxForms = m => transformsOf(m, 'gmax');
+
+// ---- Pociones de premio: mejoran con las medallas (0-2: Poción · 3-5: Superpoción · 6+: Hiperpoción) ----
+const potionTier = (b = run.badges.length) => b >= 6 ? 'hyper' : b >= 3 ? 'super' : 'potion';
+
+// ---- Primeros combates más fáciles: quesitos verdes extra hasta la 2.ª medalla ----
+const ROOKIE_BONUS = b => b < 1 ? 2 : b < 2 ? 1 : 0;
 
 // 1 % de que el Pokémon capturado sea shiny: ya no hay ruleta, simplemente aparece (con su sonido especial)
 const SHINY_RATE = 1 / 100;

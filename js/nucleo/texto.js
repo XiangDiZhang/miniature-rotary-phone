@@ -2,11 +2,15 @@
 const typers = {};
 // velocidad del texto (Opciones): lenta, normal, rápida o al instante
 
-function typeText(el, text, done) {
-  clearInterval(typers[el.id]);
+// early (ms, opcional): «done» se llama a los pocos milisegundos, sin esperar a que termine de escribirse el texto
+// (así los botones aparecen enseguida y el texto sigue escribiéndose)
+const typerDone = {};
+function typeText(el, text, done, early) {
+  clearInterval(typers[el.id]); clearTimeout(typerDone[el.id]);
   const ms = TSPEEDS[textSpeed].ms;
   if (!ms) { el.textContent = text; if (done) done(); return; }
   el.textContent = ''; let i = 0;
+  if (done && early != null) { typerDone[el.id] = setTimeout(done, Math.min(early, text.length * ms)); done = null; }
   typers[el.id] = setInterval(() => {
     el.textContent = text.slice(0, ++i);
     if (i >= text.length) { clearInterval(typers[el.id]); done && done(); }

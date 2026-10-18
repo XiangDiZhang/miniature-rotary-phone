@@ -72,7 +72,9 @@ function phaseAdventure() {
   const acts = [...(L.kind === 'prep' ? PREP_ACTS : L.start ? START_ACTS : ADV_ACTS), ...(L.local || []).map((k, i) => ({ k, label: EVENTS[k].label, color: i % 2 ? '#e8892f' : '#ff9f43', w: EVENTS[k].pw || .8, place: 1 }))]
     .map(a => a.k === 'tree' && REG().name === 'Kanto' ? { ...a, label: 'Snorlax dormido' } : a.k === 'rocket' ? { ...a, label: VIL().name } : a)
     .map(a => ({ ...a, short: a.place ? EVENTS[a.k].short : shortOf(a.label) }))
-    .filter(a => !(a.k === 'trade' && run.team.length + boxList().length < 1));
+    .filter(a => !(a.k === 'trade' && run.team.length + boxList().length < 1))
+    // el Árbol raro (Sudowoodo) y el Snorlax dormido solo existen en Johto y Kanto
+    .filter(a => !(a.k === 'tree' && run.region !== 'kanto' && run.region !== 'johto'));
   spinUI(`${L.name} · Ruleta de aventura ${n}/${tot}`, L.kind === 'prep' ? 'Última parada antes del Alto Mando: cualquier cosa puede pasar.' : `Camino de ${L.to}. La ruleta decide qué pasa por el camino${L.local && L.local.length ? ' (los quesitos naranjas son sitios especiales de esta zona)' : ''}.`,
     acts, 'AVENTURA', r => ACT[r.k]());
 }
@@ -103,54 +105,115 @@ function finish() {
 
 // ---- Evolución tras ganar: 1/4, luego 1/3, luego 1/2… y a la cuarta es segura ----
 // Tras ganar un combate SIEMPRE sale la ruleta de evolución (1/4, 1/3, 1/2… y a la cuarta, segura).
-// Si cae en "¡Evolución!" pero nadie de tu equipo puede evolucionar, en su lugar recibes una Poción.
+// Si cae en "¡Evolución!" pero nadie de tu equipo puede evolucionar, en su lugar recibes una poción (mejor cuantas más medallas tengas).
+// quesitos de «¿quién evoluciona?»: tus Pokémon (el elegido no se sube al centro: entra directo en la cinemática desde su quesito)
+const evoSegs = list => list.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m, noCenter: 1 }));
+function potionInstead(msg) {
+  const k = potionTier(); run.bag[k] = (run.bag[k] || 0) + 1; log(`🧪 Nadie puede evolucionar: recibes ${ITEMS[k].name}.`); renderAdv(); saveRun();
+  advSay(`${msg} ${ITEMS[k].name}.`, goOn);
+}
 function phaseEvolve() {
   const cands = run.team.filter(canEvolve);
   const fails = run.evoFails || 0, ch = EVO_CHANCES[Math.min(3, fails)];
   const who = () => {
-    if (!cands.length) { run.bag.potion = (run.bag.potion || 0) + 1; log('🧪 Nadie puede evolucionar: recibes una Poción.'); renderAdv(); return advSay('¡Tocaba evolución, pero ningún Pokémon de tu equipo puede evolucionar! En su lugar recibes una Poción.', goOn); }
+    if (!cands.length) return potionInstead('¡Tocaba evolución, pero ningún Pokémon de tu equipo puede evolucionar! En su lugar recibes');
     if (cands.length === 1) return evolve(cands[0]);
-    spinUI('Evolución · ¿Quién?', '¡Alguien va a evolucionar! La ruleta elige quién.',
-      cands.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m })), '¿QUIÉN?', r => evolve(r.m));
+    spinUI('Evolución · ¿Quién?', '¡Alguien va a evolucionar! La ruleta elige quién.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m));
   };
   if (ch >= 1) { run.evoFails = 0; return advSay('¡Tu equipo ha combatido tanto que esta vez la evolución es segura!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Continuar', fn: who }])); }
-  spinUI('Evolución · ¿Habrá suerte?', 'Si cae en dorado, alguien de tu equipo evolucionará (o, si nadie puede, recibes una Poción).',
+  spinUI('Evolución · ¿Habrá suerte?', 'Si cae en dorado, alguien de tu equipo evolucionará (o, si nadie puede, recibes una poción).',
     [{ label: '¡Evolución!', short: '¡EVOLUCIÓN!', color: '#ffd84a', w: ch, ok: 1 }, { label: 'Nada', short: 'NADA', color: '#8592ab', w: 1 - ch }], 'EVOLUCIÓN', r => {
       if (r.ok) { run.evoFails = 0; return advSay(cands.length ? '¡Algo está pasando! Uno de tus Pokémon empieza a brillar…' : '¡Ha caído en Evolución!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Ver premio', fn: who }])); }
       run.evoFails = fails + 1; log('🔸 Esta vez nadie evoluciona.');
       advSay('Esta vez no ha pasado nada… La próxima victoria tendrá más posibilidades.', goOn);
     });
 }
-function evolve(m, msg, shared = false) {
+// el Pokémon se sube al centro de la ruleta (desde su quesito o su ficha) para las ruletas de «¿en qué evoluciona?»
+function toCenter(m) {
+  if (advWheel.centerM === m) { advWheel.keepM = m; return null; }
+  const r = monRect(m); advWheel.keepM = m;
+  return r && r.wheel !== 'center' ? r : null;
+}
+// ¿en qué evoluciona? (si hay varias especies posibles, ruleta) y después ¿qué variante? (Alcremie, Vivillon, Lycanroc…)
+function resolveEvo(m, cb) {
   const opts = evoOptions(m);
-  const done = o => {
-    const toM = { n: o.n, form: o.form || 0, shiny: m.shiny };
-    advButtons([]);
-    evoAnim(m, { id: mid(m), ty: mtypes(m), name: mname(m) }, { id: mid(toM), n: o.n, ty: mtypes(toM), name: mname(toM) }, () => doneNow(o));
-  };
-  const doneNow = o => {
-    onWheel.delete(m); if (advWheel.centerM === m) { advWheel.centerM = null; advWheel.centerImg = null; advWheel.centerName = null; advWheel.draw(); }
-    const from = mname(m); m.n = o.n; if (o.form) m.form = o.form; else delete m.form; dexRegister(o.n, m.shiny);
-    const toName = sname(m);
-    addPoints(PTS.evolve, `${from} evoluciona`); advToast(`¡${from} evoluciona a ${toName}!`); chord([784, 988, 1318, 1568]);
-    log(`✨ ¡${from} ha evolucionado a ${toName}!`); renderAdv(); saveRun();
-    // Repartir Exp.: otro Pokémon del equipo evoluciona también (una vez por evolución)
-    const others = run.bag.share && !shared ? run.team.filter(o => o !== m && canEvolve(o)) : [];
-    const next = others.length ? () => advButtons([{ label: 'Repartir Exp. →', fn: () => others.length === 1 ? evolve(others[0], 'El Repartir Exp. también ha hecho efecto.', true) :
-      spinUI('Repartir Exp. · ¿Quién más?', 'Otro Pokémon de tu equipo aprovecha la experiencia.', others.map(o => ({ label: dname(o), n: mid(o), color: TYPE_COLORS[mtypes(o)[0]], short: dname(o), m: o })), 'REPARTIR', r => evolve(r.m, 'El Repartir Exp. también ha hecho efecto.', true)) }]) : goOn;
-    advSay(`${msg ? msg + ' ' : ''}¡Enhorabuena! ¡${from} ha evolucionado a ${toName}!${others.length ? ' ¡Y el Repartir Exp. brilla!' : ''}`, next);
-  };
-  if (opts.length === 1) return done(opts[0]);
-  // varias evoluciones posibles: el Pokémon se sube al centro de la ruleta (desde su quesito o desde su ficha)
-  const inCenter = advWheel.centerM === m;
-  const seg = advWheel.segs.find(x => x.m === m && x._sp), cr = advWheel.cv.getBoundingClientRect(), kk = cr.width / advWheel.size;
-  const tile = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m);
-  const from = inCenter ? null : seg && !seg.hideImg ? { left: cr.left + seg._sp.x * kk - seg._sp.sz * kk / 2, top: cr.top + seg._sp.y * kk - seg._sp.sz * kk / 2, width: seg._sp.sz * kk, height: seg._sp.sz * kk }
-    : tile && tile.offsetParent ? (tile.querySelector('.sp') || tile).getBoundingClientRect() : null;
-  advWheel.keepM = m;
+  if (opts.length === 1) return evoVariant(m, opts[0], cb);
+  const from = toCenter(m);
   spinUI(`Evolución · ${mname(m)}`, 'Puede evolucionar de varias formas. ¿Cuál será?',
-    opts.map(o => { const nm = mname(o); return { label: nm, n: o.form || o.n, shiny: m.shiny, color: TYPE_COLORS[mtypes(o)[0]], short: nm, o }; }), 'EVOLUCIÓN', r => done(r.o));
+    opts.map(o => { const nm = mname(o); return { label: nm, n: o.form || o.n, shiny: m.shiny, color: TYPE_COLORS[mtypes(o)[0]], short: nm, o }; }), 'EVOLUCIÓN', r => evoVariant(m, r.o, cb));
   flyToCenter(m, from);
+}
+const alcId = (cream, sweet) => cream === 'vanilla-cream' && sweet === 'strawberry' ? 0 : (VARIANTS.find(v => v[3] === `869-${cream}-${sweet}-sweet`) || [0])[0];
+function evoVariant(m, o, cb) {
+  const V = !o.form && EVO_VARIANTS[o.n];
+  if (!V) return cb(o);
+  const seg = (f, label) => ({ label, short: label, n: f || o.n, shiny: m.shiny, color: TYPE_COLORS[(f ? formRec(f)[1][2] : ptypes(o.n))[0]], f });
+  const wheel = (title, sub, segs, then) => { const from = toCenter(m); spinUI(title, sub, segs, 'VARIANTE', then); flyToCenter(m, from); };
+  if (V === 'alcremie')   // Alcremie: primero la crema y después el confite
+    return wheel('Evolución · Alcremie: la crema', `${mname(m)} va a evolucionar en Alcremie. ¿Con qué crema se cubrirá? (luego, el confite)`,
+      ALC_CREAM.map(([c, nm]) => seg(alcId(c, 'strawberry'), nm)), r => {
+        const cream = ALC_CREAM.find(x => x[1] === r.label)[0];
+        wheel('Evolución · Alcremie: el confite', `¡${r.label}! Y ahora, ¿qué confite lleva?`, ALC_SWEET.map(([s, nm]) => seg(alcId(cream, s), nm)), q => cb({ n: o.n, form: q.f }));
+      });
+  wheel(`Evolución · ${pname(o.n)}`, `${mname(m)} va a evolucionar en ${pname(o.n)}… ¿En cuál de sus ${V.length} variantes?`,
+    V.map(f => seg(f, f ? formLabel(o.n, formRec(f)[1]) : baseFormName(o.n))), r => cb({ n: o.n, form: r.f }));
+}
+// cambia los datos de un Pokémon que evoluciona (la megapiedra y la Banda Dinamax solo se quedan si le siguen sirviendo)
+function applyEvo(m, o) {
+  const from = mname(m); m.n = o.n; if (o.form) m.form = o.form; else delete m.form; dexRegister(o.n, m.shiny);
+  if (m.stone && !megaForms(m).includes(m.stone)) { const ok = megaForms(m); if (ok.length) m.stone = ok[0]; else delete m.stone; }
+  if (m.dmax && !gmaxForms(m).length) delete m.dmax;
+  const toName = sname(m);
+  addPoints(PTS.evolve, `${from} evoluciona`); advToast(`¡${from} evoluciona a ${toName}!`);
+  log(`✨ ¡${from} ha evolucionado a ${toName}!`);
+  return [from, toName];
+}
+// evolución completa: uno solo, o dos a la vez si llevas el Repartir Exp. (la ruleta elige al segundo)
+function evolve(m, msg) {
+  resolveEvo(m, o => {
+    const others = run.bag.share ? run.team.filter(x => x !== m && canEvolve(x)) : [];
+    if (!others.length) return evoPlay([{ m, o }], msg);
+    const two = p => resolveEvo(p, o2 => evoPlay([{ m, o }, { m: p, o: o2 }], msg));
+    advSay(`¡El Repartir Exp. brilla! Otro Pokémon de tu equipo va a evolucionar a la vez que ${mname(m)}.`, () => advButtons([{ label: 'Repartir Exp. →', fn: () => others.length === 1 ? two(others[0]) :
+      spinUI('Repartir Exp. · ¿Quién más?', `Otro Pokémon de tu equipo aprovecha la experiencia y evoluciona a la vez que ${mname(m)}.`, evoSegs(others), 'REPARTIR', r => two(r.m)) }]));
+  });
+}
+function evoPlay(list, msg) {
+  advButtons([]); advWheel.enabled = false;
+  const items = list.map(({ m, o }) => { const toM = { n: o.n, form: o.form || 0, shiny: m.shiny };
+    return { m, o, A: { id: mid(m), ty: mtypes(m), name: mname(m) }, B: { id: mid(toM), n: o.n, ty: mtypes(toM), name: mname(toM) } }; });
+  let done = [];
+  evoAnim(items, () => { done = items.map(x => applyEvo(x.m, x.o)); chord([784, 988, 1318, 1568]); saveRun(); }, () => {
+    if (advWheel.centerM && items.some(x => x.m === advWheel.centerM)) { advWheel.centerM = null; advWheel.centerImg = null; advWheel.centerName = null; }
+    wheelRelease();           // los demás Pokémon de la ruleta vuelven a su hueco del equipo
+    renderAdv(); saveRun();
+    advSay(`${msg ? msg + ' ' : ''}¡Enhorabuena! ${done.map(([a, b]) => `¡${a} ha evolucionado a ${b}!`).join(' ')}`, goOn);
+  });
+}
+
+// ---- Recompensas del gimnasio: megapiedra (para un Pokémon del equipo que pueda megaevolucionar) y Banda Dinamax ----
+function gymRewards(next) {
+  const steps = [];
+  // Banda Dinamax: todos tus Pokémon con forma Gigamax que aún no la tengan (equipo y caja)
+  const dm = allMine().filter(m => !m.dmax && gmaxForms(m).length);
+  if (dm.length) steps.push(go => {
+    dm.forEach(m => m.dmax = 1); log(`🔴 Banda Dinamax para ${dm.map(mname).join(', ')}.`); advToast('🔴 ¡Banda Dinamax!'); renderAdv(); saveRun();
+    advSay(`¡El estadio vibra con energía Dinamax! ${listJoin(dm.map(mname))} ${dm.length > 1 ? 'reciben' : 'recibe'} la Banda Dinamax: en combate, púlsala para que se gigamaxice durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
+  });
+  // megapiedra: una por gimnasio, para uno de los Pokémon del equipo que puedan megaevolucionar (si hay varios, la ruleta decide)
+  const opts = run.team.filter(m => !m.stone).flatMap(m => megaForms(m).map(f => ({ m, f })));
+  if (opts.length) steps.push(go => {
+    const give = ({ m, f }) => {
+      m.stone = f; const nm = mname({ n: m.n, form: f }); log(`💎 ${mname(m)} recibe la megapiedra de ${nm}.`); advToast(`💎 ¡Megapiedra para ${mname(m)}!`); renderAdv(); saveRun();
+      advSay(`¡El líder te da una megapiedra! ${mname(m)} la lleva equipada: en combate, pulsa la piedra de su ficha para que megaevolucione en ${nm} durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
+    };
+    if (opts.length === 1) return give(opts[0]);
+    advSay('¡El líder te ofrece una megapiedra! ¿Para quién será?', () => advButtons([{ label: 'Girar la ruleta', fn: () =>
+      spinUI('Megapiedra · ¿Para quién?', 'Uno de tus Pokémon que pueden megaevolucionar se lleva su megapiedra.',
+        opts.map(x => { const nm = mname({ n: x.m.n, form: x.f }); return { label: nm, short: nm, n: x.f, shiny: x.m.shiny, color: TYPE_COLORS[formRec(x.f)[1][2][0]], x }; }), 'MEGA', r => give(r.x)) }]));
+  });
+  const runSteps = i => i < steps.length ? steps[i](() => runSteps(i + 1)) : next();
+  runSteps(0);
 }
 
 // ---- Gimnasios, Alto Mando y Campeón ----
@@ -166,7 +229,9 @@ function phaseGym() {
     else { run.eliteWins = (run.eliteWins || 0) + 1; addPoints(L.role === 'champ' ? PTS.champ : PTS.elite, `victoria contra ${L.leader}`); advToast(L.role === 'champ' ? '👑 ¡CAMPEÓN!' : `¡${L.leader} derrotado!`); }
     chord([659, 784, 1046, 1318]); renderAdv(); saveRun();
     if (L.role === 'champ') return advSay(`¡Has derrotado a ${L.leader}! ¡Eres el nuevo Campeón!`, () => { run.stepDone = true; advButtons([{ label: 'Entrar en el Hall de la Fama →', fn: () => hallOfFame(phaseEnd) }]); });
-    advSay(L.badge ? `¡Increíble! Has derrotado a ${L.leader}. ¡Consigues la ${L.badge}! ¿Habrá evolución?` : `¡Has derrotado a ${L.leader}! ¿Habrá evolución antes del siguiente?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));
+    const evo = () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]);
+    advSay(L.badge ? `¡Increíble! Has derrotado a ${L.leader}. ¡Consigues la ${L.badge}!` : `¡Has derrotado a ${L.leader}! ¿Habrá evolución antes del siguiente?`,
+      () => L.badge ? advButtons([{ label: 'Continuar →', fn: () => gymRewards(() => advSay('¿Habrá evolución?', evo)) }]) : evo());
   }, '', null, L.typeName);
 }
 function phaseEnd() {
@@ -180,7 +245,9 @@ function phaseEnd() {
 
 function initAdv() {
   advWheel = new Wheel($('advWheel'));
-  advWheel.onTap = () => { const b = [...$('advBtns').querySelectorAll('button:not([disabled])')].find(x => !x.classList.contains('ghostbtn')); if (b) b.click(); };
+  const mainBtn = () => [...$('advBtns').querySelectorAll('button:not([disabled])')].find(x => !x.classList.contains('ghostbtn'));
+  advWheel.onTap = () => { const b = mainBtn(); if (b) b.click(); };
+  advWheel.hasNext = () => !!mainBtn();     // botón SEGUIR en el centro de la ruleta
   addEventListener('resize', () => { if (state.scene === 'adv') fitAdv(); });
   // móvil: los datos del líder/ruta van en un panel lateral (como los filtros de la Pokédex) y el equipo se ve siempre debajo de la ruleta
   const mq = matchMedia('(max-width: 760px)');

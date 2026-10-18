@@ -132,3 +132,44 @@
   .hof-row { bottom: 24%; }
   .lose-row { bottom: 22%; }
 }
+
+/* ---- Evolución doble (Repartir Exp.): ventana apaisada con los dos Pokémon a la vez ---- */
+.evo-pop.duo { width: min(640px, 94vw); aspect-ratio: 1.45; }
+.evo-pop.duo .stage2.s0 { inset: 12% 52% 30% 4%; }
+.evo-pop.duo .stage2.s1 { inset: 12% 4% 30% 52%; }
+.evo-pop.duo .glow { width: 46%; }
+.evo-pop.duo .cap { font-size: 15px; }
+
+/* ---- Megaevolución: esfera arcoíris que envuelve al Pokémon, se rompe y deja el símbolo Mega ---- */
+.tf-pop .tf-bg { position: absolute; inset: 0; }
+.tf-mega .tf-bg { inset: -50%; background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--c) 30%, transparent), transparent 60%), conic-gradient(from 0deg, #ff5a8a22, #ffd84a22, #5ad1c822, #6390f022, #b46cff22, #ff5a8a22); animation: spin 8s linear infinite; }
+.tf-mega .tf-fx i { position: absolute; left: 50%; top: 42%; width: 3px; height: 46%; transform-origin: 50% 0; transform: rotate(var(--a)) scaleY(0); background: linear-gradient(180deg, transparent, #fff, transparent); opacity: 0; }
+.tf-mega.go .tf-fx i { animation: megaRay 1.2s cubic-bezier(.2,.8,.3,1) var(--dl) forwards; }
+@keyframes megaRay { 0% { opacity: 0; transform: rotate(var(--a)) scaleY(0); } 40% { opacity: .9; } 100% { opacity: 0; transform: rotate(var(--a)) scaleY(1); } }
+.tf-mega .tf-orb { position: absolute; left: 50%; top: 42%; width: 64%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%) scale(.2); opacity: 0;
+  background: conic-gradient(#ff5a8a, #ffd84a, #7ac74c, #5ad1c8, #6390f0, #b46cff, #ff5a8a); filter: blur(2px); mix-blend-mode: screen; }
+.tf-mega.go .tf-orb { animation: orbIn 1.7s cubic-bezier(.3,.7,.3,1) forwards, spin 2.4s linear infinite; }
+@keyframes orbIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(0); } 60% { opacity: .75; transform: translate(-50%, -50%) scale(1) rotate(200deg); } 100% { opacity: .9; transform: translate(-50%, -50%) scale(.9) rotate(360deg); } }
+.tf-mega.done .tf-orb { animation: orbOut .6s ease-out forwards; }
+@keyframes orbOut { from { opacity: .9; transform: translate(-50%, -50%) scale(.9); } to { opacity: 0; transform: translate(-50%, -50%) scale(1.8); } }
+.tf-mega .tf-sym { position: absolute; left: 50%; top: 42%; width: 30%; aspect-ratio: 1; transform: translate(-50%, -50%) scale(0); border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, transparent 38%, #fff 40% 46%, transparent 48%), conic-gradient(from 45deg, #ff5a8a, #ffd84a, #5ad1c8, #b46cff, #ff5a8a); -webkit-mask: radial-gradient(circle, #000 0 49%, transparent 50%); mask: radial-gradient(circle, #000 0 49%, transparent 50%); }
+.tf-mega.done .tf-sym { animation: symPop 1.1s cubic-bezier(.2,.9,.3,1.3) forwards; }
+@keyframes symPop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(-90deg); } 40% { opacity: 1; transform: translate(-50%, -50%) scale(1.25) rotate(0); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2) rotate(30deg); } }
+.tf-mega.go .stage2 .a { animation: megaShake .9s ease-in-out .6s 2; filter: brightness(1.6) drop-shadow(0 0 14px #fff); }
+@keyframes megaShake { 0%, 100% { transform: none; } 25% { transform: translateX(-3px) scale(1.03); } 75% { transform: translateX(3px) scale(1.03); } }
+
+/* ---- Gigamax: nubes rojas, el Pokémon crece hasta llenar la ventana y aparece entre relámpagos ---- */
+.tf-gmax { background: radial-gradient(circle at 50% 55%, rgba(255,45,85,.35), transparent 65%), #14070c; border-color: rgba(255,45,85,.7); }
+.tf-gmax .tf-bg { background: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(255,45,85,.45), transparent 70%); animation: pulse 1.2s ease-in-out infinite; }
+.tf-gmax .tf-fx i { position: absolute; left: var(--x); top: var(--y); width: calc(120px * var(--s)); aspect-ratio: 1.8; border-radius: 50%; transform: translate(-50%, -50%) scale(.3); opacity: 0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(200,20,60,.75), rgba(90,0,30,.4) 55%, transparent 70%); filter: blur(4px); }
+.tf-gmax.go .tf-fx i { animation: cloudIn 1.8s ease-out var(--dl) forwards; }
+@keyframes cloudIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.3); } 50% { opacity: 1; } 100% { opacity: .85; transform: translate(-50%, -50%) scale(1.15); } }
+.tf-gmax .tf-bolt { position: absolute; inset: 0; opacity: 0; background: linear-gradient(115deg, transparent 46%, #ffd0dc 48%, #ff2d55 49%, transparent 51%), linear-gradient(65deg, transparent 60%, #ffd0dc 61.5%, transparent 63%); }
+.tf-gmax.go .tf-bolt { animation: bolt 1.9s steps(1) forwards; }
+@keyframes bolt { 0%, 30%, 34%, 70%, 74%, 100% { opacity: 0; } 31%, 71% { opacity: 1; } }
+.tf-gmax.go .stage2 .a { animation: gmaxGrow 1.8s cubic-bezier(.5,0,.8,.6) forwards; }
+@keyframes gmaxGrow { 0% { transform: none; filter: none; } 100% { transform: scale(1.45) translateY(-4%); filter: brightness(.4) sepia(1) saturate(6) hue-rotate(-30deg) drop-shadow(0 0 24px #ff2d55); } }
+.tf-gmax.done .stage2 .b { filter: drop-shadow(0 0 18px rgba(255,45,85,.8)); }
+.tf-pop .cap.win b { color: #fff; }

@@ -48,26 +48,67 @@ function hallOfFame(done, data) {
   sh.addEventListener('click', () => { if (!sh.classList.contains('crowned')) finale(); });
 }
 
-// ---- Animación de evolución: sale de la ficha, la energía se concentra, las siluetas se funden (sin destellos) y estalla en estrellas ----
-function evoAnim(m, A, B, cb) {
-  if (reduceMotion || document.hidden) return cb();
-  const pic = (x, cls) => { const r = (m.shiny && SPR.shiny.get(x.id)) || SPR.normal.get(x.id) || SPR.normal.get(x.n || x.id);
-    const c1 = TYPE_COLORS[x.ty[0]] || '#8592ab', c2 = TYPE_COLORS[x.ty[1] || x.ty[0]] || c1;
-    return r ? `<img class="${cls}" src="${r.u}" alt="">` : `<span class="${cls}" style="display:grid;place-items:center"><i class="ph" style="--c1:${c1};--c2:${c2}"></i></span>`; };
+// ---- Desde dónde sale un Pokémon del equipo hacia una cinemática: el centro de la ruleta, su quesito o su ficha ----
+function monRect(m) {
+  const W = advWheel, cr = W && W.cv.getBoundingClientRect(), k = cr && cr.width / W.size;
+  if (W && W.centerM === m && cr.width) return { left: cr.left + cr.width * .36, top: cr.top + cr.height * .36, width: cr.width * .28, height: cr.height * .28, wheel: 'center' };
+  const seg = W && W.segs.find(x => x.m === m && x._sp && !x.hideImg);
+  if (seg && cr.width && W.cv.offsetParent) { const s = seg._sp.sz * k; return { left: cr.left + seg._sp.x * k - s / 2, top: cr.top + seg._sp.y * k - s / 2, width: s, height: s, wheel: seg }; }
   const tile = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m);
-  const fromWheel = advWheel && advWheel.centerM === m;
+  return tile && tile.offsetParent ? (tile.querySelector('.sp') || tile).getBoundingClientRect() : null;
+}
+// el Pokémon deja su sitio en la ruleta (su quesito se queda vacío, o el centro sin él) mientras dura la cinemática
+function leaveWheel(r) {
+  if (!r || !r.wheel) return; const W = advWheel;
+  if (r.wheel === 'center') { W.centerImg = null; W.centerName = null; W.centerM = null; } else r.wheel.hideImg = true;
+  W.draw();
+}
+// el sprite vuela desde la cinemática hasta su hueco del equipo y aterriza (sin cortes: el hueco ya tiene el sprite nuevo)
+function flyHome(m, from, url, done) {
+  const tile = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m), land = () => {
+    onWheel.delete(m); const t = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m);
+    if (t) { t.classList.remove('on-wheel'); t.classList.add('landed'); setTimeout(() => t.classList.remove('landed'), 450); }
+    done && done();
+  };
+  const to = tile && tile.offsetParent && (tile.querySelector('.sp') || tile).getBoundingClientRect();
+  if (!to || !from || !url || reduceMotion) return land();
+  const S = Math.max(40, Math.min(from.width, from.height)), f = document.createElement('div'); f.className = 'fly-mon';
+  f.innerHTML = `<img src="${url}" alt="">`; f.style.width = f.style.height = S + 'px';
+  f.style.left = (from.left + from.width / 2 - S / 2) + 'px'; f.style.top = (from.top + from.height / 2 - S / 2) + 'px'; document.body.appendChild(f);
+  const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2), sc = Math.max(.2, to.height / S);
+  f.animate([{ transform: 'none' }, { transform: `translate(${dx * .5}px, ${dy * .5 - 60}px) scale(${(1 + sc) / 2}) rotate(-6deg)`, offset: .55 }, { transform: `translate(${dx}px, ${dy}px) scale(${sc})` }],
+    { duration: 640, easing: 'cubic-bezier(.3,.6,.35,1)', fill: 'forwards' }).onfinish = () => { land(); f.remove(); beep(760, .05, .03); };
+}
+const sprUrl = (id, n, shiny) => { const r = (shiny && SPR.shiny.get(id)) || SPR.normal.get(id) || SPR.normal.get(n || id); return r ? r.u : null; };
+function picHTML(x, shiny, cls) {
+  const u = sprUrl(x.id, x.n, shiny), c1 = TYPE_COLORS[x.ty[0]] || '#8592ab', c2 = TYPE_COLORS[x.ty[1] || x.ty[0]] || c1;
+  return u ? `<img class="${cls}" src="${u}" alt="">` : `<span class="${cls}" style="display:grid;place-items:center"><i class="ph" style="--c1:${c1};--c2:${c2}"></i></span>`;
+}
+// los Pokémon de la cinemática se ven «fuera» de su hueco del equipo mientras dura
+function hideTiles(list) {
+  list.forEach(m => onWheel.add(m)); renderAdv();
+  list.forEach(m => { const t = [...$('advTeam').querySelectorAll('.tmw')].find(el => el._m === m); if (t) t.classList.add('on-wheel'); });
+}
+
+// ---- Animación de evolución: sale de la ruleta (o de la ficha) como al abrir su ficha, la energía se concentra,
+// las siluetas se funden y estalla en estrellas. items = [{ m, A: { id, ty, name }, B: { id, n, ty, name } }]:
+// uno, o dos a la vez con el Repartir Exp. onSwap cambia los datos justo antes de volver; onEnd sigue cuando todos han aterrizado.
+function evoAnim(items, onSwap, onEnd) {
+  if (reduceMotion || document.hidden) { onSwap(); items.forEach(x => onWheel.delete(x.m)); renderAdv(); return onEnd(); }
+  const duo = items.length > 1, B0 = items[0].B;
+  const starts = items.map(x => monRect(x.m));
+  starts.forEach(leaveWheel); hideTiles(items.map(x => x.m));
   const shade = document.createElement('div'); shade.className = 'evo-shade';
-  const pop = document.createElement('div'); pop.className = 'evo-pop'; pop.style.setProperty('--c', TYPE_COLORS[B.ty[0]] || '#5ad1c8'); pop.style.setProperty('--p', 0);
+  const pop = document.createElement('div'); pop.className = 'evo-pop' + (duo ? ' duo' : ''); pop.style.setProperty('--c', TYPE_COLORS[B0.ty[0]] || '#5ad1c8'); pop.style.setProperty('--p', 0);
   let sparks = ''; for (let i = 0; i < 14; i++) sparks += `<span class="spark" style="--x0:${(Math.random() - .5) * 220}px;--x1:${(Math.random() - .5) * 260}px;--d:${1.2 + Math.random()}s;--dl:${Math.random() * 1.5}s"></span>`;
   let orbit = ''; for (let i = 0; i < 10; i++) orbit += `<i style="--a:${i * 36}deg;--r:${92 + (i % 3) * 18}px;--fs:${10 + (i % 3) * 5}px;--dl:${i * .16}s">✦</i>`;
   pop.innerHTML = `<div class="rays"></div><div class="rays r2"></div><div class="glow"></div>${sparks}<div class="orbit">${orbit}</div><div class="energy"></div>
-    <div class="pillar"></div><div class="stage2">${pic(A, 'a')}${pic(B, 'b hide')}</div><div class="waves"></div><div class="stars-out"></div>
-    <p class="cap"><small>Evolución</small>¿Eh? ¡${A.name} está evolucionando!</p><span class="skip">Toca para acelerar</span>`;
+    <div class="pillar"></div>${items.map((x, i) => `<div class="stage2 s${i}">${picHTML(x.A, x.m.shiny, 'a')}${picHTML(x.B, x.m.shiny, 'b hide')}</div>`).join('')}<div class="waves"></div><div class="stars-out"></div>
+    <p class="cap"><small>${duo ? 'Evolución · Repartir Exp.' : 'Evolución'}</small>¿Eh? ¡${listJoin(items.map(x => x.A.name))} ${duo ? 'están' : 'está'} evolucionando!</p><span class="skip">Toca para acelerar</span>`;
   shade.appendChild(pop); document.body.appendChild(shade);
-  const a = pop.querySelector('.stage2 .a'), b = pop.querySelector('.stage2 .b'), cap = pop.querySelector('.cap'), energy = pop.querySelector('.energy');
-  const pr = pop.getBoundingClientRect(), wr = fromWheel && advWheel.cv.getBoundingClientRect();
-  const tr = fromWheel ? { left: wr.left + wr.width * .36, top: wr.top + wr.height * .36, width: wr.width * .28, height: wr.height * .28 } : tile && tile.getBoundingClientRect();
-  if (fromWheel) { advWheel.centerImg = null; advWheel.centerName = null; advWheel.draw(); }
+  const as = [...pop.querySelectorAll('.stage2 .a')], bs = [...pop.querySelectorAll('.stage2 .b')], cap = pop.querySelector('.cap'), energy = pop.querySelector('.energy');
+  // nace desde el sitio del Pokémon (su quesito, el centro o su ficha), igual que se abre una ficha
+  const pr = pop.getBoundingClientRect(), tr = starts[0];
   if (tr) pop.animate([{ transform: `translate(${tr.left + tr.width / 2 - (pr.left + pr.width / 2)}px, ${tr.top + tr.height / 2 - (pr.top + pr.height / 2)}px) scale(${tr.width / pr.width})`, opacity: .4, borderRadius: '8px' }, { transform: 'none', opacity: 1 }], { duration: 560, easing: 'cubic-bezier(.2,.9,.25,1.1)' });
   const snd = evoAudio();
   // partículas de energía que van hacia el Pokémon
@@ -78,7 +119,7 @@ function evoAnim(m, A, B, cb) {
   const flick = () => {
     if (stage !== 1) return;
     showB = !showB; flips++;
-    a.classList.toggle('hide', showB); b.classList.toggle('hide', !showB);
+    as.forEach(a => a.classList.toggle('hide', showB)); bs.forEach(b => b.classList.toggle('hide', !showB));
     pop.style.setProperty('--p', Math.min(1, flips / 9).toFixed(2));
     snd.pulse(); gather(6 + flips);
     if (flips === 4) pop.classList.add('fast');
@@ -87,7 +128,7 @@ function evoAnim(m, A, B, cb) {
     if (flips >= 9) return timer = setTimeout(reveal, 520);
     timer = setTimeout(flick, gap);
   };
-  const start = () => { stage = 1; a.classList.add('w'); b.classList.add('w'); pop.classList.add('glowing'); gather(10); timer = setTimeout(flick, 700); };
+  const start = () => { stage = 1; [...as, ...bs].forEach(e => e.classList.add('w')); pop.classList.add('glowing'); gather(10); timer = setTimeout(flick, 700); };
   const reveal = () => {
     if (stage >= 2) return; stage = 2; clearTimeout(timer);
     snd.climax();
@@ -96,20 +137,61 @@ function evoAnim(m, A, B, cb) {
     pop.querySelector('.waves').innerHTML = '<i></i><i></i><i></i>';
     let st = ''; for (let i = 0; i < 26; i++) { const an = i / 26 * Math.PI * 2, d = 120 + Math.random() * 90; st += `<i style="--x:${Math.cos(an) * d}px;--y:${Math.sin(an) * d}px;--fs:${12 + Math.random() * 16}px;--dl:${Math.random() * .2}s">✦</i>`; }
     pop.querySelector('.stars-out').innerHTML = st;
-    a.classList.add('hide'); b.classList.remove('hide', 'w'); b.classList.add('new-in'); pop.classList.remove('fast', 'glowing'); pop.querySelector('.orbit').style.opacity = '0';
-    cap.innerHTML = `<small>¡Enhorabuena!</small>¡${A.name} ha evolucionado a <b>${B.name}</b>!`; cap.classList.add('win');
+    as.forEach(a => a.classList.add('hide')); bs.forEach(b => { b.classList.remove('hide', 'w'); b.classList.add('new-in'); });
+    pop.classList.remove('fast', 'glowing'); pop.querySelector('.orbit').style.opacity = '0';
+    cap.innerHTML = `<small>¡Enhorabuena!</small>${items.map(x => `¡${x.A.name} ha evolucionado a <b>${x.B.name}</b>!`).join('<br>')}`; cap.classList.add('win');
     const r = pop.getBoundingClientRect(); setTimeout(() => shinyBurst(r.left + r.width / 2, r.top + r.height * .42), 250);
     timer = setTimeout(close, 2700);
   };
+  // al cerrar: los datos cambian (el hueco del equipo ya tiene el sprite nuevo, oculto), la ventana se desvanece
+  // y cada Pokémon vuela desde la cinemática hasta su hueco
   const close = () => {
     if (stage >= 3) return; stage = 3; clearTimeout(timer);
-    const p2 = pop.getBoundingClientRect(), t2 = tile && tile.isConnected && tile.getBoundingClientRect();
-    shade.classList.add('out');
-    const anim = pop.animate(t2 ? [{ transform: 'none', opacity: 1 }, { transform: `translate(${t2.left + t2.width / 2 - (p2.left + p2.width / 2)}px, ${t2.top + t2.height / 2 - (p2.top + p2.height / 2)}px) scale(${t2.width / p2.width})`, opacity: 0 }]
-      : [{ transform: 'none', opacity: 1 }, { transform: 'scale(.8)', opacity: 0 }], { duration: 420, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' });
-    anim.onfinish = () => { shade.remove(); cb();
-      const el = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m); if (el) { el.classList.add('landed'); setTimeout(() => el.classList.remove('landed'), 450); } };
+    const from = bs.map(b => b.getBoundingClientRect());
+    onSwap(); renderAdv();
+    shade.classList.add('out'); pop.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.96)' }], { duration: 380, easing: 'ease-in', fill: 'forwards' });
+    let left = items.length;
+    items.forEach((x, i) => setTimeout(() => flyHome(x.m, from[i], sprUrl(x.B.id, x.B.n, x.m.shiny), () => { if (--left === 0) { shade.remove(); onEnd(); } }), 120 + i * 110));
   };
   shade.addEventListener('click', () => { if (stage === 0) { clearTimeout(timer); start(); } else if (stage === 1) { clearTimeout(timer); reveal(); } else if (stage === 2) close(); });
   timer = setTimeout(start, 700);
+}
+
+// ---- Megaevolución y Gigamax: cada una con su animación propia (más corta que la de evolución) ----
+// Mega: la megapiedra reacciona, una esfera arcoíris envuelve al Pokémon, se resquebraja y aparece con el símbolo Mega.
+// Gigamax: nubes rojas, el Pokémon crece hasta llenar la ventana y aparece su forma Gigamax entre relámpagos.
+function transformAnim(m, kind, A, B, onSwap, onEnd) {
+  if (reduceMotion || document.hidden || window.__noCine) { onSwap(); renderAdv(); return onEnd(); }
+  const start = monRect(m); hideTiles([m]);
+  const mega = kind === 'mega', shade = document.createElement('div'); shade.className = 'evo-shade';
+  const pop = document.createElement('div'); pop.className = `evo-pop tf-pop ${mega ? 'tf-mega' : 'tf-gmax'}`; pop.style.setProperty('--c', mega ? (TYPE_COLORS[B.ty[0]] || '#b46cff') : '#ff2d55');
+  let fx = '';
+  if (mega) for (let i = 0; i < 12; i++) fx += `<i style="--a:${i * 30}deg;--dl:${(i * .05).toFixed(2)}s"></i>`;
+  else for (let i = 0; i < 9; i++) fx += `<i style="--x:${(Math.random() * 100).toFixed(0)}%;--y:${(Math.random() * 100).toFixed(0)}%;--s:${(.7 + Math.random() * .9).toFixed(2)};--dl:${(Math.random() * .8).toFixed(2)}s"></i>`;
+  pop.innerHTML = `<div class="tf-bg"></div><div class="tf-fx">${fx}</div>${mega ? '<div class="tf-orb"></div><div class="tf-sym"></div>' : '<div class="tf-bolt"></div>'}
+    <div class="stage2">${picHTML(A, m.shiny, 'a')}${picHTML(B, m.shiny, 'b hide')}</div>
+    <p class="cap"><small>${mega ? 'Megaevolución' : 'Gigamax'}</small>${mega ? `¡La megapiedra de ${A.name} reacciona!` : `¡${A.name} absorbe la energía Dinamax!`}</p><span class="skip">Toca para saltar</span>`;
+  shade.appendChild(pop); document.body.appendChild(shade);
+  const pr = pop.getBoundingClientRect();
+  if (start) pop.animate([{ transform: `translate(${start.left + start.width / 2 - (pr.left + pr.width / 2)}px, ${start.top + start.height / 2 - (pr.top + pr.height / 2)}px) scale(${start.width / pr.width})`, opacity: .4 }, { transform: 'none', opacity: 1 }], { duration: 480, easing: 'cubic-bezier(.2,.9,.25,1.1)' });
+  chord(mega ? [523, 659, 784] : [196, 247, 294]);
+  const a = pop.querySelector('.stage2 .a'), b = pop.querySelector('.stage2 .b'), cap = pop.querySelector('.cap');
+  let stage = 0, timer;
+  const reveal = () => {
+    if (stage) return; stage = 1; clearTimeout(timer);
+    pop.classList.add('done'); a.classList.add('hide'); b.classList.remove('hide'); b.classList.add('new-in');
+    chord(mega ? [784, 988, 1318, 1568] : [262, 330, 392, 523]);
+    cap.innerHTML = `<small>${mega ? 'Megaevolución' : 'Gigamax'}</small>¡${A.name} ${mega ? 'ha megaevolucionado en' : 'se ha convertido en'} <b>${B.name}</b>!`; cap.classList.add('win');
+    const r = pop.getBoundingClientRect(); setTimeout(() => shinyBurst(r.left + r.width / 2, r.top + r.height * .42), 150);
+    timer = setTimeout(close, 1700);
+  };
+  const close = () => {
+    if (stage > 1) return; stage = 2; clearTimeout(timer);
+    const from = b.getBoundingClientRect(); onSwap(); renderAdv();
+    shade.classList.add('out'); pop.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.96)' }], { duration: 340, easing: 'ease-in', fill: 'forwards' });
+    setTimeout(() => flyHome(m, from, sprUrl(B.id, B.n, m.shiny), () => { shade.remove(); onEnd(); }), 100);
+  };
+  requestAnimationFrame(() => pop.classList.add('go'));
+  shade.addEventListener('click', () => stage === 0 ? reveal() : close());
+  timer = setTimeout(reveal, 1900);
 }

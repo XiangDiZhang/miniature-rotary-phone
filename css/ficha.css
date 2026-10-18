@@ -134,3 +134,16 @@
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .forms-row { grid-template-columns: 1fr; }
 }
+
+/* variantes de cada especie de la línea evolutiva (megas, Gigamax, regionales y otras formas), debajo de su tarjeta */
+.evo-node { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
+.evo-vars { display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px; }
+.evo-var { display: flex; align-items: center; gap: 4px; padding: 2px 6px 2px 2px; border: 1px dashed var(--line); border-radius: 6px; background: transparent; color: inherit; font: 500 10px var(--f-mono); cursor: pointer; text-align: left; line-height: 1.15; }
+.evo-var .th { width: 26px; height: 26px; display: grid; place-items: center; flex: none; }
+.evo-var .th img { width: 26px; height: 26px; object-fit: contain; } .evo-var .th img.px { image-rendering: pixelated; }
+.evo-var .th .ph { width: 13px; height: 13px; transform: rotate(45deg); border-radius: 3px; background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); opacity: .7; }
+.evo-var .vl b { display: block; font-size: 8px; letter-spacing: .14em; color: var(--c); }
+.evo-var:hover { border-style: solid; border-color: var(--fg-soft); }
+.evo-var.cur { border-style: solid; border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+.evo-var.locked { cursor: default; } .evo-var.locked .th img { filter: brightness(0); opacity: .6; }
+.evo-vars.many .evo-var { padding: 2px; }

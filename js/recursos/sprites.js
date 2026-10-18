@@ -2,13 +2,28 @@
 // SPR.normal / SPR.shiny: nº de especie o id de forma -> { u: imagen (data URL), px: pixel art, fb/fw/fx: suelo, ancho y centro, pc: colores }
 // SPR.badge: nº de medalla -> { u }
 const SPR = { normal: new Map(), shiny: new Map(), badge: new Map() };
+// Rendimiento: las imágenes van dentro del código como data URL (textos de miles de caracteres). Pegadas una y otra vez en el HTML
+// (equipo, línea de fases, medallas, Pokédex…) el navegador tiene que leerlas y descodificarlas cada vez. Si el navegador lo permite,
+// cada imagen se convierte, la primera vez que se usa, en un enlace blob: corto que reutiliza la imagen ya descodificada.
+let blobOK = false;
+function toBlobURL(d) {
+  const i = d.indexOf(','), bin = atob(d.slice(i + 1)), a = new Uint8Array(bin.length);
+  for (let k = 0; k < bin.length; k++) a[k] = bin.charCodeAt(k);
+  return URL.createObjectURL(new Blob([a], { type: d.slice(5, d.indexOf(';')) || 'image/png' }));
+}
+class SprRec {
+  constructor(d, px, fb, fw, fx, pc) { this.d = d; this.b = null; this.px = px; this.fb = fb; this.fw = fw; this.fx = fx; this.pc = pc; }
+  get u() { if (blobOK && !this.b) { try { this.b = toBlobURL(this.d); } catch (e) { blobOK = false; } } return this.b || this.d; }
+}
 {
   const packs = { normal: typeof SPRITES_NORMAL !== 'undefined' && SPRITES_NORMAL, shiny: typeof SPRITES_SHINY !== 'undefined' && SPRITES_SHINY };
   for (const kind in packs) for (const id in packs[kind] || {}) {
     const [u, px, fb, fw, fx, c1, c2] = packs[kind][id];
-    SPR[kind].set(+id, { u, px: !!px, fb, fw, fx, pc: c1 ? [c1, c2] : null });
+    SPR[kind].set(+id, new SprRec(u, !!px, fb, fw, fx, c1 ? [c1, c2] : null));
   }
-  if (typeof SPRITES_BADGE !== 'undefined') for (const id in SPRITES_BADGE) SPR.badge.set(+id, { u: SPRITES_BADGE[id] });
+  if (typeof SPRITES_BADGE !== 'undefined') for (const id in SPRITES_BADGE) SPR.badge.set(+id, new SprRec(SPRITES_BADGE[id]));
+  // ¿se pueden usar enlaces blob: aquí? (en algunos sitios incrustados no): se prueba con una imagen y, si carga, se usan a partir de entonces
+  try { const t = SPR.normal.get(25); if (t && window.URL && URL.createObjectURL) { const im = new Image(); im.onload = () => { blobOK = true; }; im.src = toBlobURL(t.d); } } catch (e) {}
 }
 
 // cuadro del sprite en la Pokédex y en el equipo: apoyado en el suelo y con su sombra (o un rombo con sus colores si no hay sprite)

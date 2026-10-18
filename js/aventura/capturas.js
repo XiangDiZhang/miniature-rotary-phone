@@ -43,9 +43,10 @@ function throwBall(n, legend = false, shiny, form = 0, sure = false) {
     return advSay(`¡${nm0}${shiny ? ' (¡y es shiny!)' : ''} se deja atrapar sin oponer resistencia!`, () => advButtons([{ label: 'Lanzar la Poké Ball', fn: () => caught(n, shiny, legend, form) }]));
   }
   const green = Math.min(CAP_N - 1, captureGreen(n) + (run.ball ? 1 : 0)), kurt = run.ball, rar = rarityOf(n)[0];
-  const what = shiny ? `¡Un ${nm0} de color distinto! Es shiny ★… ¿Lo intentas?` : legend ? `¡Es ${nm0}, un Pokémon legendario! Es muy difícil de atrapar. ¿Lo intentas?` : `¡Un ${nm0} salvaje! ¿Intentas capturarlo? Solo tienes una oportunidad.`;
-  advSay(what + (kurt ? ' Usarás tu Ball especial (+1 quesito verde).' : ''), () => advButtons([
-    { label: 'Intentar capturarlo', fn: () => {
+  // la captura es obligatoria: si sale un Pokémon, siempre se lanza la Poké Ball (no se puede dejar ir)
+  const what = shiny ? `¡Un ${nm0} de color distinto! Es shiny ★.` : legend ? `¡Es ${nm0}, un Pokémon legendario! Es muy difícil de atrapar.` : `¡Un ${nm0} salvaje!`;
+  advSay(`${what} ¡Lanza la Poké Ball! Solo tienes una oportunidad.${kurt ? ' Usarás tu Ball especial (+1 quesito verde).' : ''}`, () => advButtons([
+    { label: 'Lanzar la Poké Ball', fn: () => {
       run.ball = 0;
       spinUI(`Captura · ${pname(n)}`, `Rareza: ${rar}. ${green} de ${CAP_N} quesitos lo atrapan (${pct(green / CAP_N)}). Solo hay un intento.`,
         captureSegs(green), legend ? '★' : 'CAPTURA', r => {
@@ -53,8 +54,7 @@ function throwBall(n, legend = false, shiny, form = 0, sure = false) {
           log(`💨 ${pname(n)}: ${r.label.toLowerCase()}.`);
           advSay(r.say(pname(n)) + (legend ? ' Se ha perdido en el horizonte…' : ''), goOn);
         });
-    } },
-    { label: 'Dejarlo ir', ghost: true, fn: () => { log(`🏃 Dejas ir a ${pname(n)}.`); finish(); } }]));
+    } }]));
 }
 function caught(n, shiny, legend, form) {
   // si la especie tiene formas regionales u otras variantes, una ruleta decide cuál te toca

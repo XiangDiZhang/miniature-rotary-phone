@@ -197,7 +197,7 @@
   <!-- JUGAR: ruleta de generaciones -->
   <section class="scene" id="scene-roulette" hidden>
     <div class="frame stage">
-      <div class="wheel-box"><canvas id="wheel" aria-label="Ruleta de generaciones"></canvas></div>
+      <div class="wheel-box"><div class="wheel-wrap"><canvas id="wheel" aria-label="Ruleta de generaciones"></canvas><button class="wheel-hub" id="wheelHub" type="button" aria-label="Girar la ruleta"></button></div></div>
       <div class="side">
         <p class="label">Ruleta</p>
         <div class="readout" id="readout">Listo</div>
@@ -244,7 +244,7 @@
   <!-- AVENTURA: ruleta, diálogo, línea de fases, paneles de equipo / mochila / diario y Caja PC -->
   <section class="scene" id="scene-adv" hidden>
     <div class="frame stage adv-stage">
-      <div class="wheel-box adv-wbox"><canvas id="advWheel" class="adv-wheel" aria-label="Ruleta de la aventura"></canvas>
+      <div class="wheel-box adv-wbox"><div class="wheel-wrap"><canvas id="advWheel" class="adv-wheel" aria-label="Ruleta de la aventura"></canvas><button class="wheel-hub" type="button" hidden aria-label="Girar la ruleta"></button></div>
         <div class="adv-track"><div class="adv-pathwin" id="advPathWin"><ol class="adv-path" id="advPath"></ol></div></div></div>
       <div class="side">
         <div class="leader-card" id="advLeader" hidden></div>

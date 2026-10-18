@@ -26,10 +26,10 @@ if (-not $navegador) { throw 'No encuentro Chrome ni Edge' }
 $escenas = @('home=scene=home', 'menu=scene=menu', 'roulette=scene=roulette', 'roulette-landed=scene=roulette-landed', 'chosen=scene=chosen',
   'dex=scene=dex&dev=1', 'dex-user=scene=dex', 'dex-filter=scene=dex-filter&dev=1', 'dex-search=scene=dex-search&dev=1', 'dex-regional=scene=dex-regional&dev=1', 'dex-scroll=scene=dex-scroll&dev=1',
   'info=scene=info&dev=1', 'info-form=scene=info-form&dev=1', 'info-next=scene=info-next&dev=1', 'options=scene=options',
-  'adv=scene=adv&region=kanto&steps=6', 'adv-johto=scene=adv&region=johto&steps=14', 'adv-paldea=scene=adv&region=paldea&steps=20', 'pc=scene=pc', 'hof=scene=hof', 'lose=scene=lose',
+  'adv=scene=adv&region=kanto&steps=6', 'adv-johto=scene=adv&region=johto&steps=14', 'adv-paldea=scene=adv&region=paldea&steps=20', 'adv-caos=scene=adv&region=caos&steps=20', 'pc=scene=pc', 'hof=scene=hof', 'lose=scene=lose',
   'home-light=scene=home&theme=light', 'dex-light=scene=dex&dev=1&theme=light', 'adv-light=scene=adv&region=hoenn&steps=10&theme=light', 'info-light=scene=info&dev=1&theme=light',
   'home-m=scene=home', 'dex-m=scene=dex&dev=1', 'adv-m=scene=adv&region=kanto&steps=8', 'info-m=scene=info&dev=1', 'pc-m=scene=pc')   # -m = pantalla de móvil
-$regiones = if ($SinPartidas) { @() } else { @('kanto', 'johto', 'hoenn', 'sinnoh', 'teselia', 'kalos', 'alola', 'galar', 'paldea') }
+$regiones = if ($SinPartidas) { @() } else { @('kanto', 'johto', 'hoenn', 'sinnoh', 'teselia', 'kalos', 'alola', 'galar', 'paldea', 'caos') }
 
 # copia del juego con los scripts de prueba: entorno.js antes que el juego, escenarios.js al final
 $Html = (Resolve-Path $Html).Path

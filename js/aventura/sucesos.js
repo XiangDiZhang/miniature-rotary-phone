@@ -9,7 +9,7 @@ function phaseCity() {
 // la tienda regala una poción gratis, mejor cada 3 medallas (0-2: Poción · 3-5: Superpoción · 6+: Hiperpoción).
 // No se compra nada: los puntos solo son tu puntuación.
 function doShop() {
-  const b = run.badges.length, gift = b >= 6 ? 'hyper' : b >= 3 ? 'super' : 'potion';
+  const gift = potionTier();
   run.bag[gift] = (run.bag[gift] || 0) + 1; log(`🎁 La tienda te regala ${ITEMS[gift].name}.`); renderAdv(); saveRun();
   advSay(`Tienda Pokémon: ¡te regalan ${ITEMS[gift].name}! ${ITEMS[gift].desc}`, goOn);
 }
@@ -39,7 +39,7 @@ function doKurt() {
   advSay('Kurt, el artesano de Pueblo Azalea, te fabrica una Ball con un Bonguri. En tu próxima captura tendrás un quesito verde más.', goOn);
 }
 function doCasino() {
-  advSay(`Entras en el Casino de ${REG().name === 'Kanto' ? 'Ciudad Azulona' : 'Ciudad Trigal'}. ¿Pruebas suerte en la ruleta?`, () => advButtons([{ label: 'Jugar', fn: () =>
+  advSay(`Entras en el Casino de ${REG().name === 'Kanto' ? 'Ciudad Azulona' : 'Ciudad Trigal'}. ¡A probar suerte en la ruleta!`, () => advButtons([{ label: 'Jugar', fn: () =>
     spinUI('Casino · Ruleta', 'Un Pokémon de premio, dos objetos y tres vacíos.', [
       { label: 'Premio Pokémon', short: 'PREMIO', color: '#ffd84a', ok: 'mon' }, { label: 'Nada', short: 'NADA', color: '#8592ab' },
       { label: 'Objeto', short: 'OBJETO', color: '#b46cff', ok: 'item' }, { label: 'Nada', short: 'NADA', color: '#6c7790' },
@@ -47,7 +47,7 @@ function doCasino() {
         if (r.ok === 'item') { log('🎰 Cambias las fichas por un objeto.'); return advSay('¡Premio! Cambias las fichas por un objeto del mostrador.', () => advButtons([{ label: 'Elegir objeto', fn: doItem }])); }
         if (r.ok === 'mon') { const n = randomPick(regionPool(), 1)[0]; log(`🎰 Premio del Casino: ¡${pname(n)}!`); return advSay(`¡Premio gordo! Cambias las fichas por un ${pname(n)}.`, () => advButtons([{ label: 'Recoger premio', fn: () => shinyCheck(n) }])); }
         log('🎰 El Casino se queda con tus fichas.'); advSay('Nada… la casa siempre gana.', goOn);
-      }) }, { label: 'Mejor no →', ghost: true, fn: finish }]));
+      }) }]));
 }
 function doBurned() {
   log('🔥 En el sótano de la Torre Quemada despiertan los perros legendarios…'); chord([523, 659, 784, 1046]);
@@ -64,7 +64,7 @@ function doPharmacy() {
 }
 function doLake() {
   log('🔴 ¡Un Gyarados rojo en el Lago de la Furia!'); chord([523, 659, 784, 1046]);
-  advSay('En el Lago de la Furia, un Gyarados rojo salta furioso del agua…', () => throwBall(130, false, true));
+  advSay('En el Lago de la Furia, un Gyarados rojo salta furioso del agua…', () => advButtons([{ label: '¡A por él!', fn: () => throwBall(130, false, true) }]));
 }
 function doDragon() {
   const n = 147; log('🐉 El anciano del Clan Dragón te regala un Dratini.'); chord([784, 988, 1318]);
@@ -124,24 +124,24 @@ function doDaycare() {
 // evolución segura (Caramelo raro, Guardería, Entrenamiento): la ruleta elige quién
 function evolveSure(msg) {
   const cands = run.team.filter(canEvolve);
-  if (!cands.length) { run.bag.potion = (run.bag.potion || 0) + 1; log('🧪 Nadie puede evolucionar: recibes una Poción.'); renderAdv(); return advSay(`${msg} Pero nadie de tu equipo puede evolucionar, así que recibes una Poción.`, goOn); }
+  if (!cands.length) return potionInstead(`${msg} Pero nadie de tu equipo puede evolucionar, así que recibes`);
   advSay(`${msg} ¡Alguien va a evolucionar!`, () => advButtons([{ label: '¿Quién evoluciona?', fn: () => cands.length === 1 ? evolve(cands[0]) :
-    spinUI('Evolución · ¿Quién?', 'La ruleta elige quién evoluciona.', cands.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m })), '¿QUIÉN?', r => evolve(r.m)) }]));
+    spinUI('Evolución · ¿Quién?', 'La ruleta elige quién evoluciona.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m)) }]));
 }
+// Intercambio obligatorio: la ruleta elige a quién das y lo que recibes puede ser cualquier Pokémon de la Pokédex (como los huevos)
 function doTrade() {
   const all = [...run.team, ...boxList()];
   const give = m => {
-    const pool = randomPick(regionPool(n => n !== m.n), 6);
-    spinUI('Intercambio · ¿Qué recibes?', `Das a tu ${mname(m)}. ¿Qué te llega a cambio?`, pool.map(n => wseg(n)), 'RECIBES', r => {
+    const pool = randomPick(DEX.map(r => r[0]).filter(n => n !== m.n), DEX.length);
+    spinUI('Intercambio · ¿Qué recibes?', `Das a tu ${mname(m)}. A cambio puede llegarte cualquiera de los ${pool.length} Pokémon de la Pokédex (los legendarios, más difíciles).`, pool.map(n => wseg(n, isLegend(n) ? LEG_SLICE : 1)), 'RECIBES', r => {
       if (run.team.includes(m)) run.team.splice(run.team.indexOf(m), 1); else run.box[run.box.indexOf(m)] = null;
       log(`🔄 Cambias a ${mname(m)} por ${pname(r.n)}.`);
       advSay(`¡Intercambio hecho! ${mname(m)} se va y llega ${pname(r.n)}.`, () => advButtons([{ label: 'Recibir', fn: () => caught(r.n, r.shiny, false) }]));
     });
   };
-  if (all.length === 1) return advSay(`Un entrenador quiere un intercambio. Solo tienes a ${pname(all[0].n)}, así que va él.`, () => advButtons([{ label: 'Intercambiar', fn: () => give(all[0]) }, { label: 'No, gracias', ghost: true, fn: finish }]));
-  advSay('Un entrenador te propone un intercambio a ciegas. La ruleta elige a quién das.', () => advButtons([{ label: 'Aceptar', fn: () =>
-    spinUI('Intercambio · ¿A quién das?', 'Tu equipo y tu caja entran en la ruleta.', all.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m })), 'DAS', r => give(r.m)) },
-    { label: 'No, gracias', ghost: true, fn: finish }]));
+  if (all.length === 1) return advSay(`¡Intercambio a ciegas! No se puede rechazar. Solo tienes a ${pname(all[0].n)}, así que va él.`, () => advButtons([{ label: 'Intercambiar', fn: () => give(all[0]) }]));
+  advSay('¡Intercambio a ciegas! Un entrenador te obliga a cambiar un Pokémon: la ruleta elige a quién das.', () => advButtons([{ label: '¿A quién das?', fn: () =>
+    spinUI('Intercambio · ¿A quién das?', 'Tu equipo y tu caja entran en la ruleta.', all.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m })), 'DAS', r => give(r.m)) }]));
 }
 function doItem() {
   const b = badges();
@@ -311,7 +311,7 @@ function doBellsprout() {
     battle(`${L.name} · Torre Bellsprout`, t.name, t.team, 1, () => { addPoints(PTS.win, 'Torre Bellsprout'); advSay('¡Has superado la prueba de la Torre Bellsprout! ¿Habrá evolución?', () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }])); },
       ' Perder aquí no acaba la partida.', () => advSay('El sabio te ha ganado… pero solo era un entrenamiento.', goOn)) }]));
 }
-function doRuins() { log('🔤 Exploras las Ruinas Alfa.'); advSay('En las Ruinas Alfa, unas letras misteriosas cobran vida… ¡un Unown!', () => throwBall(201)); }
+function doRuins() { log('🔤 Exploras las Ruinas Alfa.'); advSay('En las Ruinas Alfa, unas letras misteriosas cobran vida… ¡un Unown!', () => advButtons([{ label: '¡A por él!', fn: () => throwBall(201) }])); }
 function doForest() { const L = loc(); advSay('Te adentras en el Encinar, un bosque espeso y oscuro.', () => advButtons([{ label: 'Buscar entre los árboles', fn: () => wildWheel(`${L.name} · Encinar`, '¿Quién vive en el bosque?', allOf(regionPool(n => ptypes(n).some(t => t === 'Planta' || t === 'Bicho'))), 'ENCINAR') }])); }
 function doContest() {
   const L = loc(); run.ball = 1;

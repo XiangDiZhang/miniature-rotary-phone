@@ -6,12 +6,15 @@
   herramientas/medir-sprite.js y lo guarda todo en tres archivos .js con las
   imágenes dentro, para que funcionen igual abriendo index.html que publicadas como artefacto.
 
-  Solo hace falta si cambias los sprites o añades especies o formas. Uso (desde la carpeta del proyecto):
-    .\herramientas\generar-sprites.ps1 -Origen "D:\mis sprites"
-  La carpeta de origen tiene que tener pokemon\<nº>.png, pokemon\shiny\<nº>.png y badges\<nº>.png.
+  Las imágenes originales que usa el juego se guardan en assets\sprites\originales (pokemon\, pokemon\shiny\ y badges\).
+  Uso (desde la carpeta del proyecto):
+    .\herramientas\generar-sprites.ps1                          # vuelve a generar desde assets\sprites\originales
+    .\herramientas\generar-sprites.ps1 -Origen "D:\mis sprites"  # toma lo que falte de otra carpeta de PokeAPI y lo copia a originales
+  La carpeta de origen tiene que tener pokemon\<nº>.png, pokemon\shiny\<nº>.png y badges\<nº>.png. Las variantes sin número
+  (VARIANTS en js/datos/formas.js: Alcremie, Vivillon…) usan su archivo con nombre, p. ej. pokemon\869-ruby-cream-berry-sweet.png.
 #>
 param(
-  [Parameter(Mandatory)] [string] $Origen,     # carpeta de sprites de PokeAPI (https://github.com/PokeAPI/sprites, carpeta sprites)
+  [string] $Origen = (Join-Path $PSScriptRoot "..\assets\sprites\originales"),   # carpeta de sprites de PokeAPI (https://github.com/PokeAPI/sprites, carpeta sprites)
   [string] $Destino = (Join-Path $PSScriptRoot '..\assets\sprites'),
   [int] $MedallaMax = 96           # las medallas se ven a 40-54 px: se reducen a este tamaño como mucho (nítidas en pantallas de alta densidad)
 )
@@ -19,6 +22,7 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 $raiz = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $Origen = (Resolve-Path $Origen).Path
+$originales = Join-Path $raiz "assets\sprites\originales"
 New-Item -ItemType Directory -Force $Destino | Out-Null
 $Destino = (Resolve-Path $Destino).Path
 $utf8 = New-Object Text.UTF8Encoding($false)
@@ -28,15 +32,24 @@ $formas = [IO.File]::ReadAllText("$raiz\js\datos\formas.js", $utf8)
 $regiones = [IO.File]::ReadAllText("$raiz\js\datos\regiones.js", $utf8)
 $ids = @(1..1025) + ([regex]::Matches($formas, '\[(\d{5}),"') | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object -Unique)
 $medallas = [regex]::Matches($regiones, 'badgeId: (\d+)') | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object -Unique
+# variantes sin número en PokeAPI (VARIANTS de formas.js): id propio -> nombre de su archivo
+$archivo = @{}
+foreach ($v in [regex]::Matches($formas, '\[(\d{5}),"[^"]*",\d+,"(\d+-[a-z0-9-]+)"\]')) { $archivo[[int]$v.Groups[1].Value] = $v.Groups[2].Value }
 $lista = @()
 foreach ($id in $ids) {
-  $lista += , @('normal', $id, "$Origen\pokemon\$id.png")
-  $lista += , @('shiny', $id, "$Origen\pokemon\shiny\$id.png")
+  $f = if ($archivo.ContainsKey($id)) { $archivo[$id] } else { $id }
+  $lista += , @('normal', $id, "$Origen\pokemon\$f.png", "pokemon\$f.png")
+  $lista += , @('shiny', $id, "$Origen\pokemon\shiny\$f.png", "pokemon\shiny\$f.png")
 }
-foreach ($id in $medallas) { $lista += , @('badge', $id, "$Origen\badges\$id.png") }
+foreach ($id in $medallas) { $lista += , @('badge', $id, "$Origen\badges\$id.png", "badges\$id.png") }
 $faltan = $lista | Where-Object { -not (Test-Path $_[2]) }
 foreach ($f in $faltan) { Write-Warning "falta $($f[0]) $($f[1]): $($f[2])" }
 $lista = $lista | Where-Object { Test-Path $_[2] }
+# copia de las imágenes originales dentro del proyecto (assets\sprites\originales): así no hace falta la carpeta de PokeAPI
+if ($Origen -ne (Resolve-Path -LiteralPath $originales -ErrorAction SilentlyContinue).Path) {
+  foreach ($e in $lista) { $d = Join-Path $originales $e[3]; New-Item -ItemType Directory -Force (Split-Path $d) | Out-Null; Copy-Item -LiteralPath $e[2] $d -Force }
+  Write-Host "Copiadas $($lista.Count) imágenes a $originales"
+}
 Write-Host "Imágenes: $($lista.Count) ($($ids.Count) especies y formas × normal/shiny + $($medallas.Count) medallas)"
 
 # ---- 2. Imágenes en base64 (las medallas, reducidas) ----

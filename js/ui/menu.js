@@ -20,6 +20,15 @@ function buildMenu() {
     grid.appendChild(b);
     items.push({ el: b, act: () => { chord([659, 880, 1175]); pick(g); } });
   });
+  // Modo Caos: gimnasios, Alto Mando y Campeón al azar de todas las regiones
+  {
+    const g = CHAOS_GEN, b = document.createElement('button');
+    b.type = 'button'; b.className = 'card chaos'; b.style.setProperty('--c', g.color);
+    b.innerHTML = cardHTML(g, false).replace(`GEN ${g.roman}`, 'MODO CAOS');
+    b.setAttribute('aria-label', 'Modo Caos: gimnasios, Alto Mando y Campeón al azar de todas las regiones');
+    grid.appendChild(b);
+    items.push({ el: b, act: () => { chord([523, 740, 1046]); pick(g); } });
+  }
   COMING.forEach(c => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'card'; b.disabled = true; b.innerHTML = cardHTML(c, true);
@@ -43,14 +52,15 @@ function pick(g) {
   state.chosen = g.id;
   $('chosenCard').style.setProperty('--c', g.color);
   $('chosenGhost').textContent = g.roman;
-  $('chosenGen').textContent = 'GENERACIÓN ' + g.roman;
+  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : 'GENERACIÓN ' + g.roman;
   $('chosenRegion').textContent = g.region;
   $('chosenRange').textContent = `Nº ${pad(g.from)}–${pad(g.to)}`;
   $('chosenCount').textContent = g.to - g.from + 1;
   $('chosenYear').textContent = g.year;
   $('chosenGames').textContent = g.games;
   show('chosen');
-  typeText($('chosenText'), `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);
+  typeText($('chosenText'), g === CHAOS_GEN ? 'Modo Caos: 8 gimnasios de cualquier región, un Alto Mando y un Campeón al azar. Cada partida es distinta. ¿Te atreves?'
+    : `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);
   const key = g.region.toLowerCase();
   if (REGIONS[key]) {
     const saved = loadRun(key), cont = saved && saved.team && saved.team.length, best = getBest()[key];

@@ -545,3 +545,50 @@ const VILLAINS = {
   star: { name: 'Team Star', short: 'STAR', grunt: 'El recluta del Team Star', flee: '«¡Star, star! ¡Volveremos!»',
     teams: [[198, 944], [198, 944], [965, 944, 942], [966, 435, 942], [966, 435, 927], [430, 89, 927], [430, 966, 89, 979], [983, 966, 89, 979], [983, 966, 89, 979]] },
 };
+
+// ===================== MODO CAOS =====================
+// Como una región más, pero hecha de trozos de todas: 8 gimnasios al azar entre todos los que existen (sin repetir), cada uno con el
+// camino que llevaba a él en su región; después la preparación, un Alto Mando de 4 y un Campeón, también al azar.
+// Los gimnasios elegidos se ordenan por su número de medalla en su región, para que la dificultad suba poco a poco.
+// La selección se guarda en la partida (run.chaos) y el camino se construye a partir de ella.
+const CHAOS_GEN = { id: 10, roman: '∞', region: 'Caos', from: 1, to: 1025, year: 'Al azar', games: '8 gimnasios, Alto Mando y Campeón de todas las regiones', color: '#b46cff' };
+const KEYS9 = Object.keys(REGIONS);
+const shuffled = a => { const p = [...a]; for (let i = p.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; } return p; };
+function chaosPlan() {
+  const all = (pred) => KEYS9.flatMap(k => REGIONS[k].path.map((p, i) => pred(p) ? { k, i, p } : null).filter(Boolean));
+  const gyms = all(p => p.kind === 'gym' && p.badge).map(x => ({ ...x, ord: REGIONS[x.k].path.filter((q, j) => q.badge && j <= x.i).length }));
+  const pick = shuffled(gyms).slice(0, 8).sort((a, b) => a.ord - b.ord || Math.random() - .5);
+  const seen = new Set(), elite = shuffled(all(p => p.role === 'elite')).filter(x => !seen.has(x.p.leader) && seen.add(x.p.leader)).slice(0, 4);
+  const champ = shuffled(all(p => p.role === 'champ'))[0], prep = shuffled(all(p => p.kind === 'prep'))[0];
+  const st = shuffled(KEYS9).slice(0, 3);
+  return { gyms: pick.map(x => [x.k, x.i]), elite: elite.map(x => [x.k, x.i]), champ: [champ.k, champ.i], prep: [prep.k, prep.i],
+    starters: [REGIONS[st[0]].starters[0], REGIONS[st[1]].starters[1], REGIONS[st[2]].starters[2]], rival: shuffled(KEYS9)[0], villain: shuffled(KEYS9)[0] };
+}
+let chaosCache = { plan: null, path: null };
+function chaosPath(plan) {
+  if (chaosCache.plan === plan) return chaosCache.path;
+  const P = ([k, i]) => REGIONS[k].path[i], tag = k => REGIONS[k].name, used = new Set(), path = [{ id: 'caos', name: 'Pueblo Caos', kind: 'start' }];
+  plan.gyms.forEach(([k, i], n) => {
+    const leg = REGIONS[k].path[i - 1], gym = { ...P([k, i]), id: `c${n}-${k}-${i}`, from: tag(k) };
+    if (used.has(gym.badge)) gym.badge = `${gym.badge} de ${tag(k)}`; used.add(gym.badge);
+    if (leg && leg.kind === 'leg') path.push({ ...leg, id: `c${n}-${k}-${i - 1}`, start: n === 0 || undefined });
+    path.push(gym);
+  });
+  path.push({ ...P(plan.prep), id: 'c-prep', to: 'el Alto Mando del Caos' });
+  plan.elite.forEach(([k, i], n) => path.push({ ...P([k, i]), id: `c-e${n}`, from: tag(k) }));
+  path.push({ ...P(plan.champ), id: 'c-champ', from: tag(plan.champ[0]) });
+  chaosCache = { plan, path };
+  return path;
+}
+const chaosRun = () => run && run.region === 'caos' && run.chaos && run.chaos.gyms ? run.chaos : null;
+REGIONS.caos = {
+  name: 'Caos', prof: 'un profesor muy despistado', range: [1, 1025], rankScale: 4, potions: 1, league: 'la Liga del Caos', chaos: true,
+  legends: [...new Set(KEYS9.flatMap(k => REGIONS[k].legends))],
+  fossils: [...new Set(KEYS9.flatMap(k => REGIONS[k].fossils || [140, 138, 142]))],
+  get starters() { const c = chaosRun(); return c ? c.starters : [1, 4, 7]; },
+  get rivalName() { const c = chaosRun(); return c ? REGIONS[c.rival].rivalName : 'Azul'; },
+  get rivalTeam() { const c = chaosRun(); return c ? REGIONS[c.rival].rivalTeam : undefined; },
+  get villain() { const c = chaosRun(); return c ? REGIONS[c.villain].villain : undefined; },
+  get path() { const c = chaosRun(); return c ? chaosPath(c) : REGIONS.kanto.path; },
+  end: () => '¡Has sobrevivido al Caos y eres su Campeón! Has completado la aventura con',
+};

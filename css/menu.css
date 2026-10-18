@@ -72,3 +72,7 @@
 .hist-mon .ph { width: 12px; height: 12px; margin: 8px; transform: rotate(45deg); border-radius: 3px; background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); }
 .hist-mon em { font-style: normal; }
 .hist-mon.shiny { border-color: #ffd84a; } .hist-mon.shiny em { color: #ffd84a; }
+
+/* Modo Caos: tarjeta del menú con un borde que cambia de color */
+.card.chaos { border-image: linear-gradient(120deg, #ff5a46, #f2c14e, #3fb6a8, #4f86ff, #b46cff, #e0457b) 1; }
+.card.chaos .ghost { background: linear-gradient(120deg, #ff5a46, #f2c14e, #3fb6a8, #4f86ff, #b46cff); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: .35; }

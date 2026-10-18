@@ -196,7 +196,7 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
   .adv-stage .adv-text { height: auto; flex: 0 1 7.75em; min-height: 3.1em; }
   /* línea de fases en el hueco entre la ruleta y el borde de abajo del recuadro */
   .adv-stage .adv-wbox { display: grid; grid-template-rows: minmax(0, .45fr) auto minmax(0, 1fr); justify-items: center; align-items: center; justify-content: center; height: 100%; gap: 0; }
-  .adv-stage .adv-wbox > canvas { grid-row: 2; }
+  .adv-stage .adv-wbox > .wheel-wrap { grid-row: 2; }
   .adv-stage .adv-wbox > .adv-track { grid-row: 3; align-self: center; }
   .adv-grid { height: clamp(196px, 25vh, 300px); grid-template-columns: 1.45fr 1fr 1fr; gap: 10px; }
   .adv-card { padding: 12px 14px; gap: 8px; min-height: 0; overflow: hidden; }
@@ -282,3 +282,21 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
   body.wide-adv .lead-tab { display: block; position: fixed; z-index: 45; left: 0; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; rotate: 180deg; font-family: var(--f-mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; padding: 14px 7px; border: 1px solid var(--cyan); border-left: 0; border-radius: 6px 0 0 6px; background: var(--bg-2, var(--bg)); color: var(--cyan); cursor: pointer; }
   body.lead-open .lead-shade { display: block; position: fixed; inset: 0; z-index: 61; background: rgba(0,0,0,.45); }
 }
+
+/* ---- Megapiedra y Banda Dinamax equipadas (esquina inferior izquierda de la ficha); en combate brillan y se pueden pulsar ---- */
+.tm-tools { position: absolute; left: 6px; bottom: 6px; z-index: 2; display: flex; gap: 4px; }
+.tm-tool { --g: #c9a7ff; width: 24px; height: 24px; padding: 3px; display: grid; place-items: center; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--g) 55%, var(--line-2)); background: var(--bg); cursor: pointer; transition: transform .15s, box-shadow .2s; }
+.tm-tool.dmax { --g: #ff4d6d; }
+.tm-tool svg { width: 100%; height: 100%; overflow: visible; }
+.tm-tool .gem { fill: color-mix(in srgb, var(--g) 70%, transparent); stroke: var(--g); stroke-width: 1.2; }
+.tm-tool .ln { fill: none; stroke: color-mix(in srgb, #fff 75%, var(--g)); stroke-width: 1.2; stroke-linejoin: round; }
+.tm-tool.live { box-shadow: 0 0 0 2px color-mix(in srgb, var(--g) 45%, transparent), 0 0 14px var(--g); animation: toolPulse 1.3s ease-in-out infinite; }
+.tm-tool.live:hover { transform: scale(1.15); }
+.tm-tool.on { background: var(--g); box-shadow: 0 0 16px var(--g); }
+.tm-tool.on .gem { fill: #fff; }
+@keyframes toolPulse { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--g) 25%, transparent), 0 0 22px var(--g); } }
+.tm-ghost .tm-tools { display: none; }
+.m-team-slot .adv-team .tm-tools { left: 4px; bottom: 4px; }
+.m-team-slot .adv-team .tm-tool { width: 20px; height: 20px; padding: 2px; }
+.bag-slot.gem .bag-ico .gem { fill: color-mix(in srgb, var(--c) 70%, transparent); stroke: var(--c); stroke-width: 1.2; }
+.bag-slot.gem .bag-ico .ln { stroke: color-mix(in srgb, #fff 70%, var(--c)); stroke-width: 1.2; stroke-linejoin: round; }

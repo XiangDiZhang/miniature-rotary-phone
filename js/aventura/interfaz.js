@@ -1,17 +1,19 @@
 // Aventura: interfaz (diálogo, botones, equipo, mochila, línea de fases, tarjeta del líder)
-function advSay(t, done) { speak(t); typeText($('advText'), t, done); }
+// los botones de después salen a los 180 ms, mientras el texto se sigue escribiendo (no hay que esperar a que acabe)
+function advSay(t, done) { speak(t); typeText($('advText'), t, done, 180); }
 function advToast(t) { const el = document.createElement('div'); el.className = 'adv-toast'; el.textContent = t; $('advToasts').appendChild(el); setTimeout(() => el.remove(), 3200); }
 function advButtons(list) {
   $('advBtns').innerHTML = list.map((b, i) => `<button class="btn${b.ghost ? ' ghostbtn' : ''}" type="button" data-i="${i}"${b.off ? ' disabled' : ''}>${b.label}</button>`).join('');
   // un toque = una acción: los botones desaparecen al pulsar (evita dobles toques)
-  $('advBtns').querySelectorAll('button').forEach(el => el.onclick = () => { const f = list[+el.dataset.i].fn; $('advBtns').innerHTML = ''; beep(660); f(); });
+  $('advBtns').querySelectorAll('button').forEach(el => el.onclick = () => { const f = list[+el.dataset.i].fn; $('advBtns').innerHTML = ''; beep(660); f(); if (advWheel) advWheel.draw(); });
+  if (advWheel) advWheel.draw();     // el botón del centro de la ruleta cambia (GIRAR / SEGUIR)
 }
 function spinUI(title, sub, segs, center, onLand) {
   curBattle = null;
   $('advStep').textContent = title; $('advRpm').textContent = '';
   advWheel.set(segs, center); advWheel.enabled = true;
   advWheel.onLand = r => { advWheel.enabled = false; onLand(r); renderAdv(); saveRun(); };
-  advWheel.onStart = () => { advButtons([]); advSay('Girando…'); };
+  advWheel.onStart = () => { advButtons([]); advSay('Girando…'); renderAdv(); };   // (la megapiedra deja de poder pulsarse)
   advSay(introText ? introText + ' ' + sub : sub); introText = ''; advButtons([{ label: 'Girar', fn: () => advWheel.spin(1) }]);
 }
 // tarjeta del equipo con el mismo diseño que la Pokédex (fondo, número, sprite, nombre y tipos)
@@ -22,9 +24,20 @@ function teamTile(m, i) {
   return `<span class="tmw${onWheel.has(m) ? ' on-wheel' : ''}"><button class="mon tmon on${FLYING.has(n) ? ' fly' : ''}${m.shiny ? ' shiny' : ''}" type="button" data-n="${n}" data-i="${i}" style="--c:${c};--c2:${c2};--dur:${(2.6 + (n * 37 % 13) / 10).toFixed(1)}s;--del:-${(n * 53 % 30) / 10}s">` +
     `<span class="bg${no.length > 3 ? ' d4' : ''}" aria-hidden="true">${no}</span>` +
     `<span class="top"><span class="no">Nº ${no}</span>${m.shiny ? '<small>✦ SHINY</small>' : leg ? '<small>LEG</small>' : myth ? '<small>SING</small>' : ''}</span>` +
-    cell + `<span class="nm">${name}</span><span class="ty">${ty.map(typeIcon).join('')}<em class="pw">P${power(n)}</em></span></button>` +
-    (run.team.length > 1 ? `<button class="tm-mv" type="button" data-out="${i}" title="Meter en la caja" aria-label="Meter ${name} en la caja">↓</button>` : '') + `</span>`;
+    cell + `<span class="nm">${name}</span><span class="ty">${ty.map(typeIcon).join('')}<em class="pw">P${mpower(m)}</em></span></button>` +
+    (run.team.length > 1 ? `<button class="tm-mv" type="button" data-out="${i}" title="Meter en la caja" aria-label="Meter ${name} en la caja">↓</button>` : '') + toolsHTML(m, i) + `</span>`;
 }
+// megapiedra y Banda Dinamax equipadas: esquina inferior izquierda de la ficha; en combate brillan y se pueden pulsar
+const GEM_SVG = '<svg viewBox="0 0 24 24"><path d="M7 3h10l4 6-9 12L3 9z" class="gem"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12" class="ln"/></svg>';
+const DMAX_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" class="gem"/><path d="M12 6l2 4.5 4.5.5-3.5 3 1 4.5L12 16l-4 2.5 1-4.5-3.5-3 4.5-.5z" class="ln"/></svg>';
+function toolsHTML(m, i) {
+  const live = canTransform(), out = [];
+  if (m.stone && formRec(m.stone)) { const nm = mname({ n: m.n, form: m.stone });
+    out.push(`<button class="tm-tool mega${m.tf && m.tf.kind === 'mega' ? ' on' : live ? ' live' : ''}" type="button" data-tool="mega" data-i="${i}" title="Megapiedra (${nm})${live ? ': pulsa para megaevolucionar en este giro' : ': úsala en combate'}" aria-label="Megapiedra de ${name4(m)}">${GEM_SVG}</button>`); }
+  if (m.dmax && gmaxForms(m).length) out.push(`<button class="tm-tool dmax${m.tf && m.tf.kind === 'gmax' ? ' on' : live ? ' live' : ''}" type="button" data-tool="gmax" data-i="${i}" title="Banda Dinamax${live ? ': pulsa para gigamaxizarlo en este giro' : ': úsala en combate'}" aria-label="Banda Dinamax de ${name4(m)}">${DMAX_SVG}</button>`);
+  return out.length ? `<span class="tm-tools">${out.join('')}</span>` : '';
+}
+const name4 = m => mname(m).replace(/"/g, '');
 // ---- Animación FLIP: los huecos que cambian de sitio se deslizan; los nuevos aparecen con un saltito ----
 function flipCapture(root, sel) { const m = new Map(); root.querySelectorAll(sel).forEach(el => { if (el._m) m.set(el._m, el.getBoundingClientRect()); }); return m; }
 function flipPlay(root, sel, before, pop) {
@@ -98,41 +111,54 @@ function fitAdv() {
 function renderAdv() {
   if (!run) return;
   // línea del tiempo corta: un punto por parada (rombos = gimnasios) y el nombre de la actual debajo
+  // (solo se vuelve a dibujar si cambia la parada o la región: renderAdv se llama muchas veces por giro)
   const path = REG().path, cur = path[Math.min(run.step, path.length - 1)];
   const lit = renderAdv.lastStep !== undefined && renderAdv.lastStep !== run.step && run.step > renderAdv.lastStep; renderAdv.lastStep = run.step;
   if (lit && onWheel.size) wheelRelease();   // la próxima ruleta que salga (la de la nueva fase) se cambia con animación
-  $('advPath').innerHTML = path.map((p, i) => { const v = phaseLook(p);
-    return `<li class="${i < run.step ? 'ok' : i === run.step ? 'now' + (lit ? ' lit' : '') : ''}${v.tc ? ' gym' : ''}" title="${p.name}"${v.tc ? ` style="--tc:${v.tc}"` : ''}><span class="node">${v.icon}</span><span class="pl">${v.label}</span><span class="pk">${v.kind}</span></li>`; }).join('');
-  placePath();
+  const pathKey = run.region + ':' + run.step + ':' + path.length + ':' + (run.chaos ? run.chaos.gyms.join() : '');
+  if ($('advPath')._k !== pathKey) {
+    $('advPath')._k = pathKey;
+    $('advPath').innerHTML = path.map((p, i) => { const v = phaseLook(p);
+      return `<li class="${i < run.step ? 'ok' : i === run.step ? 'now' + (lit ? ' lit' : '') : ''}${v.tc ? ' gym' : ''}" title="${p.name}"${v.tc ? ` style="--tc:${v.tc}"` : ''}><span class="node">${v.icon}</span><span class="pl">${v.label}</span><span class="pk">${v.kind}</span></li>`; }).join('');
+    placePath();
+  }
   const slots = [...run.team, ...Array(Math.max(0, 6 - run.team.length)).fill(null)];
-  const TM = $('advTeam');
+  const TM = $('advTeam'), live = canTransform();
   // si el equipo no ha cambiado, no se vuelve a dibujar (así las animaciones de los Pokémon no se reinician)
-  const sig = run.team.map(m => [m.n, m.form || 0, m.shiny ? 1 : 0, onWheel.has(m) ? 1 : 0, m.nick || ''].join('.')).join('|') + '#' + SPR.normal.size + '.' + SPR.shiny.size + '.' + (run.bag.share ? 1 : 0);
+  const sig = run.team.map(m => [m.n, m.form || 0, m.shiny ? 1 : 0, onWheel.has(m) ? 1 : 0, m.nick || '', m.stone || 0, m.dmax ? 1 : 0, m.tf ? m.tf.kind : ''].join('.')).join('|') + '#' + SPR.normal.size + '.' + SPR.shiny.size + '.' + (run.bag.share ? 1 : 0) + (live ? 'L' : '');
   const same = TM._sig === sig && [...TM.querySelectorAll('.tmw')].every((el, i) => el._m === run.team[i]);
   if (!same) {
     const before = flipCapture(TM, '.tmw');
     TM.innerHTML = slots.map((m, i) => m ? teamTile(m, i) : '<span class="tm empty"></span>').join('');
     TM.querySelectorAll('.tmw').forEach((el, i) => el._m = run.team[i]);
     flipPlay(TM, '.tmw', before, true); TM._sig = sig;
+    TM.querySelectorAll('[data-n]').forEach(b => b.onclick = () => openTeamInfo(+b.dataset.i, b));
+    TM.querySelectorAll('[data-out]').forEach(b => b.onclick = () => moveMon(true, +b.dataset.out));
+    TM.querySelectorAll('[data-tool]').forEach(b => b.onclick = e => { e.stopPropagation(); transformMon(run.team[+b.dataset.i], b.dataset.tool); });
   }
-  $('advTeam').querySelectorAll('[data-n]').forEach(b => b.onclick = () => openTeamInfo(+b.dataset.i, b));
-  $('advTeam').querySelectorAll('[data-out]').forEach(b => b.onclick = () => moveMon(true, +b.dataset.out));
   $('pcOpen').textContent = `Caja PC · ${boxList().length}`;
   if (!$('pcShade').hidden) renderPC();
-  // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes
+  // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
-  $('advBag').innerHTML = (items.map(([k, v]) => `<span class="bag-slot" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${BAG_ICON[k] || BAG_ICON.potion}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
+  const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);
+  const bag = (items.map(([k, v]) => `<span class="bag-slot" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${BAG_ICON[k] || BAG_ICON.potion}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
+    + stones.map(m => { const nm = mname({ n: m.n, form: m.stone }); return `<span class="bag-slot gem" style="--c:${TYPE_COLORS[formRec(m.stone)[1][2][0]]}" title="Megapiedra de ${nm}, equipada en ${mname(m)}. En combate, púlsala en su ficha para megaevolucionar durante ese giro."><span class="bag-ico">${GEM_SVG}</span><span class="bag-nm">Megapiedra · ${nm.replace(/^Mega-/, '')}</span></span>`; }).join('')
+    + (bands.length ? `<span class="bag-slot gem" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${DMAX_SVG}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
     + (run.ball ? `<span class="bag-slot buff" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${BAG_ICON.ball}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
     || '<span class="bag-empty">Mochila vacía</span>')
     + (stolenList().length ? `<span class="bag-note">Robado por el ${VIL().name}: ${stolenList().map(mname).join(', ')}</span>` : '');
+  if ($('advBag')._h !== bag) { $('advBag')._h = bag; $('advBag').innerHTML = bag; }
   const best = getBest()[run.region];
   $('advPoints').innerHTML = `<b>${run.points}</b><span>pts · ${rank(run.points)}</span>`; $('advPoints').title = `Puntos de la partida · rango ${rank(run.points)}${best ? ` · récord ${best}` : ''}`;
   // estuche de medallas: las 8 de la región; las conseguidas brillan y las que faltan se ven apagadas
-  const gyms = REG().path.filter(p => p.badge);
-  $('advBadges').innerHTML = gyms.map(p => { const got = run.badges.includes(p.badge), sp = SPR.badge.get(p.badgeId);
-    return `<span class="bdg${got ? ' got' : ''}" title="${p.badge}${got ? '' : ' (por conseguir)'}">${sp ? `<img src="${sp.u}" alt="${p.badge}">` : `<i>◆</i>`}</span>`; }).join('')
-    ;
-  $('advLog').innerHTML = run.log.map(t => `<li>${t}</li>`).join('');
+  const gyms = REG().path.filter(p => p.badge), bKey = pathKey.split(':')[0] + gyms.map(p => p.badge).join() + '|' + run.badges.join();
+  if ($('advBadges')._k !== bKey) {
+    $('advBadges')._k = bKey;
+    $('advBadges').innerHTML = gyms.map(p => { const got = run.badges.includes(p.badge), sp = SPR.badge.get(p.badgeId);
+      return `<span class="bdg${got ? ' got' : ''}" title="${p.badge}${got ? '' : ' (por conseguir)'}">${sp ? `<img src="${sp.u}" alt="${p.badge}">` : `<i>◆</i>`}</span>`; }).join('');
+  }
+  const lg = run.log.join('\n');
+  if ($('advLog')._k !== lg) { $('advLog')._k = lg; $('advLog').innerHTML = run.log.map(t => `<li>${t}</li>`).join(''); }
   renderCard();
 }
 
@@ -150,14 +176,17 @@ function leaderHTML(L) {
     <div class="lc-rows">
       <div class="lc-row"><em>Tienen ventaja los</em>${weak.map(chip).join('') || '—'}</div>
       <div class="lc-row"><em>Tienen desventaja los</em>${danger.map(chip).join('') || '—'}</div>
-      <div class="lc-row lc-team">${teamMarks(T)}</div>
+      <div class="lc-row lc-team">${teamMarks(L.rivalStarter ? [...L.team, evoAt(rivalStarter(), 2)] : L.team, T)}</div>
     </div>` };
 }
-// tus Pokémon contra el tipo del líder: ▲ suma verdes (ventaja) · ▼ suma rojos (desventaja). Cambia al tocar el equipo o la caja.
-function teamMarks(T) {
+// tus Pokémon contra el equipo del líder (tabla de tipos completa, igual que en el combate):
+// ▲ suma verdes · ▼ suma rojos (▲▲ / ▼▼ = dos). Cambia al tocar el equipo o la caja.
+function teamMarks(foe, T) {
   if (!run.team.length) return '';
-  return '<em>Tu equipo</em>' + run.team.map(m => { const my = mtypes(m), a = my.some(t => eff(t, [T]) > 1), d = eff(T, my) > 1;
-    return `<span class="lmark ${a && !d ? 'up' : d && !a ? 'down' : a && d ? 'mix' : ''}" title="${mname(m)}">${mname(m)} ${a ? '▲' : ''}${d ? '▼' : ''}${!a && !d ? '·' : ''}</span>`; }).join('');
+  const sets = foeSets(foe || [], T);
+  return '<em>Tu equipo</em>' + run.team.map(m => { const x = matchup(m, sets), a = x.g, d = x.r;
+    const tip = `${mname(m)}: sus ataques ${xTxt(x.off)} de media · recibe ${xTxt(x.def)}`;
+    return `<span class="lmark ${a && !d ? 'up' : d && !a ? 'down' : a && d ? 'mix' : ''}" title="${tip}">${mname(m)} ${'▲'.repeat(a)}${'▼'.repeat(d)}${!a && !d ? '·' : ''}</span>`; }).join('');
 }
 // tarjeta de contexto (siempre del mismo tamaño): líder en los combates, y en el camino adónde vas y qué hay
 function renderCard() {

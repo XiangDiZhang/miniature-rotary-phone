@@ -4,13 +4,14 @@ let run = null, advWheel = null;
 const REG = () => REGIONS[run.region];
 const loc = () => REG().path[run.step];
 const VIL = () => VILLAINS[(run && REG().villain) || 'rocket'];
-function newRun(region = 'kanto') { return { v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
+function newRun(region = 'kanto') { return { chaos: region === 'caos' ? chaosPlan() : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
 function saveRun() { store.setJSON('ruleta-run-' + run.region, run); }
 function loadRun(region) {
   const r = store.getJSON('ruleta-run-' + region);
   if (!(r && REGIONS[r.region] && r.v === 5 && (r.region !== 'kanto' || r.kv === 2))) return null;   // partidas de versiones antiguas: no valen
-  // si se guardó en mitad de un combate, cada Pokémon vuelve a su forma normal
-  [...(r.team || []), ...(r.box || []).filter(Boolean), ...(Array.isArray(r.stolen) ? r.stolen : r.stolen ? [r.stolen] : [])].forEach(m => { if (!('bf' in m)) return; if (m.bf) m.form = m.bf; else delete m.form; delete m.bf; });
+  // si se guardó en mitad de un combate, cada Pokémon vuelve a su forma normal (también si estaba megaevolucionado o Gigamax)
+  [...(r.team || []), ...(r.box || []).filter(Boolean), ...(Array.isArray(r.stolen) ? r.stolen : r.stolen ? [r.stolen] : [])].forEach(restoreForm);
+  if (r.region === 'caos' && !(r.chaos && r.chaos.gyms)) return null;
   return r;
 }
 // récord de puntos de cada región

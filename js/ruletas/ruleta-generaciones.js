@@ -47,12 +47,12 @@ function paintWheel(ctx, size, r0, opts = {}) {
     // separador
     ctx.strokeStyle = W.div; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(c + Math.cos(a0) * inner, c + Math.sin(a0) * inner); ctx.lineTo(c + Math.cos(a0) * (R - 8), c + Math.sin(a0) * (R - 8)); ctx.stroke();
-    // número romano de la generación
+    // número romano de la generación, a lo largo del radio (como todos los textos de las ruletas): con la flecha a la derecha se lee recto
     if (!opts.mini) {
       const am = a0 + ARC / 2, rl = (R + inner) / 2 + 6;
       ctx.save();
       ctx.translate(c + Math.cos(am) * rl, c + Math.sin(am) * rl);
-      ctx.rotate(am + Math.PI / 2);
+      ctx.rotate(am);
       ctx.fillStyle = lit ? W.labelLit : W.label;
       ctx.font = `500 ${Math.round(R * 0.13)}px "Chakra Petch", system-ui, sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -94,11 +94,18 @@ let WSIZE = 360;
 function sizeWheel() {
   const w = Math.max(220, Math.round(cv.getBoundingClientRect().width) || 360);
   WSIZE = w;
+  $("wheelHub").style.width = (2 * ((w / 2 - 18) * 0.42 - 18)) + "px";   // el botón es el círculo central entero
   const dpr = Math.min(3, window.devicePixelRatio || 1);
   cv.width = w * dpr; cv.height = w * dpr;
   drawWheel();
 }
-const drawWheel = () => paintWheel(ctx, WSIZE, rot, centerLabel ? { center: centerLabel.roman, centerColor: centerLabel.color } : {});
+// botón del centro: GIRAR mientras espera y SEGUIR (aceptar la generación) cuando ha parado
+const genHub = () => spinning || drag ? null : landed && centerLabel ? 'SEGUIR' : 'GIRAR';
+const drawWheel = () => {
+  const hub = genHub(), el = $('wheelHub'); if (el) { el.hidden = !hub; el.setAttribute('aria-label', hub === 'SEGUIR' ? 'Aceptar la generación' : 'Girar la ruleta'); }
+  paintWheel(ctx, WSIZE, rot, { ...(centerLabel ? { center: centerLabel.roman, centerColor: centerLabel.color } : {}), hub });
+};
+$('wheelHub').onclick = e => { e.stopPropagation(); const h = genHub(); if (h === 'GIRAR') spin(); else if (h === 'SEGUIR') $('acceptBtn').click(); };
 window.addEventListener('resize', () => { if (state.scene === 'roulette') sizeWheel(); });
 
 // Ruleta mini de «Que decida la ruleta»: solo gira mientras se ve y con las animaciones activadas
@@ -227,9 +234,8 @@ function land() {
   chord([784, 988, 1318, 1568]);
   $('rouletteBtns').hidden = true;
   $('readout').innerHTML = `Gen <b style="color:${landed.color}">${landed.roman}</b> · ${landed.region}`;
-  typeText($('rouletteText'), `Ha salido la Generación ${landed.roman}. ¿Aceptas el destino?`, () => {
-    $('resultBtns').hidden = false; $('acceptBtn').focus({ preventScroll: true });
-  });
+  typeText($('rouletteText'), `Ha salido la Generación ${landed.roman}. ¿Aceptas el destino?`);
+  $('resultBtns').hidden = false; $('acceptBtn').focus({ preventScroll: true });   // los botones salen ya, sin esperar al texto
 }
 $('spinBtn').onclick = spin;
 $('menuBtn').onclick = goPlay;

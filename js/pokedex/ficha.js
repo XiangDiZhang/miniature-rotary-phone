@@ -8,13 +8,23 @@ function thumb(n, tyOverride) {
   const r = spriteRec(n), ty = tyOverride || BY_NUM.get(n)[3];
   return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : typePh(ty);
 }
-function evoHTML(n) {
+// Línea evolutiva completa: cada especie de la línea con TODAS sus variantes debajo (megas, Gigamax, formas regionales y otras formas),
+// estés en la ficha que estés. Se ve con el mismo aspecto que la ficha abierta (si la ficha es shiny, toda la línea es shiny).
+const VAR_TAG = { mega: 'MEGA', gmax: 'GMAX', reg: '', form: '' };
+function evoHTML(n, formId) {
   const ids = CHAINS.get(INFO[n - 1][12]);
   const kids = id => ids.filter(k => INFO[k - 1][13] === id);
   const roots = ids.filter(k => !INFO[k - 1][13] || !ids.includes(INFO[k - 1][13]));
-  if (ids.length < 2) return '<p class="empty-note">No evoluciona.</p>';
-  const card = id => dexHas(id) ? `<button class="evo-card${id === n ? ' cur' : ''}" type="button" data-go="${id}"><span class="th">${thumb(id)}</span><span class="tx">${BY_NUM.get(id)[1]}<small>Nº ${padN(id)}</small></span></button>`
-    : `<button class="evo-card locked" type="button" disabled><span class="th">${thumb(id)}</span><span class="tx">???<small>Nº ${padN(id)}</small></span></button>`;
+  const variants = id => {
+    const l = FORMS[id] || []; if (!l.length) return '';
+    const own = dexHas(id), many = l.length > 8;
+    return `<div class="evo-vars${many ? ' many' : ''}">${l.map(f => { const lb = formLabel(id, f), tag = VAR_TAG[f[8]] || '';
+      return own ? `<button class="evo-var${id === n && f[0] === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${f[0]}" title="${lb}"><span class="th">${thumb(f[0], f[2])}</span>${many ? '' : `<span class="vl">${tag ? `<b>${tag}</b>` : ''}${lb.replace(/^Mega-|^Gigantamax |\s*Gigamax$/g, '')}</span>`}</button>`
+        : `<button class="evo-var locked" type="button" disabled title="???"><span class="th">${thumb(f[0], f[2])}</span></button>`; }).join('')}</div>`;
+  };
+  const card = id => `<div class="evo-node">${dexHas(id) ? `<button class="evo-card${id === n && !formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="0"><span class="th">${thumb(id)}</span><span class="tx">${baseFormName(id)}<small>Nº ${padN(id)}</small></span></button>`
+    : `<button class="evo-card locked" type="button" disabled><span class="th">${thumb(id)}</span><span class="tx">???<small>Nº ${padN(id)}</small></span></button>`}${variants(id)}</div>`;
+  if (ids.length < 2) return (FORMS[n] || []).length ? `<p class="empty-note">No evoluciona, pero tiene ${FORMS[n].length > 1 ? 'estas variantes' : 'esta variante'}:</p><div class="evo">${card(n)}</div>` : '<p class="empty-note">No evoluciona.</p>';
   // por etapas (columnas); cada evolución lleva al lado cómo se consigue
   let stage = roots, html = '', first = true;
   while (stage.length) {
@@ -69,9 +79,14 @@ function centerBeam(hero, sweep) {
   if (sweep) { hero.classList.remove('beam-in'); void hero.offsetWidth; hero.classList.add('beam-in'); }
 }
 addEventListener('resize', () => centerBeam());
-function openInfo(n, from, formId, peek) {
+// infoSh: aspecto (shiny o no) de la ficha abierta. Al pulsar una evolución o una variante dentro de la ficha se mantiene,
+// para que la línea que estás viendo y la ficha a la que llegas sean coherentes (keep = viene de un enlace de la propia ficha).
+let infoSh = false;
+const withShiny = (s, f) => { const s0 = shinyMode; shinyMode = s; try { return f(); } finally { shinyMode = s0; } };
+function openInfo(n, from, formId, peek, keep) {
   // en la Pokédex (modo usuario), su versión shiny solo se ve si alguna vez lo conseguiste shiny
-  if (!infoNav && shinyMode && !dexShiny(n)) { shinyMode = false; try { return openInfo(n, from, formId, peek); } finally { shinyMode = true; } }
+  // (salvo que llegues desde la línea evolutiva de una ficha shiny: entonces sigue siendo shiny)
+  if (!infoNav && !keep && shinyMode && !dexShiny(n)) { shinyMode = false; try { return openInfo(n, from, formId, peek); } finally { shinyMode = true; } }
   const row = BY_NUM.get(n); if (!row) return;
   const I = INFO[n - 1], F = formId && (FORMS[n] || []).find(f => f[0] === formId);
   const [, baseName, g, baseTy, leg, myth] = row;
@@ -82,7 +97,13 @@ function openInfo(n, from, formId, peek) {
   const sid = F ? F[0] : n;
   // "peek" = vista previa del vecino mientras arrastras la ficha (no toca el estado)
   const HERO = peek ? peek.hero : $('infoHero'), BODY = peek ? peek.body : $('infoBody');
-  if (!peek) { infoN = n; infoOpen = true; }
+  if (!peek) {
+    infoN = n; infoOpen = true;
+    // desde la ficha de uno de tus Pokémon puedes ir a su línea evolutiva y volver a él (con su mote y su aspecto)
+    const isHome = h => h && h.list[h.i].n === n && (h.list[h.i].form || 0) === (formId || 0);
+    if (infoNav && !isHome(infoNav)) { infoHome = infoNav; infoNav = null; }
+    else if (!infoNav && isHome(infoHome)) { infoNav = infoHome; infoHome = null; }
+  }
   const sp = shinyMode && SPR.shiny.get(sid), pc = sp && sp.pc;
   const c = pc ? pc[0] : TYPE_COLORS[ty[0]], c2 = pc ? pc[1] : TYPE_COLORS[ty[1]] || c;
   const box = peek ? peek.root : $('info'); box.style.setProperty('--c', c); box.style.setProperty('--c2', c2); box.style.setProperty('--cn', c);
@@ -99,7 +120,7 @@ function openInfo(n, from, formId, peek) {
     <div class="genus">${genus || 'Pokémon'}</div>
     <div class="types2">${ty.map(tchip).join('')}</div>
     <div class="badges">${leg ? '<span class="badge">LEGENDARIO</span>' : ''}${myth ? '<span class="badge">SINGULAR</span>' : ''}${F ? `<span class="badge form">${{ mega: 'MEGAEVOLUCIÓN', gmax: 'GIGAMAX', reg: 'FORMA REGIONAL', form: 'OTRA FORMA' }[F[8]]}</span>` : ''}</div>
-    ${hasShiny && !infoNav && dexShiny(n) ? `<button class="mini-btn${shinyMode ? ' on' : ''}" id="infoShiny" type="button">✦ SHINY · ${shinyMode ? 'ON' : 'OFF'}</button>` : ''}`;
+    ${hasShiny && !infoNav && (dexShiny(n) || keep) ? `<button class="mini-btn${shinyMode ? ' on' : ''}" id="infoShiny" type="button">✦ SHINY · ${shinyMode ? 'ON' : 'OFF'}</button>` : ''}`;
   const total = st.reduce((a, b) => a + b, 0);
   const fem = gr < 0 ? null : gr / 8 * 100;
   BODY.innerHTML = `
@@ -117,7 +138,7 @@ function openInfo(n, from, formId, peek) {
       <div class="fact"><b>Crecimiento</b><span>${growth || '—'}</span></div>
       <div class="fact"><b>Grupo huevo</b><span>${eggs.join(' / ') || '—'}</span></div>
     </div></div>
-    <div><h3>Línea evolutiva</h3>${evoHTML(n)}${formsHTML(n, formId)}</div>
+    <div><h3>Línea evolutiva y variantes</h3>${evoHTML(n, formId || 0)}</div>
     <div><h3>Daño que recibe</h3>${effHTML(ty)}</div>`;
   if (peek) {
     peek.root.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
@@ -125,20 +146,21 @@ function openInfo(n, from, formId, peek) {
     requestAnimationFrame(() => centerBeam(peek.hero));
     return { c, c2 };
   }
-  if (infoNav && infoNav.list[infoNav.i].n !== n) infoNav = null;
+  infoSh = shinyMode;
   const idx = navIdx(), len = navNs().length;
   $('infoPos').textContent = idx >= 0 ? `${infoNav ? 'Tus Pokémon · ' : ''}${idx + 1} / ${len}` : '';
   $('infoPrev').disabled = idx <= 0; $('infoNext').disabled = idx < 0 || idx >= len - 1;
   $('infoShade').hidden = false;
   requestAnimationFrame(() => $('infoBody').querySelectorAll('.bar i').forEach(i => i.style.width = i.dataset.w + '%'));
-  $('infoBody').querySelectorAll('[data-go]').forEach(b => b.onclick = () => { const to = +b.dataset.go; if (to === n && !formId) return; beep(740, 0.04, 0.02); slideInfo(to > n || (to === n) ? 1 : -1, () => openInfo(to)); });
-  // ✦ en la ficha: solo cambia esta ficha y solo mientras está abierta (la Pokédex no se toca)
-  const sb = $('infoShiny'); if (sb) sb.onclick = () => { const s0 = shinyMode; shinyMode = !sb.classList.contains('on'); beep(980, .05, .03); try { openInfo(n, null, formId); } finally { shinyMode = s0; } };
-  $('infoBody').querySelectorAll('[data-form]').forEach(b => b.onclick = () => {
-    const to = +b.dataset.form || 0; if (to === (formId || 0)) return;
-    const order = [0, ...(FORMS[n] || []).map(f => f[0])]; beep(820, 0.04, 0.02);
-    slideInfo(order.indexOf(to) > order.indexOf(formId || 0) ? 1 : -1, () => openInfo(n, null, to));
+  // evoluciones y variantes de la línea: la ficha nueva conserva el aspecto de esta (shiny o normal)
+  const sh = infoSh;
+  $('infoBody').querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
+    const to = +b.dataset.go, tf = +b.dataset.form || 0; if (to === n && tf === (formId || 0)) return;
+    const order = [0, ...(FORMS[n] || []).map(f => f[0])], dir = to !== n ? (to > n ? 1 : -1) : order.indexOf(tf) > order.indexOf(formId || 0) ? 1 : -1;
+    beep(to === n ? 820 : 740, 0.04, 0.02); slideInfo(dir, () => withShiny(sh, () => openInfo(to, null, tf, null, true)));
   });
+  // ✦ en la ficha: solo cambia esta ficha y solo mientras está abierta (la Pokédex no se toca)
+  const sb = $('infoShiny'); if (sb) sb.onclick = () => { beep(980, .05, .03); withShiny(!sb.classList.contains('on'), () => openInfo(n, null, formId, null, true)); };
   $('infoBody').querySelectorAll('[data-ab]').forEach(b => b.onclick = () => {
     const on = b.classList.contains('on'); $('infoBody').querySelectorAll('[data-ab]').forEach(x => x.classList.remove('on'));
     const box = $('abilBox');
@@ -150,14 +172,6 @@ function openInfo(n, from, formId, peek) {
   centerBeam(null, true); requestAnimationFrame(() => centerBeam()); setTimeout(() => centerBeam(), 450);
   chord([659, 880]);
   if (from) growFrom(from);
-}
-function formsHTML(n, cur) {
-  const l = FORMS[n]; if (!l || !l.length) return '';
-  const card = (id, label, ty, sel) => `<button class="evo-card${sel ? ' cur' : ''}" type="button" data-form="${id}"><span class="th">${thumb(id || n, ty)}</span><span class="tx">${label}<small>${ty.map(t => t).join(' · ')}</small></span></button>`;
-  const groups = [['mega', 'Megaevoluciones'], ['reg', 'Formas regionales'], ['form', 'Otras formas'], ['gmax', 'Gigamax']];
-  let html = `<div class="forms-row"><span class="forms-lbl">Forma normal</span><div class="forms">${card(0, BY_NUM.get(n)[1], BY_NUM.get(n)[3], !cur)}</div></div>`;
-  groups.forEach(([k, lbl]) => { const g = l.filter(f => f[8] === k); if (g.length) html += `<div class="forms-row"><span class="forms-lbl">${lbl}</span><div class="forms">${g.map(f => card(f[0], formLabel(n, f), f[2], cur === f[0])).join('')}</div></div>`; });
-  return `<div class="forms-wrap">${html}</div>`;
 }
 // animación de agrandar: la ficha nace desde el cuadro pulsado
 function growFrom(r, reverse) {
@@ -177,14 +191,14 @@ async function closeInfo() {
   // si su cuadro está a la vista, vuelve encogiéndose hacia él
   const li = document.querySelector(`#dexList .mon[data-n="${infoN}"]`), vr = $('dexView').getBoundingClientRect();
   // abierta desde el equipo de la aventura: vuelve encogiéndose hacia esa tarjeta
-  const o = infoNav ? document.querySelector(`#advTeam [data-i="${infoNav.i}"]`) : (infoOrigin && infoOrigin.isConnected && infoOrigin.dataset.n == infoN ? infoOrigin : null);
+  const nav = infoNav || infoHome, o = nav ? document.querySelector(`#advTeam [data-i="${nav.i}"]`) : (infoOrigin && infoOrigin.isConnected && infoOrigin.dataset.n == infoN ? infoOrigin : null);
   if (o) { $('infoShade').classList.add('closing'); await growFrom(o.getBoundingClientRect(), true); $('infoShade').classList.remove('closing'); }
   else if (li) { const r = li.getBoundingClientRect(); if (r.bottom > vr.top && r.top < vr.bottom) { $('infoShade').classList.add('closing'); await growFrom(r, true); $('infoShade').classList.remove('closing'); } }
-  infoOrigin = null; infoNav = null;
+  infoOrigin = null; infoNav = null; infoHome = null;
   $('infoShade').hidden = true; $('dexView').focus({ preventScroll: true });
 }
 // Navegar entre fichas: por la Pokédex filtrada o, si se abrió desde la aventura, por tus Pokémon (equipo + caja)
-let infoNav = null;   // { list: [{ n, shiny }], i }
+let infoNav = null, infoHome = null;   // { list: [{ n, shiny, form, m }], i } · infoHome: tu Pokémon del que vienes al mirar su línea evolutiva
 const navNs = () => infoNav ? infoNav.list.map(e => e.n) : shownRows.map(r => r[1][0]).filter(dexHas);
 const navIdx = () => infoNav ? infoNav.i : navNs().indexOf(infoN);
 // abre la ficha de uno de tus Pokémon con su aspecto (shiny o no)
@@ -193,7 +207,7 @@ function openNav(i, from, peek) {
   try { return openInfo(e.n, from, e.form || 0, peek); } finally { shinyMode = s; }
 }
 function openTeamInfo(i, el) {
-  infoNav = { list: [...run.team, ...boxList()].map(m => ({ n: m.n, shiny: m.shiny, form: m.form || 0, m })), i };
+  infoHome = null; infoNav = { list: [...run.team, ...boxList()].map(m => ({ n: m.n, shiny: m.shiny, form: m.form || 0, m })), i };
   infoOrigin = el; openNav(i, el.getBoundingClientRect());
 }
 function goNav(j) { if (infoNav) { infoNav.i = j; openNav(j); } else openInfo(navNs()[j]); }

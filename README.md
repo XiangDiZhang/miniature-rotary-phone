@@ -3,7 +3,8 @@
 Juego de aventura Pokémon en el que todo lo decide una ruleta, con Pokédex completa de las nueve generaciones (1025 especies, formas, megaevoluciones y Pokédex regionales).
 
 - **Pokédex**: filtros por generación, tipo y categoría, buscador, numeración nacional o regional y ficha de cada Pokémon.
-- **Jugar**: elige región (o deja que decida la ruleta) y recorre el camino hasta la Liga: capturas, entrenadores, villanos, gimnasios, Alto Mando y Campeón. Hay 9 regiones jugables.
+- **Jugar**: elige región (o deja que decida la ruleta) y recorre el camino hasta la Liga: capturas, entrenadores, villanos, gimnasios, Alto Mando y Campeón. Hay 9 regiones jugables y el **Modo Caos** (8 gimnasios, Alto Mando y Campeón al azar de todas las regiones).
+- **Combate**: quesitos verdes y rojos según el poder del equipo y la tabla de tipos completa, Pokémon a Pokémon. Las megapiedras (premio de gimnasio) y la Banda Dinamax (para los Pokémon con forma Gigamax) transforman a un Pokémon durante un giro.
 - **Opciones**: sonido, tema claro u oscuro, animaciones, velocidad del texto, locutor y repetir las cinemáticas.
 
 ## Cómo abrirlo
@@ -18,6 +19,7 @@ Los sprites (normales y shiny de las 1025 especies y sus formas) y las medallas 
 index.html              página: cabecera, escenas (menú, Pokédex, opciones, jugar, aventura) y carga de CSS y JS
 assets/img/             fondos del Hall de la Fama y de la derrota
 assets/sprites/         sprites incluidos (normales.js, shiny.js, medallas.js), generados: no editar a mano
+  originales/             los PNG de los que salen (pokemon/, pokemon/shiny/, badges/): solo los que usa el juego
 css/                    estilos por área (el orden de carga importa: cada archivo puede afinar los anteriores)
   base.css                tokens de color y tema claro, maquetación, cabecera, botones y animaciones comunes
   menu.css                tarjetas del menú, ruleta de generaciones, generación elegida e historial
@@ -40,7 +42,7 @@ js/
   main.js                 teclado global y arranque
 pruebas/                capturas y partidas automáticas con Chrome sin ventana
 herramientas/           empaquetar.ps1: copia de un solo archivo para publicar (dist/)
-                        generar-sprites.ps1 y medir-sprite.js: vuelven a crear assets/sprites/ desde una carpeta de sprites de PokeAPI
+                        generar-sprites.ps1 y medir-sprite.js: vuelven a crear assets/sprites/ desde assets/sprites/originales (o desde una carpeta de PokeAPI)
 ```
 
 ### Cómo encaja el JavaScript
@@ -64,11 +66,12 @@ Todo pasa por `store` (`js/nucleo/utilidades.js`), que no falla si el navegador 
 
 - **Región nueva**: añádela a `GENS` y a `REGIONS` en `js/datos/regiones.js` (camino, gimnasios, Alto Mando y Campeón). Si tiene villano propio, añádelo a `VILLAINS`.
 - **Sitio especial de un camino**: añádelo a `EVENTS` en `js/datos/eventos.js` con `SP(...)`; el tipo de suceso (`wild`, `legend`, `gift`, `catch`, `villain`, `mix`…) lo resuelve `runSpot` en `js/aventura/sucesos.js`, sin código nuevo. Luego ponlo en el `local` del tramo del camino.
-- **Reglas** (puntos, probabilidades de captura y de evolución, ruletas de aventura): `js/datos/reglas.js`.
+- **Reglas** (puntos, probabilidades de captura y de evolución, ruletas de aventura, variantes al evolucionar, megas y Gigamax, pociones de premio): `js/datos/reglas.js`.
+- **Modo Caos**: se construye solo a partir de las regiones (`REGIONS.caos` al final de `js/datos/regiones.js`); la selección de cada partida se guarda en `run.chaos`.
 
 ## Sprites incluidos
 
-Ya están generados. Solo hay que rehacerlos si cambias los sprites o añades especies o formas: descarga los sprites de PokeAPI (https://github.com/PokeAPI/sprites, carpeta `sprites`) y ejecuta `.\herramientas\generar-sprites.ps1 -Origen "ruta\a\sprites"`. Toma solo lo que usa el juego, reduce las medallas, mide cada sprite en Chrome con `herramientas/medir-sprite.js` y escribe los tres archivos de `assets/sprites/`, con las imágenes dentro para que funcionen igual abriendo `index.html` que publicados.
+Ya están generados. Solo hay que rehacerlos si cambias los sprites o añades especies o formas: ejecuta `.\herramientas\generar-sprites.ps1`, que usa los PNG de `assets/sprites/originales/`. Si faltan imágenes (especies o formas nuevas), pásale una carpeta de sprites de PokeAPI (https://github.com/PokeAPI/sprites, carpeta `sprites`) con `-Origen "ruta\a\sprites"`: copia a `originales/` lo que haga falta. Las variantes sin número en PokeAPI (Alcremie, Vivillon) tienen un id propio (2xxxx) en `VARIANTS` de `js/datos/formas.js`, con el nombre de su archivo. Toma solo lo que usa el juego, reduce las medallas, mide cada sprite en Chrome con `herramientas/medir-sprite.js` y escribe los tres archivos de `assets/sprites/`, con las imágenes dentro para que funcionen igual abriendo `index.html` que publicados.
 
 ## Pruebas
 
@@ -79,7 +82,7 @@ Necesitan Windows PowerShell y Chrome o Edge. Desde esta carpeta:
 .\pruebas\ejecutar.ps1 -Salida pruebas\resultados\despues -Referencia pruebas\resultados\antes
 ```
 
-Hacen 29 capturas (escritorio, móvil y tema claro, con las animaciones apagadas) y juegan 260 pasos en cada una de las 9 regiones, con el azar fijado. Avisan de cualquier error de JavaScript y comparan paso a paso y píxel a píxel con la referencia. Unas decenas de píxeles distintos suelen ser ruido del navegador: si aparecen, repite la prueba.
+Hacen 30 capturas (escritorio, móvil y tema claro, con las animaciones apagadas) y juegan 260 pasos en cada una de las 9 regiones y en el Modo Caos, con el azar fijado. Avisan de cualquier error de JavaScript y comparan paso a paso y píxel a píxel con la referencia. Unas decenas de píxeles distintos suelen ser ruido del navegador: si aparecen, repite la prueba.
 
 ## Publicar como artefacto de Claude
 
