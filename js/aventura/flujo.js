@@ -254,8 +254,10 @@ function initAdv() {
   advWheel.onTap = () => { const b = mainBtn(); if (b) b.click(); };
   advWheel.hasNext = () => !!mainBtn();     // botón SEGUIR en el centro de la ruleta
   addEventListener('resize', () => { if (state.scene === 'adv') fitAdv(); });
+  // en el móvil, la caja de la ruleta tiene el alto que sobra: si cambia (texto más largo, otra fila de botones…), la ruleta se ajusta
+  try { new ResizeObserver(() => { if (state.scene === 'adv' && (matchMedia(PHONE_V).matches || matchMedia(PHONE_H).matches)) fitAdv(); }).observe(document.querySelector('.adv-wbox')); } catch (e) {}
   // móvil: los datos del líder/ruta van en un panel lateral (como los filtros de la Pokédex) y el equipo se ve siempre debajo de la ruleta
-  const mq = matchMedia('(max-width: 760px)');
+  const mq = matchMedia(PHONE_V);   // (en horizontal, el móvil usa el diseño del ordenador)
   const placeTeam = () => {
     const card = document.querySelector('[data-card="0"]');
     if (mq.matches) { $('mTeamSlot').appendChild(card); if ($('advGrid').dataset.tab === '0') $('advGrid').dataset.tab = '1'; }

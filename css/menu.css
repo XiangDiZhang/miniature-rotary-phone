@@ -69,7 +69,22 @@
 .entry-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .entry-row .btns { margin: 0; }
 .entry-row #advEntry .wip { flex-basis: auto !important; }
-.hist-view .hist-list { padding: 22px 0; }   /* la primera y la última partida no se quedan bajo el difuminado */
+.hist-view .hist-list { padding: 22px 0; }
+.hist-view { cursor: grab; -webkit-user-select: none; user-select: none; } .hist-view.dragging { cursor: grabbing; }
+/* móvil: generación elegida compacta (sin los datos) para que el historial quepa sin desplazar la página */
+@media (max-width: 640px) {
+  #scene-chosen { gap: 10px; }
+  #scene-chosen .dialog { padding: 10px 12px; }
+  #scene-chosen .chosen .right { display: none; }
+  #scene-chosen .chosen .left { min-height: 70px; padding: 12px 16px; border-bottom: 0; }
+  #scene-chosen .chosen .left .ghost { font-size: 96px; bottom: -20px; }
+  #scene-chosen .chosen .region { font-size: 30px; margin-top: 2px; }
+  .entry-row { flex-wrap: nowrap; gap: 8px; } .entry-row .btns { flex-wrap: nowrap; } .entry-row .btn { padding: 10px 12px; font-size: 10px; letter-spacing: .1em; }
+  .entry-row #advEntry .wip { display: none; }
+  .hist-top { gap: 6px; } .hist-seg button { font-size: 10px; padding: 5px 8px; }
+  .hist-head { gap: 2px 8px; } .hist-head b { font-size: 12.5px; } .hist-exp { margin-left: auto; }
+  .hist-mon { font-size: 10.5px; padding-right: 7px; } .hist-mon img { width: 22px; height: 22px; }
+}   /* la primera y la última partida no se quedan bajo el difuminado */
 /* pantallas bajas: la tarjeta de la región sin los datos, para dejar sitio al historial */
 @media (max-height: 820px) and (min-width: 641px) { #scene-chosen .chosen .right { display: none; } #scene-chosen .chosen { grid-template-columns: 1fr; } #scene-chosen .chosen .left { min-height: 96px; border-right: 0; } }
 /* el historial es un hueco con su propio desplazamiento (como la Pokédex): la página no crece, con los bordes difuminados */
@@ -144,3 +159,20 @@
 /* Modo Caos: tarjeta del menú con un borde que cambia de color */
 .card.chaos { border-image: linear-gradient(120deg, #ff5a46, #f2c14e, #3fb6a8, #4f86ff, #b46cff, #e0457b) 1; }
 .card.chaos .ghost { background: linear-gradient(120deg, #ff5a46, #f2c14e, #3fb6a8, #4f86ff, #b46cff); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: .35; }
+/* ---- Móvil: menús compactos (caben sin desplazarse en la mayoría de móviles) ---- */
+@media (max-width: 640px) {
+  #home { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  #home .card { min-height: 0; padding: 14px 16px; gap: 8px; }
+  #home .ghost { font-size: 96px; bottom: -18px; }
+  #home .region { font-size: 26px; }
+  #grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 7px; }
+  #grid .card { min-height: 86px; padding: 9px 10px; gap: 4px; }
+  #grid .region { font-size: 17px; }
+  #grid .row-top { font-size: 8.5px; letter-spacing: .08em; } #grid .row-top span:last-child { display: none; }
+  #grid .dex-meta span:first-child { display: none; } #grid .dex-meta { font-size: 8.5px; justify-content: flex-start; }
+  #grid .ghost { font-size: 64px; bottom: -12px; }
+  #scene-menu .dialog { padding: 10px 12px; } #scene-menu .dialog .txt { font-size: 13px; }
+  #scene-menu .cta { padding: 10px 12px; gap: 10px; } #scene-menu .cta canvas { width: 40px; height: 40px; } #scene-menu .cta .t1 { font-size: 16px; } #scene-menu .cta .t2 { font-size: 11px; }
+  .saves-ico { width: 38px; height: 38px; }
+  #scene-menu .hint { display: none; }
+}

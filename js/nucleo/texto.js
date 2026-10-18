@@ -13,6 +13,7 @@ function typeText(el, text, done, early) {
   if (done && early != null) { typerDone[el.id] = setTimeout(done, Math.min(early, text.length * ms)); done = null; }
   typers[el.id] = setInterval(() => {
     el.textContent = text.slice(0, ++i);
+    if (el.scrollHeight > el.clientHeight + 2) el.scrollTop = el.scrollHeight;   // texto largo en una caja pequeña (móvil): se ve lo último que se escribe
     if (i >= text.length) { clearInterval(typers[el.id]); done && done(); }
   }, ms);
 }

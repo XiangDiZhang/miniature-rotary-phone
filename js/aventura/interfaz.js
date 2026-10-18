@@ -100,10 +100,24 @@ function placePath() {
   W.style.setProperty('--fl', off > 1 ? '64px' : '0px'); W.style.setProperty('--fr', off < max - 1 ? '64px' : '0px');
 }
 // ---- La ruleta crece todo lo posible sin que el equipo, las medallas o el diario se salgan de la pantalla ----
+// móvil en vertical: pantalla fija (sin desplazarse); móvil en horizontal: el diseño del ordenador, en pequeño
+const PHONE_V = '(max-width: 760px) and (orientation: portrait)', PHONE_H = '(orientation: landscape) and (max-height: 520px)';
 function fitAdv() {
   if (state.scene !== 'adv' || !advWheel) return;
   const st = document.querySelector('.adv-stage'), box = document.querySelector('.adv-wbox'), track = document.querySelector('.adv-track');
   let sz;
+  if (matchMedia(PHONE_V).matches) {
+    // la ruleta ocupa el hueco que deja todo lo demás (su caja tiene el alto que sobra), dejando sitio a la línea de fases
+    sz = Math.min(box.clientWidth, box.clientHeight - track.offsetHeight - 4);
+    sz = Math.max(130, Math.floor(sz));
+    document.documentElement.style.setProperty('--wsz', sz + 'px'); advWheel.resize(); placePath(); return;
+  }
+  if (matchMedia(PHONE_H).matches) {
+    const cs = getComputedStyle(st), innerH = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    sz = Math.min(innerH - track.offsetHeight - 6, st.clientWidth * .5);
+    sz = Math.max(140, Math.floor(sz));
+    document.documentElement.style.setProperty('--wsz', sz + 'px'); advWheel.resize(); placePath(); return;
+  }
   if (matchMedia('(min-width: 900px) and (min-height: 560px)').matches) {
     const cs = getComputedStyle(st);
     const innerH = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);

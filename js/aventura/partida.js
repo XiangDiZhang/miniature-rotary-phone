@@ -105,6 +105,24 @@ function fitHistory() {
   const over = document.documentElement.scrollHeight - innerHeight; if (over > 0) v.style.height = Math.max(140, h - over) + 'px';
 }
 addEventListener('resize', fitHistory);
+// el historial se arrastra con el ratón como la Pokédex (con el dedo ya se desplaza solo), con inercia al soltar
+(() => {
+  let d = null;
+  document.addEventListener('pointerdown', e => {
+    const v = e.target.closest && e.target.closest('.hist-view'); if (!v || e.pointerType !== 'mouse' || e.button > 0 || e.target.closest('button')) return;
+    cancelAnimationFrame(v._glide); d = { v, y: e.clientY, top: v.scrollTop, last: e.clientY, t: performance.now(), vel: 0, moved: false };
+  });
+  addEventListener('pointermove', e => {
+    if (!d) return; const dy = e.clientY - d.y; if (!d.moved && Math.abs(dy) < 4) return;
+    d.moved = true; d.v.classList.add('dragging'); d.v.scrollTop = d.top - dy;
+    const now = performance.now(); d.vel = (e.clientY - d.last) / Math.max(1, now - d.t); d.last = e.clientY; d.t = now; e.preventDefault();
+  });
+  addEventListener('pointerup', () => {
+    if (!d) return; const { v, moved } = d; let vel = d.vel * 16; d = null; v.classList.remove('dragging');
+    if (!moved || reduceMotion) return;
+    const glide = () => { if (Math.abs(vel) < .4) return; v.scrollTop -= vel; vel *= .94; v._glide = requestAnimationFrame(glide); }; glide();
+  });
+})();
 // lo de arriba cambia de alto después (el texto del profesor se va escribiendo, los botones…): se vuelve a medir
 try { const ro = new ResizeObserver(() => fitHistory()); ['chosenText', 'chosenCard', 'advEntry'].forEach(id => $(id) && ro.observe($(id))); } catch (e) {}
 
