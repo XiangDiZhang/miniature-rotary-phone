@@ -116,12 +116,12 @@ body.wide-adv .wrap { max-width: 1120px; }
 .lc-art img:nth-last-child(3) { transform: translateX(104%); }
 .lc-art img:nth-child(2):nth-last-child(2) { z-index: 1; }
 /* fondo: de cintura para arriba, grande (cubre buena parte de la tarjeta), abajo a la derecha, con la cabeza casi arriba */
-.lc-big { left: 74%; right: auto; transform: translateX(-50%);   /* centrado en la parte derecha de la tarjeta */
+.lc-big { left: 80%; right: auto; transform: translateX(-50%);   /* centrado bien a la derecha de la tarjeta */
    top: calc(4px - 100% * .23); height: 190%;   /* (sube lo que mide el hueco vacío encima de la cabeza) */
   opacity: .2; filter: saturate(.85);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%); }
 /* si el líder son varios personajes, el fondo los enseña a todos: más pequeños y montados */
-.lc-art.many .lc-big { left: 66%; top: calc(4px - 100% * .14); height: 118%; }   /* (más pequeños, para que quepan todos sin cortarse) */
+.lc-art.many .lc-big { left: 70%; top: calc(4px - 100% * .14); height: 118%; }   /* (más pequeños, para que quepan todos sin cortarse) */
 /* (los de delante se montan hacia la derecha: la fila se corre a la izquierda para que el grupo quede centrado) */
 .lc-art.n2 .lc-big { transform: translateX(-63%); } .lc-art.n3 .lc-big { transform: translateX(-67.3%); }
 /* delante, de cuerpo entero: de abajo hasta 3/4 del alto de la tarjeta */
@@ -327,9 +327,9 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
     height: min(250px, 38%); z-index: 0; pointer-events: none; }
   .adv-stage .side { position: relative; z-index: 1; justify-content: flex-start; }
   .adv-stage #advBtns { order: 4; }   /* los botones, abajo del todo */
-  /* el título y el texto de la fase, a un cuarto del hueco que queda (un hueco que crece 1 encima y otro que crece 3 debajo) */
-  .adv-stage .side::before { content: ""; order: 1; flex: 1 1 0; } .adv-stage .adv-say > * { order: 2; }
-  .adv-stage .side::after { content: ""; order: 3; flex: 3 1 0; }
+  /* el título y el texto de la fase, casi arriba del todo (un hueco pequeño encima; lo que sobra, debajo) */
+  .adv-stage .side::before { content: ""; order: 1; flex: 0 0 8px; } .adv-stage .adv-say > * { order: 2; }
+  .adv-stage .side::after { content: ""; order: 3; flex: 1 1 0; }
   .leader-card .lc-full { display: none; }
   .adv-stage .adv-text { height: auto; flex: 0 1 auto; min-height: 0; max-height: 9.3em; }   /* el texto ocupa solo lo que mide, arriba (si es muy largo, se desplaza dentro) */
   /* línea de fases en el hueco entre la ruleta y el borde de abajo del recuadro */
@@ -514,7 +514,7 @@ img.stone.px { image-rendering: pixelated; }
   body.wide-adv h1 { font-size: 18px; }
   #scene-adv:not([hidden]) { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   .adv-stage { flex: 1 1 auto; min-height: 0; display: flex !important; flex-direction: column; align-items: stretch; padding: 8px 10px 10px; gap: 6px; overflow: hidden; }
-  .adv-stage .adv-wbox { flex: 1 1 0; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; overflow: hidden; }
+  .adv-stage .adv-wbox { flex: 0 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; overflow: hidden; }
   .adv-stage .side { flex: none; gap: 5px; justify-content: flex-start; }
   #advPath.adv-path li { height: 48px; }
   .adv-pathwin { padding-top: 12px; }
@@ -668,3 +668,11 @@ img.stone.px { image-rendering: pixelated; }
 .lc-ty svg { width: 14px; height: 14px; }
 .lc-top .lc-ty { width: 26px; height: 26px; } .lc-top .lc-ty svg { width: 16px; height: 16px; }
 .lc-row .lc-ty { margin-right: 1px; }
+/* móvil en vertical: sin el contador de RPM (deja sitio al texto y al botón) y la línea de fases con los nombres en dos líneas que se leen enteros */
+@media (max-width: 760px) and (orientation: portrait) {
+  .adv-stage .adv-rpm { display: none !important; }
+  #advPath.adv-path li { height: 60px; }
+  #advPath li .pl { line-height: 1.25; }
+  #advPath li.now .pk { display: none !important; }
+  #advPath li.now .pl { font-size: 9.5px; }
+}

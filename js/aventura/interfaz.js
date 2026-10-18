@@ -153,9 +153,11 @@ function fitAdv() {
   const st = document.querySelector('.adv-stage'), box = document.querySelector('.adv-wbox'), track = document.querySelector('.adv-track');
   let sz;
   if (matchMedia(PHONE_V).matches) {
-    // la ruleta ocupa el hueco que deja todo lo demás (su caja tiene el alto que sobra), dejando sitio a la línea de fases
-    // (un poco más pequeña que el hueco, para que nada quede justo al borde de abajo)
-    sz = Math.min(box.clientWidth * .94, box.clientHeight - track.offsetHeight - 10);
+    // la ruleta ocupa el hueco que deja todo lo demás: el alto del escenario menos lo de debajo (equipo, texto y botones) y la línea
+    // de fases; su caja se ajusta a ella, así lo que sobre queda abajo del todo y el botón de girar siempre se ve
+    const cs = getComputedStyle(st), side = st.querySelector('.side'), gap = parseFloat(cs.rowGap) || 0;
+    const free = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - (side ? side.offsetHeight : 0) - gap;
+    sz = Math.min(box.clientWidth * .94, free - track.offsetHeight - 14);
     sz = Math.max(120, Math.floor(sz));
     document.documentElement.style.setProperty('--wsz', sz + 'px'); advWheel.resize(); placePath(); return;
   }
