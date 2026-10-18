@@ -8,5 +8,6 @@ function dexRegister(n, shiny) {
   const nc = !PDX.c.has(n), ns = shiny && !PDX.s.has(n); if (!nc && !ns) return;
   PDX.c.add(n); if (shiny) PDX.s.add(n);
   store.setJSON('ruleta-dex', { c: [...PDX.c], s: [...PDX.s] });
-  if (nc && !devMode && run) advToast(`📘 Nuevo en la Pokédex: ${BY_NUM.get(n)[1]}`);
+  if (nc && run) dexFresh.set(n, !!shiny);   // la aventura enseña «Nuevo registro» después del «¡NUEVO!» (renderAdv)
 }
+const dexFresh = new Map();

@@ -1,6 +1,36 @@
 // Aventura: interfaz (diálogo, botones, equipo, mochila, línea de fases, tarjeta del líder)
 // los botones de después salen a los 180 ms, mientras el texto se sigue escribiendo (no hay que esperar a que acabe)
 function advSay(t, done) { speak(t); typeText($('advText'), t, done, 180); }
+// «¡NUEVO!» encima de una ficha: en una capa fija sobre toda la página, así no lo recortan los bordes de las tarjetas,
+// y colocado para que nunca se salga de la pantalla
+function newTag(el) {
+  if (!el.getBoundingClientRect().width) return;
+  const t = document.createElement('div'); t.className = 'new-tag'; t.textContent = '¡NUEVO!'; document.body.appendChild(t);
+  const w = t.offsetWidth, h = t.offsetHeight, end = performance.now() + 2300;
+  // sigue a la ficha mientras dura (la ficha puede estar aún colocándose en su hueco, o desplazarse la lista)
+  const place = () => {
+    if (!t.isConnected) return;
+    if (performance.now() > end || !el.isConnected) return t.remove();
+    const r = el.getBoundingClientRect();
+    t.style.left = Math.max(6, Math.min(innerWidth - w - 6, r.left + r.width / 2 - w / 2)) + 'px';
+    // en las fichas, abajo por dentro; en un botón pequeño (Caja PC), justo encima (o debajo si no cabe)
+    const y = r.height >= 60 ? r.bottom - h - 8 : r.top - h - 4 >= 6 ? r.top - h - 4 : r.bottom + 4;
+    t.style.top = Math.max(6, Math.min(innerHeight - h - 6, y)) + 'px';
+    requestAnimationFrame(place);
+  };
+  place(); setTimeout(() => t.remove(), 2400);
+}
+// «Nuevo registro» en la Pokédex: aviso pequeño en la esquina con el dibujo de la Pokédex, sin tapar nada ni recibir toques
+function dexPop(n, shiny, wait) {
+  setTimeout(() => {
+    if (!run) return;
+    let box = document.querySelector('.dex-pops'); if (!box) { box = document.createElement('div'); box.className = 'dex-pops'; document.body.appendChild(box); }
+    const r = (shiny && SPR.shiny.get(n)) || SPR.normal.get(n), el = document.createElement('div'); el.className = 'dex-pop';
+    el.innerHTML = `<span class="dp-spr">${r ? `<img src="${r.u}" alt="">` : ''}</span><span class="dp-tx"><small>📘 Nuevo registro</small><b><i>Nº ${String(n).padStart(3, '0')}</i>${pname(n)}${shiny ? ' ★' : ''}</b></span>`;
+    box.appendChild(el); beep(1319, .07, .03, 'triangle'); setTimeout(() => beep(1760, .12, .03, 'triangle'), 90);
+    setTimeout(() => el.remove(), 3400);
+  }, wait || 0);
+}
 function advToast(t) { const el = document.createElement('div'); el.className = 'adv-toast'; el.textContent = t; $('advToasts').appendChild(el); setTimeout(() => el.remove(), 3200); }
 function advButtons(list) {
   $('advBtns').innerHTML = list.map((b, i) => `<button class="btn${b.ghost ? ' ghostbtn' : ''}" type="button" data-i="${i}"${b.off ? ' disabled' : ''}>${b.label}</button>`).join('');
@@ -172,10 +202,13 @@ function renderAdv() {
   const fresh = prevM ? mine.filter(m => !prevM.has(m)) : [];
   if (fresh.length) {
     if (!fresh.some(m => m.shiny || isLegend(m.n))) monSfx();
-    const pop = el => { if (!el) return; el.classList.remove('got'); void el.offsetWidth; el.classList.add('got'); setTimeout(() => el.classList.remove('got'), 2300); };
-    fresh.forEach(m => run.team.includes(m) ? pop([...TM.querySelectorAll('.tmw')].find(x => x._m === m)) : pop($('pcOpen')));
+    const pop = (el, tag) => { if (!el) return; el.classList.remove('got'); void el.offsetWidth; el.classList.add('got'); setTimeout(() => el.classList.remove('got'), 2300); if (tag) newTag(el); };
+    fresh.forEach(m => run.team.includes(m) ? pop([...TM.querySelectorAll('.tmw')].find(x => x._m === m), true) : pop($('pcOpen'), true));
     const tab = $('advTabs') && $('advTabs').querySelector('[data-tab="0"]'); if (tab && tab.offsetParent) pop(tab);
   }
+  // especie que no estaba en tu Pokédex: después del «¡NUEVO!», un aviso pequeño con su dibujo y «Nuevo registro»
+  // (también al evolucionar a una especie nueva, que no tiene «¡NUEVO!», y entonces sale antes)
+  if (dexFresh.size) { const wait = fresh.length ? 1300 : 400; [...dexFresh].forEach(([n, sh], i) => dexPop(n, sh, wait + i * 900)); dexFresh.clear(); }
   // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
   const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);
