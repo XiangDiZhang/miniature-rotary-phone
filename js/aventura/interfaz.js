@@ -360,7 +360,9 @@ function leaderHTML(L) {
   const bsp = badgeSpr(L), N = advNow, ni = null;
   // su sprite (Líderes, Alto Mando y Campeones): de fondo, de medio cuerpo para arriba, grande y tenue, abajo a la derecha;
   // y encima, de cuerpo entero
-  const ls = leaderSpr(L.leader), art = ls ? `<div class="lc-art" aria-hidden="true"><img class="lc-big" src="${ls}" alt=""><img class="lc-full" src="${ls}" alt=""></div>` : '';
+  // (si son varios personajes, como Vito y Leti, salen todos juntos, un poco montados uno sobre otro)
+  const ls = leaderSprs(L.leader), imgs = ls.map(u => `<img src="${u}" alt="">`).join('');
+  const art = ls.length ? `<div class="lc-art${ls.length > 1 ? ' many' : ''}" aria-hidden="true"><span class="lc-big">${imgs}</span><span class="lc-full">${imgs}</span></div>` : '';
   return { c: TYPE_COLORS[T], html: `${art}<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
     <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div>${chip(T)}</div></div>
     <div class="lc-rows">${N && N.mons ? monsRow(N) : `

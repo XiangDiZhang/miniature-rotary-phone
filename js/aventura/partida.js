@@ -142,7 +142,35 @@ async function exportRun(x) {
   let gr = g.createRadialGradient(260, 330, 20, 260, 330, 520); gr.addColorStop(0, C + '55'); gr.addColorStop(1, 'transparent'); g.fillStyle = gr; g.fillRect(0, 0, Wd, Hg);
   gr = g.createRadialGradient(900, 120, 10, 900, 120, 600); gr.addColorStop(0, acc + '33'); gr.addColorStop(1, 'transparent'); g.fillStyle = gr; g.fillRect(0, 0, Wd, Hg);
   g.save(); g.globalAlpha = .12; g.fillStyle = C; g.beginPath(); g.moveTo(Wd * .62, 0); g.lineTo(Wd, 0); g.lineTo(Wd, Hg * .3); g.lineTo(Wd * .4, Hg); g.lineTo(0, Hg); g.lineTo(0, Hg * .55); g.closePath(); g.fill(); g.restore();
+  // decoración del fondo (todo muy tenue, para que lo de delante destaque):
+  // · rejilla de puntos
+  g.save(); g.fillStyle = 'rgba(255,255,255,.055)';
+  for (let yy = 30; yy < Hg; yy += 22) for (let xx = 30 + (yy / 22 % 2) * 11; xx < Wd; xx += 22) { g.beginPath(); g.arc(xx, yy, 1.1, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+  // · rayos de luz que salen de detrás del entrenador
+  { const ox = 238, oy = 300, rg = g.createRadialGradient(ox, oy, 40, ox, oy, 430); rg.addColorStop(0, C + '30'); rg.addColorStop(1, 'transparent');
+    g.save(); g.fillStyle = rg; for (let k = 0; k < 16; k++) { const a0 = k / 16 * Math.PI * 2, a1 = a0 + Math.PI / 32;
+      g.beginPath(); g.moveTo(ox, oy); g.arc(ox, oy, 430, a0, a1); g.closePath(); g.fill(); } g.restore(); }
+  // · una Poké Ball enorme, solo el contorno, detrás del entrenador
+  { const ox = 238, oy = 292, R = 214; g.save(); g.strokeStyle = C + '2e'; g.lineWidth = 7;
+    g.beginPath(); g.arc(ox, oy, R, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(ox - R, oy); g.lineTo(ox - 52, oy); g.moveTo(ox + 52, oy); g.lineTo(ox + R, oy); g.stroke();
+    g.beginPath(); g.arc(ox, oy, 52, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.arc(ox, oy, 28, 0, Math.PI * 2); g.stroke(); g.restore(); }
+  // · el nombre de la región en grande, solo el contorno, abajo a la derecha
+  g.save(); g.font = F(300, 170); g.textAlign = 'right'; g.textBaseline = 'alphabetic'; g.lineWidth = 1.5; g.strokeStyle = C + '22';
+  g.strokeText((x.name || '').toUpperCase(), Wd - 26, Hg - 22); g.restore();
+  // · si ganaste, destellos dorados repartidos (siempre en el mismo sitio para la misma partida)
+  if (x.won) { let sd = (x.t || 1) % 2147483647; const rr = () => (sd = sd * 16807 % 2147483647) / 2147483647;
+    g.save(); for (let k = 0; k < 22; k++) { const sx = 40 + rr() * (Wd - 80), sy = 40 + rr() * (Hg - 80), r = 3 + rr() * 6;
+      g.globalAlpha = .18 + rr() * .3; g.fillStyle = '#ffd84a'; g.shadowColor = '#ffd84a'; g.shadowBlur = 8;
+      g.beginPath(); g.moveTo(sx, sy - r); g.quadraticCurveTo(sx, sy, sx + r, sy); g.quadraticCurveTo(sx, sy, sx, sy + r); g.quadraticCurveTo(sx, sy, sx - r, sy); g.quadraticCurveTo(sx, sy, sx, sy - r); g.fill(); }
+    g.restore(); }
   g.strokeStyle = C; g.lineWidth = 2; g.shadowColor = C; g.shadowBlur = 18; g.strokeRect(14, 14, Wd - 28, Hg - 28); g.shadowBlur = 0;
+  // · esquinas del marco remarcadas, como las del juego
+  g.save(); g.strokeStyle = acc; g.lineWidth = 4; g.lineCap = 'square'; g.shadowColor = acc; g.shadowBlur = 10;
+  [[24, 24, 1, 1], [Wd - 24, 24, -1, 1], [24, Hg - 24, 1, -1], [Wd - 24, Hg - 24, -1, -1]].forEach(([px, py, dx, dy]) => {
+    g.beginPath(); g.moveTo(px + dx * 30, py); g.lineTo(px, py); g.lineTo(px, py + dy * 30); g.stroke(); });
+  g.restore();
   // entrenador: tu sprite (Opciones · Sprite de entrenador) bien grande sobre una peana neón, y su nombre debajo
   const tx = 238;
   g.save(); g.fillStyle = C + '22'; g.beginPath(); g.ellipse(tx, 522, 150, 28, 0, 0, Math.PI * 2); g.fill();
@@ -161,10 +189,16 @@ async function exportRun(x) {
   g.font = F(500, 16, 'IBM Plex Mono'); g.fillStyle = acc; g.fillText(`RULETA POKÉMON · ${(x.name || '').toUpperCase()}`, rx, 72);
   g.font = F(600, 44); g.fillStyle = x.won ? '#7ee0a1' : '#ff8a7a'; g.fillText(x.won ? '¡Campeón!' : 'Derrota' + (x.lostTo ? ' · ' + x.lostTo : ''), rx, 120);
   g.font = F(500, 18, 'IBM Plex Mono'); g.fillStyle = '#a9b4c8'; g.fillText(`${x.points} PTS · RANGO ${x.rank} · ${x.badges} MEDALLAS · ${histWhen(x.t).toUpperCase()}`, rx, 154);
+  // las 8 medallas arriba a la derecha (encendidas las que conseguiste) y una línea que separa la cabecera de las fichas
+  g.save(); for (let k = 0; k < 8; k++) { const bx = Wd - 52 - (7 - k) * 26, by = 66, on = k < x.badges;
+    g.beginPath(); g.moveTo(bx, by - 10); g.lineTo(bx + 9, by); g.lineTo(bx, by + 10); g.lineTo(bx - 9, by); g.closePath();
+    if (on) { g.fillStyle = C; g.shadowColor = C; g.shadowBlur = 10; g.fill(); g.shadowBlur = 0; } else { g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 1.5; g.stroke(); } }
+  const sl = g.createLinearGradient(rx, 0, Wd - 40, 0); sl.addColorStop(0, C); sl.addColorStop(1, 'transparent');
+  g.fillStyle = sl; g.fillRect(rx, 166, Wd - 40 - rx, 1.5); g.restore();
   // los 6 Pokémon: 3 × 2 fichas como las miniaturas de la Pokédex (número y generación arriba, número grande de fondo,
   // franja diagonal con sus colores, sprite, nombre e iconos de tipo)
   const team = x.team.slice(0, 6), loadImg = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
-  const load = m => { const r = monSprite(m); return r ? loadImg(r.u).then(im => im && { im, px: !!r.px }) : Promise.resolve(null); };
+  const load = m => { const r = monSprite(m); return r ? loadImg(r.u).then(im => im && { im, px: !!r.px, fb: r.fb || 0, fx: r.fx || .5, fw: r.fw || .45 }) : Promise.resolve(null); };
   // icono de tipo: su dibujo (TYPE_ICONS) en blanco o negro según el color, dentro de un círculo del color del tipo
   const tyIcons = {};
   await Promise.all([...new Set(team.flatMap(m => mtypes(m)))].map(async t => {
@@ -188,9 +222,12 @@ async function exportRun(x) {
       // arriba: «Nº 006» y «GEN I»
       g.font = F(500, 13, 'IBM Plex Mono'); g.textAlign = 'left'; g.fillStyle = c1; g.fillText(`Nº ${no}`, cx + 12, cy + 24);
       g.textAlign = 'right'; g.fillStyle = '#8b97ad'; g.fillText(gen ? `GEN ${ROMAN[gen]}` : '', cx + cw - 12, cy + 24);
-      // sprite, con su sombra en el suelo
-      g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(cx + cw / 2, cy + 132, 46, 9, 0, 0, Math.PI * 2); g.fill();
-      const im = imgs[i]; if (im) { g.imageSmoothingEnabled = !im.px; const s = 124; g.drawImage(im.im, cx + (cw - s) / 2, cy + 18, s, s); g.imageSmoothingEnabled = true; }
+      // sprite con los pies sobre su sombra, como en la Pokédex: cada imagen trae medido el hueco que deja bajo los pies (fb),
+      // dónde está su centro (fx) y lo ancho que es (fw). Los que vuelan se quedan un poco por encima de su sombra
+      const im = imgs[i], s = 124, sx0 = cx + (cw - s) / 2, floor = cy + 136, fly = FLYING.has(m.n);
+      const fx = im ? im.fx : .5, fw = im ? im.fw : .45;
+      g.fillStyle = 'rgba(0,0,0,.32)'; g.beginPath(); g.ellipse(sx0 + fx * s, floor, Math.max(18, fw * s * .5), 7, 0, 0, Math.PI * 2); g.fill();
+      if (im) { g.imageSmoothingEnabled = !im.px; g.drawImage(im.im, sx0, floor - s + im.fb * s + 2 - (fly ? 22 : 0), s, s); g.imageSmoothingEnabled = true; }
       // abajo: nombre e iconos de tipo
       g.textAlign = 'left'; g.font = F(600, 18); g.fillStyle = m.shiny ? '#ffd84a' : '#e7edf8'; g.fillText(dname(m), cx + 12, cy + ch - 38, cw - 24);
       ty2.forEach((t, k) => { const ix = cx + 23 + k * 28, iy = cy + ch - 19;
