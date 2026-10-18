@@ -10,7 +10,10 @@ function loadRun(region) {
   const r = store.getJSON('ruleta-run-' + region);
   if (!(r && REGIONS[r.region] && r.v === 5 && (r.region !== 'kanto' || r.kv === 2))) return null;   // partidas de versiones antiguas: no valen
   // si se guardó en mitad de un combate, cada Pokémon vuelve a su forma normal (también si estaba megaevolucionado o Gigamax)
-  [...(r.team || []), ...(r.box || []).filter(Boolean), ...(Array.isArray(r.stolen) ? r.stolen : r.stolen ? [r.stolen] : [])].forEach(restoreForm);
+  [...(r.team || []), ...(r.box || []).filter(Boolean), ...(Array.isArray(r.stolen) ? r.stolen : r.stolen ? [r.stolen] : [])].forEach(m => {
+    restoreForm(m);
+    if (m.stone && m.dmax) { delete m.dmax; m.tfPath = 'mega'; }   // (partidas de antes: un Pokémon solo puede llevar una de las dos)
+  });
   if ((r.region === 'caos' || r.region === 'test') && !(r.chaos && r.chaos.gyms)) return null;
   return r;
 }
