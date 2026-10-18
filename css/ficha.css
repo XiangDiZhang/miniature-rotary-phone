@@ -140,8 +140,25 @@
 
 /* variantes de cada especie de la línea evolutiva (megas, Gigamax, regionales y otras formas), debajo de su tarjeta */
 .evo-node { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+/* una especie con variantes va en su propio recuadro: la tarjeta y, colgando de ella con una rama, sus megas, Gigamax y formas
+   (así se ve que Mega Charizard X/Y son Charizard transformado, no otra evolución) */
+.evo-node.fam { margin-top: -5px; padding: 4px 6px 6px 4px; border-radius: 9px; border: 1px solid color-mix(in srgb, var(--c) 24%, var(--line)); background: color-mix(in srgb, var(--c) 5%, transparent); }
+.evo-branch { margin-left: 18px; padding: 1px 0 1px 10px; border-left: 2px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: 0 0 0 6px; display: flex; flex-direction: column; gap: 4px; }
+.evo-bl { font: 500 8px var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: color-mix(in srgb, var(--c) 75%, var(--fg-soft)); }
 .evo-vars { display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px; }
-/* línea que no cabe con el método al lado (móvil, o muchas etapas): el método va encima de la tarjeta, y así cabe todo en una fila */
+.evo-vars:not(.many) { flex-direction: column; align-items: flex-start; }
+.evo-vars:not(.many) .evo-var { position: relative; }
+.evo-vars:not(.many) .evo-var::before { content: ""; position: absolute; left: -11px; top: 50%; width: 9px; height: 2px; background: color-mix(in srgb, var(--c) 55%, var(--line)); }
+.evo-bl .sh { display: none; }
+/* línea que no cabe: tarjetas más pequeñas, rótulo corto y variantes solo con su icono (el nombre sale al pasar por encima) */
+.evo.compact .evo-bl .lg { display: none; } .evo.compact .evo-bl .sh { display: inline; }
+.evo.compact .evo-card { flex-direction: column; gap: 0; padding: 3px 6px 4px; font-size: 13px; text-align: center; }
+.evo.compact .evo-card .tx { align-items: center; }
+.evo.compact .evo-card .th, .evo.compact .evo-card .th img { width: 28px; height: 28px; }
+.evo.compact .evo-branch { margin-left: 12px; padding-left: 8px; }
+.evo.compact .evo-vars:not(.many) { flex-direction: row; flex-wrap: wrap; }
+.evo.compact .evo-vars .evo-var { padding: 2px; } .evo.compact .evo-var .vl, .evo.compact .evo-var::before { display: none; }
+/* el método va encima de cada tarjeta, y así cabe todo en una fila */
 .evo.tight .evo-step { flex-direction: column; align-items: flex-start; gap: 3px; }
 .evo.tight .evo-m { flex: none; min-width: 0; flex-direction: row; gap: 4px; text-align: left; }
 .evo.tight .evo-m::before { font-size: 13px; line-height: 1; }

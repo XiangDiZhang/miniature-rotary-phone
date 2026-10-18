@@ -27,13 +27,19 @@ function evoHTML(n, formId) {
   const varBtn = (id, f, many) => { const lb = formLabel(id, f), tag = VAR_TAG[f[8]] || '';
     return own(id) ? `<button class="evo-var${id === n && f[0] === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${f[0]}" title="${lb}"><span class="th">${thumb(f[0], f[2])}</span>${many ? '' : `<span class="vl">${tag ? `<b>${tag}</b>` : ''}${lb.replace(/^Mega-|^Gigantamax |\s*Gigamax$/g, '')}</span>`}</button>`
       : `<button class="evo-var locked" type="button" disabled title="???"><span class="th">${thumb(f[0], f[2])}</span></button>`; };
-  const vars = (id, list) => list.length ? `<div class="evo-vars${list.length > 8 ? ' many' : ''}">${list.map(f => varBtn(id, f, list.length > 8)).join('')}</div>` : '';
+  // variantes de la MISMA especie (no son evoluciones): colgadas de su tarjeta con una rama y un rótulo que dice qué son
+  // rótulo largo y, para cuando la línea va muy justa, uno corto
+  const varKind = list => { const k = new Set(list.map(f => f[8])), fo = k.has('form') || k.has('reg');
+    const lg = [k.has('mega') && (list.filter(f => f[8] === 'mega').length > 1 ? 'Megaevoluciones' : 'Megaevolución'), k.has('gmax') && 'Gigamax', fo && 'Otras formas'];
+    const sh = [k.has('mega') && 'Mega', k.has('gmax') && 'Gmax', fo && 'Formas'];
+    return `<span class="lg">${lg.filter(Boolean).join(' · ')}</span><span class="sh">${sh.filter(Boolean).join(' · ')}</span>`; };
+  const vars = (id, list) => list.length ? `<div class="evo-branch"><span class="evo-bl">${varKind(list)}</span><div class="evo-vars${list.length > 8 ? ' many' : ''}">${list.map(f => varBtn(id, f, list.length > 8)).join('')}</div></div>` : '';
   // tarjeta de una especie (fid = su forma; link = antecesor normal que solo se muestra para dar contexto)
   const card = (id, fid = 0, extra = [], link = false) => {
     const f = fid && FORM_OF.get(fid)[1], ty = f ? f[2] : null, lb = f ? formLabel(id, f) : baseFormName(id);
     const btn = own(id) ? `<button class="evo-card${link ? ' link' : ''}${id === n && fid === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${fid}"><span class="th">${thumb(fid || id, ty)}</span><span class="tx">${lb}<small>Nº ${padN(id)}</small></span></button>`
       : `<button class="evo-card locked${link ? ' link' : ''}" type="button" disabled><span class="th">${thumb(fid || id, ty)}</span><span class="tx">???<small>Nº ${padN(id)}</small></span></button>`;
-    return `<div class="evo-node">${btn}${vars(id, extra)}</div>`;
+    return `<div class="evo-node${extra.length ? ' fam' : ''}">${btn}${vars(id, extra)}</div>`;
   };
   // una línea por etapas (columnas); nodes: especie -> [[forma, variantes, enlace]]; cada evolución lleva al lado cómo se consigue
   const line = nodes => {
@@ -47,7 +53,7 @@ function evoHTML(n, formId) {
       }
       stage = stage.flatMap(kids);
     }
-    return `<div class="evo"><div class="evo-in">${html}</div></div>`;
+    return `<div class="evo tight"><div class="evo-in">${html}</div></div>`;
   };
   // línea normal: sin las evoluciones que solo hace una forma regional; debajo de cada una, sus variantes no regionales
   const base = new Map(ids.filter(k => !regOnly(k)).map(k => [k, [[0, (FORMS[k] || []).filter(f => !formTag(f)), false]]]));
@@ -67,14 +73,12 @@ function evoHTML(n, formId) {
   if (!tags.length) return line(base);
   return `<div class="evo-fam"><p class="evo-fam-h">${ids.length < 2 ? 'No evoluciona · forma normal' : 'Forma normal'}</p>${line(base)}</div>${regional.join('')}`;
 }
-// la línea evolutiva va siempre en una fila: si no cabe con el método al lado de cada tarjeta, lo pone encima («tight»),
-// y si ni así, deja partir los nombres («tighter»). Se mide de nuevo al cambiar el tamaño de la ventana.
+// la línea evolutiva va siempre en una fila, con el método encima de cada tarjeta; si no cabe, se compacta
+// (tarjetas más pequeñas y variantes solo con su icono) y, si ni así, deja partir los nombres. Se mide de nuevo al cambiar el tamaño de la ventana.
 function fitEvo(root) {
   (root || document).querySelectorAll('.evo').forEach(e => {
-    e.classList.remove('tight', 'tighter');
-    const over = () => e.firstElementChild.scrollWidth > e.clientWidth + 1;
-    if (over()) e.classList.add('tight');
-    if (over()) e.classList.add('tighter');
+    e.classList.remove('compact', 'tighter');
+    for (const c of ['compact', 'tighter']) { if (e.firstElementChild.scrollWidth <= e.clientWidth + 1) break; e.classList.add(c); }
   });
 }
 addEventListener('resize', () => { if (infoOpen) fitEvo($('infoBody')); });
