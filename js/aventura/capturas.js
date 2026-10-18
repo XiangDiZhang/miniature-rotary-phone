@@ -107,7 +107,8 @@ function legendEncounter(n, shiny) {
         if (r.k === 'flee') { log(`💨 ${pname(n)} desaparece.`); return advSay(`${pname(n)} te mira un instante… y desaparece a toda velocidad.`, goOn); }
         battle(`Legendario · ${pname(n)}`, pname(n), [n], 2, () => {
           addPoints(PTS.rival, `${pname(n)} derrotado`);
-          advSay(`¡Has vencido a ${pname(n)}! Se retira… pero tu equipo ha aprendido mucho. ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));
+          // ganar a un legendario: la evolución es segura (sin la ruleta de «¿habrá evolución?»)
+          evolveSure(`¡Has vencido a ${pname(n)}! Se retira… y tu equipo ha aprendido tanto que uno de tus Pokémon evoluciona seguro.`);
         }, ' Perder contra un legendario no acaba la partida.', () => { log(`💨 ${pname(n)} te supera y se marcha.`); advSay(`${pname(n)} es demasiado fuerte y se marcha. Tu aventura sigue.`, goOn); });
       }, { txt: `¡Ha aparecido ${pname(n)}!`, n, shiny }) }]));
 }

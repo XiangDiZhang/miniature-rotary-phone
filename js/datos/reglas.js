@@ -29,6 +29,9 @@ const SIZE_SCALE = { 10027: .74, 10028: 1.16, 10029: 1.32, 10030: .78, 10031: 1.
 const sizeStyle = id => SIZE_SCALE[id] ? `scale:${SIZE_SCALE[id]};transform-origin:50% 100%;` : '';
 const BASE_FORM_NAME = { 550: 'Raya Roja', 413: 'Tronco Planta', 678: 'Macho', 710: 'Tamaño Normal', 711: 'Tamaño Normal', 741: 'Estilo Apasionado', 745: 'Forma Diurna', 849: 'Forma Aguda', 892: 'Estilo Brusco', 876: 'Macho', 902: 'Macho', 916: 'Macho', 925: 'Familia de cuatro', 931: 'Plumaje verde', 978: 'Forma curvada', 982: 'Binodular', 999: 'Forma cofre', 666: 'Motivo Floral', 869: 'Crema de Vainilla · Confite Fresa' };
 // evoluciones que solo hace una forma concreta
+// especies que, al evolucionar desde la forma normal, también pueden salir en su forma regional (Quilava → Typhlosion o Typhlosion
+// de Hisui, Pikachu → Raichu o Raichu de Alola…): especie → id de esa forma. La ruleta de «¿en qué evoluciona?» ofrece las dos
+const REGIONAL_BRANCH = { 157: 10233, 503: 10236, 724: 10244, 549: 10237, 628: 10240, 705: 10241, 713: 10243, 26: 10100, 103: 10114, 105: 10115, 110: 10167, 122: 10168 };
 const REG_REQ = { 862: 10175, 863: 10161, 864: 10173, 865: 10166, 866: 10168, 867: 10179, 902: 10247, 903: 10235, 904: 10234, 980: 10253 };
 // evoluciones con varias variantes: al evolucionar, una ruleta decide cuál sale (0 = forma normal).
 // Alcremie va en dos tiradas: primero la crema y luego el confite (ver evoVariant en flujo.js).

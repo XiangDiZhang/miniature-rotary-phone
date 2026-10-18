@@ -67,11 +67,14 @@ function evoOptions(m) {
   const special = all.filter(t => REG_REQ[t] && REG_REQ[t] === m.form);
   const list = special.length ? special : all.filter(t => !REG_REQ[t]);
   const tag = regionTag(m.form), r = formRec(m.form), lbl = r && r[1][1];
-  return list.map(t => {
+  const out = list.map(t => {
     const fl = FORMS[t] || [];
     const f = tag ? fl.find(x => x[8] === 'reg' && x[0] !== 10178 && x[1].includes(tag)) : lbl ? fl.find(x => x[1] === lbl) : null;
     return { n: t, form: f ? f[0] : 0 };
   });
+  // desde la forma normal, también su forma regional cuando existe (Typhlosion de Hisui, Raichu de Alola…)
+  if (!m.form) list.forEach(t => { if (REGIONAL_BRANCH[t] && formRec(REGIONAL_BRANCH[t])) out.push({ n: t, form: REGIONAL_BRANCH[t] }); });
+  return out;
 }
 
 // ---- Historial de partidas: equipo (con motes), puntos y si ganaste o perdiste ----
