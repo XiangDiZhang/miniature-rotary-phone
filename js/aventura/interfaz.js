@@ -404,7 +404,10 @@ function renderCard() {
     const places = (L.local || []).map(k => `<span class="lchip" style="--tc:#ff9f43">${EVENTS[k].label}</span>`).join('');
     // lo que está pasando va en grande (Capturando a Pikachu…) y el sitio, encima en pequeño
     const N = advNow, ni = nowImg(N) || (N && N.icon === 'evo' ? EVO_SVG : null);
-    html = `<div class="lc-spr${ni ? ' lc-mon' : ''}${N && N.icon && !nowImg(N) ? ' lc-ico' : ''}">${ni || phaseLook(L).icon}</div>
+    // de fondo, abajo a la derecha, grande y tenue: el Pokémon de lo que está pasando (el que capturas, el que evoluciona…)
+    // o, si no hay ninguno, el icono de la fase (camino, ciudad, inicio…)
+    const deco = nowImg(N) ? `<span class="lc-bigmon">${nowImg(N)}</span>` : `<span class="lc-bigico">${N && N.icon === 'evo' ? EVO_SVG : phaseLook(L).icon}</span>`;
+    html = `<div class="lc-art lc-deco" aria-hidden="true">${deco}</div><div class="lc-spr${ni ? ' lc-mon' : ''}${N && N.icon && !nowImg(N) ? ' lc-ico' : ''}">${ni || phaseLook(L).icon}</div>
       <div class="lc-top">${N ? `${nowLine(N, `${kind} · ${L.name}`)}<b class="lc-doing">${N.txt}</b>` : `<small>${kind}${L.to ? ' · hacia ' + L.to : ''}</small><b>${L.name}</b>`}</div>
       <div class="lc-rows">
         ${N && N.mons ? monsRow(N) : ''}

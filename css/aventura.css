@@ -86,6 +86,26 @@ body.wide-adv .wrap { max-width: 1120px; }
    y encima, de cuerpo entero. El texto y los chips van por delante */
 .leader-card { position: relative; isolation: isolate; }
 .leader-card > :not(.lc-art) { position: relative; z-index: 1; }
+/* caja de información decorada (sea líder o no): brillo del color de la fase arriba a la izquierda, rayas diagonales finas,
+   una línea de luz arriba y las cuatro esquinas remarcadas */
+.leader-card { background:
+    radial-gradient(130% 120% at 0% 0%, color-mix(in srgb, var(--c) 22%, transparent), transparent 55%),
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 7%, transparent) 0 1px, transparent 1px 11px),
+    linear-gradient(180deg, color-mix(in srgb, var(--c) 10%, transparent), color-mix(in srgb, var(--c) 4%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 26px color-mix(in srgb, var(--c) 14%, transparent); }
+.leader-card::before { content: ""; position: absolute; left: 16px; right: 16px; top: 0; height: 2px; z-index: 2; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--c), transparent); box-shadow: 0 0 12px var(--c); opacity: .85; }
+.leader-card::after { content: ""; position: absolute; inset: 5px; z-index: 2; pointer-events: none; opacity: .75; background-repeat: no-repeat;
+  background-image: linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
+    linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c));
+  background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px;
+  background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%; }
+/* fases que no son de líder: de fondo, abajo a la derecha, el Pokémon de lo que pasa o el icono de la fase, en grande y tenue */
+.lc-deco .lc-bigmon { position: absolute; right: -24px; bottom: -34%; height: 165%; opacity: .15;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%); mask-image: linear-gradient(90deg, transparent, #000 40%); }
+.lc-deco .lc-bigmon img.hd { image-rendering: auto; }
+.lc-deco .lc-bigico { position: absolute; right: -18px; bottom: -28%; height: 140%; aspect-ratio: 1; color: var(--c); opacity: .12; transform: rotate(-12deg); }
+.lc-deco .lc-bigico svg, .lc-deco .lc-bigico img { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .lc-art { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
 /* cada capa (fondo y cuerpo entero) es una fila con el sprite, o con varios si el líder son varios personajes */
 .lc-big, .lc-full { position: absolute; display: flex; align-items: flex-end; }
@@ -94,10 +114,10 @@ body.wide-adv .wrap { max-width: 1120px; }
 .lc-art img:nth-last-child(2) { transform: translateX(52%); }
 .lc-art img:nth-last-child(3) { transform: translateX(104%); }
 .lc-art img:nth-child(2):nth-last-child(2) { z-index: 1; }
-/* fondo: la tarjeta enseña los 2/3 de arriba del sprite (de la cabeza a las rodillas), que llegan casi arriba del todo */
-.lc-big { right: -24px; top: calc(4px - (100% - 4px) * .24); height: calc((100% - 4px) * 1.5);   /* (sube lo que mide el hueco vacío encima de la cabeza) */
-  opacity: .14; filter: saturate(.8);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); mask-image: linear-gradient(90deg, transparent, #000 45%); }
+/* fondo: de cintura para arriba, grande (cubre buena parte de la tarjeta), abajo a la derecha, con la cabeza casi arriba */
+.lc-big { right: 46px; top: calc(4px - 100% * .27); height: 220%;   /* (sube lo que mide el hueco vacío encima de la cabeza) */
+  opacity: .2; filter: saturate(.85);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%); }
 /* delante, de cuerpo entero: de abajo hasta 3/4 del alto de la tarjeta */
 .lc-full { right: 10px; bottom: 0; height: 87%;   /* la imagen trae hueco encima de la cabeza: así la cabeza llega a 3/4 */
   filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); animation: lcIn .45s cubic-bezier(.2,.9,.3,1.3) both; }
