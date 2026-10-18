@@ -93,6 +93,13 @@ function renderExtra(pop) {
 const spinsOf = L => L.spins + (run.extra || 0) + (L.kind === 'leg' && run.bag.shoes ? 1 : 0);
 // termina un suceso: en los tramos pasa a la siguiente tirada; en el resto, a la siguiente parada
 function finish() {
+  // Caramelo raro guardado: en cuanto alguien del equipo puede evolucionar (un Pokémon nuevo, uno que vuelve de la caja…),
+  // se usa solo antes de seguir; al acabar la evolución se vuelve aquí y se sigue como siempre
+  if (run.bag.candy > 0 && run.team.some(canEvolve) && !run.over) {
+    run.bag.candy--; if (!run.bag.candy) delete run.bag.candy;
+    log('🍬 Usas el Caramelo raro que guardabas.'); renderAdv(); saveRun();
+    return evolveSure('¡El Caramelo raro que guardabas en la mochila brilla!');
+  }
   const L = loc();
   if (L.kind === 'leg' || L.kind === 'prep') {
     if (run.pending && run.pending.length) { saveRun(); return advNext(); }

@@ -418,6 +418,13 @@ function renderCard() {
   }
   el.style.setProperty('--c', c); el.hidden = false;
   if (el._h !== html) { el._h = html; el.innerHTML = html; }   // (renderAdv la llama mucho: solo se redibuja si cambia)
+  // en el ordenador, el líder (Alto Mando, Campeón…) de cuerpo entero abajo a la derecha del escenario, sobre una peana de luz
+  const fig = $('advLeadFig');
+  if (fig) {
+    const ls = L.kind === 'gym' ? leaderSprs(L.leader) : [], fh = ls.length ? `<span class="lf-glow"></span><span class="lf-row${ls.length > 1 ? ' many' : ''}">${ls.map(u => `<img src="${u}" alt="">`).join('')}</span>` : '';
+    fig.style.setProperty('--c', c); fig.hidden = !ls.length;
+    if (fig._h !== fh) { fig._h = fh; fig.innerHTML = fh; }
+  }
   // pestaña del móvil: un botón redondo con icono (medalla en los combates de gimnasio y liga, mapa en el resto); el nombre, para los lectores de pantalla
   const lt = $('leadTab');
   if (lt) {

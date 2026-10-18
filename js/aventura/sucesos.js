@@ -154,7 +154,13 @@ function doItem() {
     { label: 'Caramelo raro', short: 'CARAMELO', color: '#5ad1c8', w: 1, k: 'candy' }, { label: 'Cuerda huida', short: 'CUERDA', color: '#c9a36a', w: 1, k: 'rope' },
     ...(run.bag.shoes ? [] : [{ label: 'Deportivas', short: 'DEPORTIVAS', color: '#4aa3df', w: .5, k: 'shoes' }]),
     ...(run.bag.share ? [] : [{ label: 'Repartir Exp.', short: 'REPARTIR EXP', color: '#ffd84a', w: .5, k: 'share' }]), { label: 'Ball especial', short: 'BALL', color: '#e0a040', w: 1, k: 'ball' }], 'OBJETO', r => {
-      if (r.k === 'candy') { log('🍬 Encuentras un Caramelo raro.'); return evolveSure('¡Un Caramelo raro!'); }
+      if (r.k === 'candy') {
+        log('🍬 Encuentras un Caramelo raro.');
+        // si nadie puede evolucionar, se guarda en la mochila y se usa solo en cuanto llegue alguien que pueda (finish de flujo.js)
+        if (!run.team.some(canEvolve)) { run.bag.candy = (run.bag.candy || 0) + 1; renderAdv(); saveRun();
+          return advSay('¡Un Caramelo raro! Nadie de tu equipo puede evolucionar ahora, así que lo guardas en la mochila: se usará solo en cuanto tengas un Pokémon que pueda.', goOn); }
+        return evolveSure('¡Un Caramelo raro!');
+      }
       if (r.k === 'ball') { run.ball = 1; log('⚪ Encuentras una Ball especial: +1 quesito en la próxima captura.'); return advSay('¡Una Ball especial! En tu próxima captura tendrás un quesito verde más.', goOn); }
       run.bag[r.k] = (run.bag[r.k] || 0) + 1; log(`🎒 Encuentras: ${ITEMS[r.k].name}.`); renderAdv();
       advSay(`¡Has encontrado ${ITEMS[r.k].name}! ${ITEMS[r.k].desc}`, goOn);

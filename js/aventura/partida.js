@@ -215,8 +215,8 @@ async function exportRun(x) {
       const lg = g.createLinearGradient(cx + cw, cy, cx, cy + ch);
       lg.addColorStop(0, 'rgba(255,255,255,.6)'); lg.addColorStop(.26, c1); lg.addColorStop(.7, c2); lg.addColorStop(.96, 'transparent');
       g.globalAlpha = .18; g.fillStyle = lg; g.beginPath(); g.moveTo(cx + cw * .68, cy); g.lineTo(cx + cw, cy); g.lineTo(cx + cw, cy + ch * .24); g.lineTo(cx + cw * .4, cy + ch); g.lineTo(cx, cy + ch); g.lineTo(cx, cy + ch * .5); g.closePath(); g.fill(); g.globalAlpha = 1;
-      // número grande de fondo, solo el contorno
-      g.font = F(300, no.length > 3 ? 62 : 76); g.textAlign = 'right'; g.lineWidth = 1.2; g.strokeStyle = c1 + '77'; g.strokeText(no, cx + cw + 4, cy + 116);
+      // número grande de fondo, solo el contorno, abajo a la derecha (detrás del nombre y los tipos)
+      g.font = F(300, no.length > 3 ? 62 : 76); g.textAlign = 'right'; g.lineWidth = 1.2; g.strokeStyle = c1 + '77'; g.textBaseline = 'alphabetic'; g.strokeText(no, cx + cw - 6, cy + ch - 8);
       // rayita de color arriba a la izquierda
       g.fillStyle = c1; g.shadowColor = c1; g.shadowBlur = 10; g.fillRect(cx, cy, 34, 3); g.shadowBlur = 0;
       // arriba: «Nº 006» y «GEN I»

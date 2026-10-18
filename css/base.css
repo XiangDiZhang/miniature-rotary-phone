@@ -72,7 +72,15 @@ body {
   background: var(--bg);
   background-image:
     radial-gradient(1200px 600px at 80% -10%, rgba(var(--glow-rgb),.07), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(var(--warm-rgb),.05), transparent 60%);
+    radial-gradient(900px 500px at -10% 110%, rgba(var(--warm-rgb),.05), transparent 60%),
+    /* decoración: una Poké Ball enorme (solo el contorno) asomando abajo a la izquierda, otra pequeña arriba a la derecha y una rejilla de puntos */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%237fd6ff' stroke-opacity='.07' stroke-width='3'%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Cpath d='M4 100h66M130 100h66'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Ccircle cx='100' cy='100' r='16'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23ff5a46' stroke-opacity='.06' stroke-width='4'%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Cpath d='M4 100h66M130 100h66'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3C/svg%3E"),
+    radial-gradient(circle, rgba(var(--glow-rgb),.085) 1px, transparent 1.6px);
+  background-size: auto, auto, 640px 640px, 260px 260px, 24px 24px;
+  background-position: 0 0, 0 0, -220px calc(100% + 240px), calc(100% + 70px) -70px, 0 0;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-attachment: fixed;
   color: var(--fg);
   font-family: var(--f-body);
   font-size: 15px;
@@ -173,3 +181,7 @@ h1 b { font-weight: 600; }
   .head-actions { gap: 5px; flex-wrap: nowrap; }
   .head-actions .sound { padding: 6px 9px; font-size: 9.5px; letter-spacing: .08em; white-space: nowrap; }
 }
+
+/* ---- Decoración de los paneles (en vez de un color liso): brillo arriba a la izquierda y rayas diagonales muy finas ---- */
+.frame { background-image: radial-gradient(90% 70% at 0% 0%, rgba(var(--glow-rgb), .06), transparent 60%),
+  repeating-linear-gradient(135deg, rgba(var(--glow-rgb), .022) 0 1px, transparent 1px 12px); }
