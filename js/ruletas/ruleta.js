@@ -40,6 +40,7 @@ class Wheel {
     return this.hasNext && this.hasNext() ? 'SEGUIR' : null;
   }
   set(segs, center = '?') {
+    this.gen = (this.gen || 0) + 1;   // cada ruleta nueva tiene su número: las animaciones de la anterior ya no la tocan
     if (this === advWheel) { wheelRelease(this.keepM); }
     const tot = segs.reduce((a, s) => a + (s.w || 1), 0); let acc = 0;
     this.segs = segs.map(s => { const a = (s.w || 1) / tot * TAU, o = { ...s, a0: acc, arc: a }; acc += a; return o; });

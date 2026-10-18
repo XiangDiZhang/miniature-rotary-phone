@@ -5,7 +5,8 @@ document.addEventListener('keydown', e => {
   if (state.scene === 'menu' && ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
     e.preventDefault();
     const dir = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : -1;
-    markActive((cursor + dir + items.length) % items.length);
+    let i = cursor; do { i = (i + dir + items.length) % items.length; } while (items[i].el.hidden && i !== cursor);   // salta los ocultos (Partidas en curso, si no hay)
+    markActive(i);
     items[cursor].el.focus();
   }
   if (infoOpen) return;

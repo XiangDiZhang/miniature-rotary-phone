@@ -33,13 +33,15 @@ function teamTile(m, i) {
 // megapiedra y Banda Dinamax equipadas: esquina inferior izquierda de la ficha; en combate brillan y se pueden pulsar
 const GEM_SVG = '<svg viewBox="0 0 24 24"><path d="M7 3h10l4 6-9 12L3 9z" class="gem"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12" class="ln"/></svg>';
 const DMAX_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" class="gem"/><path d="M12 6l2 4.5 4.5.5-3.5 3 1 4.5L12 16l-4 2.5 1-4.5-3.5-3 4.5-.5z" class="ln"/></svg>';
+// icono de la Banda Dinamax: su dibujo de la carpeta de sprites (si faltara, el dibujado)
+const dmaxIcon = () => { const r = SPR.item && SPR.item.get(DMAX_SPR.spr); return r ? `<img class="dmax-img" src="${r.u}" alt="">` : DMAX_SVG; };
 // icono de la megapiedra de cada mega (Charizardita X, Lucarita Z…); si faltara, una gema dibujada
 const stoneHTML = id => { const r = stoneIcon(id); return r ? `<img class="stone${MEGA_STONES[id][0].startsWith('gen9/') ? '' : ' px'}" src="${r.u}" alt="">` : GEM_SVG; };
 function toolsHTML(m, i) {
   const live = canTransform(), out = [];
   if (m.stone && formRec(m.stone)) { const nm = stoneName(m.stone);
     out.push(`<button class="tm-tool mega${m.tf && m.tf.kind === 'mega' ? ' on' : live ? ' live' : ''}" type="button" data-tool="mega" data-i="${i}" title="${nm}${live ? ': pulsa para megaevolucionar en este giro' : ': úsala en combate'}" aria-label="${nm} de ${name4(m)}">${stoneHTML(m.stone)}</button>`); }
-  if (m.dmax && gmaxForms(m).length) out.push(`<button class="tm-tool dmax${m.tf && m.tf.kind === 'gmax' ? ' on' : live ? ' live' : ''}" type="button" data-tool="gmax" data-i="${i}" title="Banda Dinamax${live ? ': pulsa para gigamaxizarlo en este giro' : ': úsala en combate'}" aria-label="Banda Dinamax de ${name4(m)}">${DMAX_SVG}</button>`);
+  if (m.dmax && gmaxForms(m).length) out.push(`<button class="tm-tool dmax${m.tf && m.tf.kind === 'gmax' ? ' on' : live ? ' live' : ''}" type="button" data-tool="gmax" data-i="${i}" title="Banda Dinamax${live ? ': pulsa para gigamaxizarlo en este giro' : ': úsala en combate'}" aria-label="Banda Dinamax de ${name4(m)}">${dmaxIcon()}</button>`);
   return out.length ? `<span class="tm-tools">${out.join('')}</span>` : '';
 }
 const name4 = m => mname(m).replace(/"/g, '');
@@ -137,7 +139,8 @@ function renderAdv() {
   // si el equipo no ha cambiado, no se vuelve a dibujar (así las animaciones de los Pokémon no se reinician)
   const sig = run.team.map(m => [m.n, m.form || 0, m.shiny ? 1 : 0, offTile(m) ? 1 : 0, m.nick || '', m.stone || 0, m.dmax ? 1 : 0, m.tf ? m.tf.kind : ''].join('.')).join('|') + '#' + SPR.normal.size + '.' + SPR.shiny.size + '.' + (run.bag.share ? 1 : 0) + (live ? 'L' : '');
   const same = TM._sig === sig && [...TM.querySelectorAll('.tmw')].every((el, i) => el._m === run.team[i]);
-  if (!same) {
+  // mientras arrastras un Pokémon del equipo no se vuelve a dibujar (si no, se vería a la vez en tu mano y en su hueco)
+  if (!same && !document.body.classList.contains('tm-dragging')) {
     const before = flipCapture(TM, '.tmw');
     TM.innerHTML = slots.map((m, i) => m ? teamTile(m, i) : '<span class="tm empty"></span>').join('');
     TM.querySelectorAll('.tmw').forEach((el, i) => el._m = run.team[i]);
@@ -147,13 +150,13 @@ function renderAdv() {
     TM.querySelectorAll('[data-tool]').forEach(b => b.onclick = e => { e.stopPropagation(); transformMon(run.team[+b.dataset.i], b.dataset.tool); });
   }
   const pcb = pcButtonHTML(); if ($('pcOpen')._h !== pcb) { $('pcOpen')._h = pcb; $('pcOpen').innerHTML = pcb; $('pcOpen').setAttribute('aria-label', `Caja PC: ${boxList().length} Pokémon`); }
-  if (!$('pcShade').hidden) renderPC();
+  if (!$('pcShade').hidden && !document.body.classList.contains('pc-dragging')) renderPC();
   // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
   const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);
   const bag = (items.map(([k, v]) => `<span class="bag-slot" data-k="${k}" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${bagIcon(k)}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
     + stones.map(m => { const nm = mname({ n: m.n, form: m.stone }), st = stoneName(m.stone); return `<span class="bag-slot gem" data-k="st${m.stone}" style="--c:${TYPE_COLORS[formRec(m.stone)[1][2][0]]}" title="${st} (${nm}), equipada en ${mname(m)}. En combate, púlsala en su ficha para megaevolucionar durante ese giro."><span class="bag-ico">${stoneHTML(m.stone)}</span><span class="bag-nm">${st}</span></span>`; }).join('')
-    + (bands.length ? `<span class="bag-slot gem" data-k="dmax" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${DMAX_SVG}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
+    + (bands.length ? `<span class="bag-slot gem" data-k="dmax" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${dmaxIcon()}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
     + (run.ball ? `<span class="bag-slot buff" data-k="ball" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${bagIcon('ball')}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
     || '<span class="bag-empty">Mochila vacía</span>')
     + (stolenList().length ? `<span class="bag-note">Robado por el ${VIL().name}: ${stolenList().map(mname).join(', ')}</span>` : '');

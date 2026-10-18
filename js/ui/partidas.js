@@ -22,7 +22,7 @@ function renderSavesCard() {
   $('savesIco').innerHTML = typeof PC_BOX_SVG !== 'undefined' ? PC_BOX_SVG : '';
   $('savesSub').textContent = s.length ? `${s.length} ${s.length > 1 ? 'partidas sin terminar' : 'partida sin terminar'} · ${s.map(([k]) => genOf(k).region).join(', ')}` : 'No tienes ninguna partida a medias';
   $('savesPeek').innerHTML = s.map(([k, r]) => `<span style="--c:${genOf(k).color}">${saveSpr(r.team[0])}</span>`).join('');
-  $('savesCard').classList.toggle('empty', !s.length);
+  $('savesCard').hidden = !s.length;   // sin partidas a medias, el botón no sale
 }
 function renderSaves() {
   const s = activeSaves(), L = $('savesList');

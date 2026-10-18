@@ -69,11 +69,14 @@
 .entry-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .entry-row .btns { margin: 0; }
 .entry-row #advEntry .wip { flex-basis: auto !important; }
+.hist-view .hist-list { padding: 22px 0; }   /* la primera y la última partida no se quedan bajo el difuminado */
+/* pantallas bajas: la tarjeta de la región sin los datos, para dejar sitio al historial */
+@media (max-height: 820px) and (min-width: 641px) { #scene-chosen .chosen .right { display: none; } #scene-chosen .chosen { grid-template-columns: 1fr; } #scene-chosen .chosen .left { min-height: 96px; border-right: 0; } }
 /* el historial es un hueco con su propio desplazamiento (como la Pokédex): la página no crece, con los bordes difuminados */
 .hist-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .hist-top .label { flex: 1; min-width: 180px; }
 .hist-seg button b { font-weight: 600; margin-left: 4px; opacity: .8; }
-.hist-view { --fd: 26px; height: 360px; overflow-y: auto; overscroll-behavior: contain; padding: 10px 10px 18px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--bg) 96%, #fff 4%);
+.hist-view { --fd: 56px; height: 360px; overflow-y: auto; overscroll-behavior: contain; padding: 10px 10px 18px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--bg) 96%, #fff 4%);
   scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; -webkit-mask-image: linear-gradient(transparent, #000 var(--fd), #000 calc(100% - var(--fd)), transparent); mask-image: linear-gradient(transparent, #000 var(--fd), #000 calc(100% - var(--fd)), transparent); }
 .hist-exp { margin-left: 8px; font-size: 10px; padding: 4px 10px; color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 55%, transparent); }
 .hist-exp:hover { background: color-mix(in srgb, var(--cyan) 14%, transparent); }

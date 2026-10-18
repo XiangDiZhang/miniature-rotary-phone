@@ -238,6 +238,7 @@ const ITEMS = {
 };
 // spr: icono del objeto (nombre del archivo de items de PokeAPI, en assets/sprites/objetos.js); sin icono, se dibuja (BAG_ICON)
 const BALL_SPR = { spr: 'level-ball' };   // Ball de Kurt
+const DMAX_SPR = { spr: 'dynamax-band' }; // Banda Dinamax (dibujo oficial, reducido; en assets/sprites/originales/items)
 
 // ---- Diario: cada entrada empieza por un emoji que dice qué ha pasado; aquí, cómo se dibuja ----
 // spr: objeto de la esquina (o el icono, si no sale ningún Pokémon) · svg: dibujo propio · c: color
@@ -251,7 +252,7 @@ const LOG_ICONS = {
   '🧪': { item: 1, spr: 'potion', c: '#b46cff' }, '💊': { item: 1, spr: 'potion', c: '#b46cff' },
   '🎒': { item: 1, spr: 'dowsing-machine', c: '#b46cff' }, '🍬': { spr: 'rare-candy', c: '#5ad1c8' }, '🍵': { spr: 'tea', c: '#7ac74c' },
   '⚪': { spr: 'level-ball', c: '#e0a040' }, '🪢': { spr: 'escape-rope', c: '#c9a36a' },
-  '💎': { mon: 1, spr: 'key-stone', c: '#5ad1c8' }, '↩️': { mon: 1, spr: 'key-stone', c: '#8592ab' }, '🔴': { mon: 1, svg: 'dmax', c: '#ff2d55' },
+  '💎': { mon: 1, spr: 'key-stone', c: '#5ad1c8' }, '↩️': { mon: 1, spr: 'key-stone', c: '#8592ab' }, '🔴': { mon: 1, spr: 'dynamax-band', c: '#ff2d55' },
   '🥚': { mon: 1, spr: 'mystery-egg', c: '#f2e27a' }, '🌟': { mon: 1, spr: 'master-ball', c: '#ffd84a' },
   '🦒': { mon: 1, spr: 'safari-ball', c: '#7ac74c' }, '🦴': { mon: 1, spr: 'old-amber', c: '#c9b37e' }, '🥋': { mon: 1, spr: 'black-belt', c: '#c22e28' },
   '🎰': { mon: 1, item: 1, spr: 'coin-case', c: '#ffd84a' }, '🎁': { mon: 1, item: 1, spr: 'poke-ball', c: '#ff9f43' },

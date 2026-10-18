@@ -174,9 +174,9 @@ function gameOver(who) {
   if (reduceMotion) return phaseGameOver();
   loseScreen(who, phaseGameOver);
 }
-// cine = se ha visto la cinemática de la derrota: al cerrarla se vuelve al inicio (el resumen ya salía en ella)
+// cine = se ha visto la cinemática de la derrota: al cerrarla se va a la selección de región (el resumen ya salía en ella)
 function phaseGameOver(cine) {
-  if (cine === true) return goMenu();
+  if (cine === true) return goPlay();
   $('advStep').textContent = 'Fin de la partida'; advWheel.enabled = false;
   advSay(`${run.overMsg || `${run.lostTo || 'Tu rival'} te ha derrotado y no te quedaban Pociones.`} Fin de la partida: ${run.points} puntos (rango ${rank(run.points)}).${run.record ? ' ¡Nuevo récord!' : ''}`, () => advButtons([
     { label: 'Nueva partida', fn: () => advStart(true) }, { label: '← Menú', ghost: true, fn: goMenu }]));

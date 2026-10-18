@@ -96,11 +96,13 @@ function renderHistory(region) {
 function fitHistory() {
   const v = document.querySelector('#advHist .hist-view'); if (!v || state.scene !== 'chosen') return;
   const top = v.getBoundingClientRect().top + scrollY;
-  let h = Math.max(200, Math.floor(innerHeight - top - 22)); v.style.height = h + 'px';
+  let h = Math.max(140, Math.floor(innerHeight - top - 22)); v.style.height = h + 'px';
   // lo que quede por debajo (márgenes de la página) también cuenta: se descuenta para que la página no se desplace
-  const over = document.documentElement.scrollHeight - innerHeight; if (over > 0) v.style.height = Math.max(200, h - over) + 'px';
+  const over = document.documentElement.scrollHeight - innerHeight; if (over > 0) v.style.height = Math.max(140, h - over) + 'px';
 }
 addEventListener('resize', fitHistory);
+// lo de arriba cambia de alto después (el texto del profesor se va escribiendo, los botones…): se vuelve a medir
+try { const ro = new ResizeObserver(() => fitHistory()); ['chosenText', 'chosenCard', 'advEntry'].forEach(id => $(id) && ro.observe($(id))); } catch (e) {}
 
 // ---- Imagen de una partida: tu entrenador (de momento, una silueta neón; más adelante, su sprite) con su nombre debajo,
 // y a la derecha tus 6 Pokémon con su nombre, más la región, el resultado y los puntos. Se ve en grande y se puede descargar. ----

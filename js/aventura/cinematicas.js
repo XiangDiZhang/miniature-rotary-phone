@@ -108,10 +108,10 @@ function flyHome(m, from, url, done) {
   if (!to || !from || !url || reduceMotion) return land();
   const S = Math.max(40, Math.min(from.width, from.height)), f = document.createElement('div'); f.className = 'fly-mon';
   f.innerHTML = `<img src="${url}" alt="">`; f.style.width = f.style.height = S + 'px';
-  f.style.left = (from.left + from.width / 2 - S / 2) + 'px'; f.style.top = (from.top + from.height / 2 - S / 2) + 'px'; document.body.appendChild(f);
+  f.style.left = (from.left + from.width / 2 - S / 2) + 'px'; f.style.top = (from.top + from.height / 2 - S / 2) + 'px'; document.body.appendChild(flight(m, f));
   const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2), sc = Math.max(.2, to.height / S);
   f.animate([{ transform: 'none' }, { transform: `translate(${dx * .5}px, ${dy * .5 - 60}px) scale(${(1 + sc) / 2}) rotate(-6deg)`, offset: .55 }, { transform: `translate(${dx}px, ${dy}px) scale(${sc})` }],
-    { duration: 640, easing: 'cubic-bezier(.3,.6,.35,1)', fill: 'forwards' }).onfinish = () => { land(); f.remove(); beep(760, .05, .03); };
+    { duration: 640, easing: 'cubic-bezier(.3,.6,.35,1)', fill: 'forwards' }).onfinish = () => { land(); landedFly(m, f); beep(760, .05, .03); };
 }
 const sprUrl = (id, n, shiny) => { const r = (shiny && SPR.shiny.get(id)) || SPR.normal.get(id) || SPR.normal.get(n || id); return r ? r.u : null; };
 function picHTML(x, shiny, cls) {

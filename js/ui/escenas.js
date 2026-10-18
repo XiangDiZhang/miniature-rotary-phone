@@ -9,7 +9,12 @@ $('fsBtn').onclick = async () => {
     else { const el = document.documentElement; await (el.requestFullscreen || el.webkitRequestFullscreen).call(el); }
   } catch (e) { $('fsBtn').title = 'Este navegador no deja poner la pantalla completa aquí'; beep(220, .08, .03); }
 };
-const syncFs = () => { const on = !!(document.fullscreenElement || document.webkitFullscreenElement); $('fsBtn').setAttribute('aria-pressed', on); $('fsBtn').textContent = on ? '⤢' : '⛶'; };
+// en pantalla completa, Esc no la quita (bloqueo de teclado: en Chrome y Edge hay que mantener Esc pulsado unos segundos;
+// en los navegadores que no lo permiten, Esc la sigue quitando). Se sale con el botón de la cabecera.
+const syncFs = () => {
+  const on = !!(document.fullscreenElement || document.webkitFullscreenElement); $('fsBtn').setAttribute('aria-pressed', on); $('fsBtn').textContent = on ? '⤢' : '⛶';
+  try { if (navigator.keyboard && navigator.keyboard.lock) { if (on) navigator.keyboard.lock(['Escape']).catch(() => {}); else navigator.keyboard.unlock(); } } catch (e) {}
+};
 document.addEventListener('fullscreenchange', syncFs); document.addEventListener('webkitfullscreenchange', syncFs);
 $('soundBtn').onclick = () => {
   soundOn = !soundOn; syncSound(); beep(880);
@@ -28,7 +33,7 @@ function show(scene) {
   document.body.classList.remove('side-open');
   if (scene === 'dex') scrollTo(0, 0);
   if (scene === 'dex') renderDex();
-  if (scene === 'menu') { typeText($('menuText'), `Bienvenido, ${trainerName()}. ¿Qué generación quieres jugar? Si no te decides, deja que gire la ruleta.`); markActive(cursor); if (!icoRunning) icoLoop(); renderSavesCard(); }
+  if (scene === 'menu') { typeText($('menuText'), `Bienvenido, ${trainerName()}. ¿Qué generación quieres jugar? Si no te decides, deja que gire la ruleta.`); renderSavesCard(); if (items[cursor] && items[cursor].el.hidden) cursor = 1; markActive(cursor); if (!icoRunning) icoLoop(); }
   if (scene === 'saves') renderSaves();
   if (scene === 'roulette') { sizeWheel(); resetRoulette(); }
 }
