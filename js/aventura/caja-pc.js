@@ -138,6 +138,8 @@ function closePC() { $('pcShade').hidden = true; pcSel = null; }
   $('pcShade').querySelector('.pc-ico').innerHTML = PC_BOX_SVG;
   // icono delante del título de cada panel (Equipo, Mochila, Diario)
   ['team', 'bag', 'log'].forEach((k, i) => { const h = document.querySelector(`[data-card="${i}"] .card-head .label`); if (h) h.insertAdjacentHTML('afterbegin', `<span class="card-ico">${CARD_ICONS[k]}</span>`); });
+  // y en las pestañas del móvil, solo el icono (el nombre queda para los lectores de pantalla)
+  ['team', 'bag', 'log'].forEach((k, i) => { const b = document.querySelector(`#advTabs [data-tab="${i}"]`); if (b) b.insertAdjacentHTML('afterbegin', `<span class="tab-ico">${CARD_ICONS[k]}</span>`); });
   const tag = $('pcShade').querySelector('.pc-tag.box'); if (tag) tag.insertAdjacentHTML('afterbegin', `<i class="pc-tag-ico">${PC_BOX_SVG}</i>`);
   addEventListener('keydown', e => { if (e.key === 'Escape' && !$('pcShade').hidden) { e.stopImmediatePropagation(); closePC(); } }, true);
 })();

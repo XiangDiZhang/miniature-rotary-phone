@@ -132,9 +132,8 @@ addEventListener('resize', () => centerBeam());
 let infoSh = false;
 const withShiny = (s, f) => { const s0 = shinyMode; shinyMode = s; try { return f(); } finally { shinyMode = s0; } };
 function openInfo(n, from, formId, peek, keep) {
-  // en la Pokédex (modo usuario), su versión shiny solo se ve si alguna vez lo conseguiste shiny
-  // (salvo que llegues desde la línea evolutiva de una ficha shiny: entonces sigue siendo shiny)
-  if (!infoNav && !keep && shinyMode && !dexShiny(n)) { shinyMode = false; try { return openInfo(n, from, formId, peek); } finally { shinyMode = true; } }
+  // su versión shiny solo se ve si alguna vez lo conseguiste shiny (en modo desarrollador, todas)
+  if (!infoNav && shinyMode && !dexShiny(n)) { shinyMode = false; try { return openInfo(n, from, formId, peek); } finally { shinyMode = true; } }
   const row = BY_NUM.get(n); if (!row) return;
   const I = INFO[n - 1], F = formId && (FORMS[n] || []).find(f => f[0] === formId);
   const [, baseName, g, baseTy, leg, myth] = row;
@@ -168,7 +167,7 @@ function openInfo(n, from, formId, peek, keep) {
     <div class="genus">${genus || 'Pokémon'}</div>
     <div class="types2">${ty.map(tchip).join('')}</div>
     <div class="badges">${leg ? '<span class="badge">LEGENDARIO</span>' : ''}${myth ? '<span class="badge">SINGULAR</span>' : ''}${F ? `<span class="badge form">${{ mega: 'MEGAEVOLUCIÓN', gmax: 'GIGAMAX', reg: 'FORMA REGIONAL', form: 'OTRA FORMA' }[F[8]]}</span>` : ''}</div>
-    ${hasShiny && !infoNav && (dexShiny(n) || keep) ? `<button class="mini-btn${shinyMode ? ' on' : ''}" id="infoShiny" type="button">✦ SHINY · ${shinyMode ? 'ON' : 'OFF'}</button>` : ''}`;
+    ${hasShiny && !infoNav && dexShiny(n) ? `<button class="mini-btn${shinyMode ? ' on' : ''}" id="infoShiny" type="button">✦ SHINY · ${shinyMode ? 'ON' : 'OFF'}</button>` : ''}`;
   const total = st.reduce((a, b) => a + b, 0);
   const fem = gr < 0 ? null : gr / 8 * 100;
   BODY.innerHTML = `

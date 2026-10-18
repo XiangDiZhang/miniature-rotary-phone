@@ -85,10 +85,11 @@ function renderDex() {
     dexFilter.types.every(t => ty.includes(t)) &&
     (!dexFilter.cls || (dexFilter.cls === 'leg' ? leg : myth)) &&
     (!dexFilter.own || PDX.c.has(n)) &&
+    (!shinyMode || dexShiny(n)) &&            // con el botón shiny, solo los que has conseguido shiny (en modo desarrollador, todos)
     (!q || NAME_KEY.get(n).includes(q) || (qn && (String(num).startsWith(qn) || String(n).startsWith(qn))) || q === '0' && num === 0));
   const active = !!(dexFilter.q || dexFilter.gen || dexFilter.types.length || dexFilter.cls || dexFilter.own);
   $('dexClear').hidden = !active;
-  $('dexCount').textContent = `${devMode ? '' : `${base.filter(r => PDX.c.has(r[1][0])).length} CONSEGUIDOS · `}${rows.length} DE ${base.length} · ${reg ? 'POKÉDEX DE ' + reg.name.toUpperCase() + ' (' + reg.games.toUpperCase() + ')' : 'POKÉDEX NACIONAL'}${dexFilter.types.length ? ' · ' + dexFilter.types.join(' + ').toUpperCase() : ''}`;
+  $('dexCount').textContent = `${devMode ? '' : shinyMode ? `✦ ${base.filter(r => PDX.s.has(r[1][0])).length} SHINY · ` : `${base.filter(r => PDX.c.has(r[1][0])).length} CONSEGUIDOS · `}${rows.length} DE ${base.length} · ${reg ? 'POKÉDEX DE ' + reg.name.toUpperCase() + ' (' + reg.games.toUpperCase() + ')' : 'POKÉDEX NACIONAL'}${dexFilter.types.length ? ' · ' + dexFilter.types.join(' + ').toUpperCase() : ''}`;
   $('dexSub').hidden = true;
   const showTicks = !reg && !genStart, key = JSON.stringify([numMode, dexFilter]), reset = key !== lastDexKey;
   lastDexKey = key;
@@ -97,7 +98,7 @@ function renderDex() {
   if (look === listKey) return rail.refresh(showTicks, reset);
   listKey = look; clearTimeout(fillTimer);
   const list = $('dexList');
-  if (!rows.length) { list.innerHTML = `<li class="dex-empty">${dexFilter.own && !PDX.c.size ? 'Aún no has desbloqueado ningún Pokémon: captúralos en tus partidas.' : 'Ningún Pokémon coincide con la búsqueda.'}</li>`; return rail.refresh(showTicks, reset); }
+  if (!rows.length) { list.innerHTML = `<li class="dex-empty">${shinyMode && !devMode && !PDX.s.size ? 'Aún no has conseguido ningún Pokémon shiny: cuando lo consigas en tus partidas, aparecerá aquí.' : dexFilter.own && !PDX.c.size ? 'Aún no has desbloqueado ningún Pokémon: captúralos en tus partidas.' : 'Ningún Pokémon coincide con la búsqueda.'}</li>`; return rail.refresh(showTicks, reset); }
   const label = reg ? reg.name.slice(0, 3).toUpperCase() : genStart ? 'GEN ' + ROMAN[dexFilter.gen] + ' ·' : 'Nº';
   const html = from => rows.slice(from, from + (from ? CHUNK : FIRST)).map(r => dexItem(r, label, !genStart && !reg)).join('');
   list.innerHTML = html(0);

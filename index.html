@@ -300,8 +300,10 @@
         <p class="drag-hint">Toca la ruleta para girar o continuar · o agárrala y lánzala tú</p>
       </div>
     </div>
-    <button class="lead-tab" id="leadTab" type="button">Líder</button><div class="lead-shade" id="leadShade"></div>
-    <div class="adv-tabs" id="advTabs" role="tablist"><button type="button" data-tab="0">Equipo</button><button type="button" data-tab="1">Mochila</button><button type="button" data-tab="2">Diario</button></div>
+    <div class="lead-shade" id="leadShade"></div>
+    <!-- móvil en vertical: pestañas en el borde izquierdo (líder, mochila y diario) -->
+    <div class="m-rail"><button class="lead-tab" id="leadTab" type="button">Líder</button>
+    <div class="adv-tabs" id="advTabs" role="tablist"><button type="button" data-tab="0" title="Equipo" aria-label="Equipo"><span class="t">Equipo</span></button><button type="button" data-tab="1" title="Mochila" aria-label="Mochila"><span class="t">Mochila</span></button><button type="button" data-tab="2" title="Diario" aria-label="Diario"><span class="t">Diario</span></button></div></div>
     <div class="adv-grid" id="advGrid" data-tab="0">
       <div class="frame adv-card" data-card="0"><div class="card-head"><p class="label">Equipo · combaten</p><button class="mini-btn pc-open" id="pcOpen" type="button">Caja PC</button></div><div class="adv-team" id="advTeam"></div></div>
       <div class="frame adv-card adv-scroll bag-card" data-card="1"><div class="card-head"><p class="label">Mochila</p><div class="adv-points" id="advPoints"></div></div><div class="adv-bag" id="advBag"></div><div class="adv-badges" id="advBadges"></div></div>
