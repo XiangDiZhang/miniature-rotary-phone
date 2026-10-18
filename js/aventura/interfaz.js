@@ -141,14 +141,22 @@ function placePath() {
 // ---- La ruleta crece todo lo posible sin que el equipo, las medallas o el diario se salgan de la pantalla ----
 // móvil en vertical: pantalla fija (sin desplazarse); móvil en horizontal: el diseño del ordenador, en pequeño
 const PHONE_V = '(max-width: 760px) and (orientation: portrait)', PHONE_H = '(orientation: landscape) and (max-height: 520px)';
+// alto de verdad de lo que se ve en el móvil (sin la barra del navegador): 100vh la incluye en muchos móviles y
+// lo de abajo (el botón de girar) quedaba escondido; la pantalla fija de la aventura usa este alto (--app-h)
+{
+  const setAppH = () => document.documentElement.style.setProperty('--app-h', Math.round(window.visualViewport ? visualViewport.height : innerHeight) + 'px');
+  setAppH(); addEventListener('resize', setAppH); addEventListener('orientationchange', () => setTimeout(setAppH, 250));
+  if (window.visualViewport) visualViewport.addEventListener('resize', setAppH);
+}
 function fitAdv() {
   if (state.scene !== 'adv' || !advWheel) return;
   const st = document.querySelector('.adv-stage'), box = document.querySelector('.adv-wbox'), track = document.querySelector('.adv-track');
   let sz;
   if (matchMedia(PHONE_V).matches) {
     // la ruleta ocupa el hueco que deja todo lo demás (su caja tiene el alto que sobra), dejando sitio a la línea de fases
-    sz = Math.min(box.clientWidth, box.clientHeight - track.offsetHeight - 4);
-    sz = Math.max(130, Math.floor(sz));
+    // (un poco más pequeña que el hueco, para que nada quede justo al borde de abajo)
+    sz = Math.min(box.clientWidth * .94, box.clientHeight - track.offsetHeight - 10);
+    sz = Math.max(120, Math.floor(sz));
     document.documentElement.style.setProperty('--wsz', sz + 'px'); advWheel.resize(); placePath(); return;
   }
   if (matchMedia(PHONE_H).matches) {
@@ -402,8 +410,18 @@ function renderCard() {
   }
   el.style.setProperty('--c', c); el.hidden = false;
   if (el._h !== html) { el._h = html; el.innerHTML = html; }   // (renderAdv la llama mucho: solo se redibuja si cambia)
-  if ($('leadTab')) $('leadTab').textContent = L.kind === 'gym' ? (L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? 'Campeón' : REG().trials ? 'Prueba' : 'Líder') : L.kind === 'leg' ? 'Ruta' : L.kind === 'prep' ? 'Meseta' : 'Zona';
+  // pestaña del móvil: un botón redondo con icono (medalla en los combates de gimnasio y liga, mapa en el resto); el nombre, para los lectores de pantalla
+  const lt = $('leadTab');
+  if (lt) {
+    const name = L.kind === 'gym' ? (L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? 'Campeón' : REG().trials ? 'Prueba' : 'Líder') : L.kind === 'leg' ? 'Ruta' : L.kind === 'prep' ? 'Meseta' : 'Zona';
+    const h = `<span class="tab-ico">${L.kind === 'gym' ? LEAD_SVG.gym : LEAD_SVG.map}</span><span class="t">${name}</span>`;
+    if (lt._h !== h) { lt._h = h; lt.innerHTML = h; lt.title = name; lt.setAttribute('aria-label', name); }
+  }
 }
+const LEAD_SVG = {
+  gym: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2.5h8l-2 6h-4z" fill="#ff5a46" stroke="#10131c" stroke-width=".9"/><circle cx="12" cy="15" r="6.5" fill="#ffd84a" stroke="#10131c" stroke-width="1.1"/><path d="M12 11.2l1.2 2.5 2.7.3-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.3z" fill="#fff6c8" stroke="#b08a10" stroke-width=".6"/></svg>',
+  map: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2.5 6 2.5 6-2.5v14.5l-6 2.5-6-2.5-6 2.5z" fill="#7ee0a1" stroke="#10131c" stroke-width="1.1" stroke-linejoin="round"/><path d="M9 3.5v14.5M15 6v14.5" stroke="#10131c" stroke-width=".9" opacity=".6"/><circle cx="12" cy="10" r="2.6" fill="#ff5a46" stroke="#10131c" stroke-width=".9"/></svg>',
+};
 
 // ---- Diario: pulsar el Pokémon de una entrada abre su ficha (agrandándose desde su icono, y vuelve a él al cerrarla) ----
 (() => {

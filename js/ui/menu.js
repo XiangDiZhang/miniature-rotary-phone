@@ -23,10 +23,10 @@ function buildMenu() {
     grid.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 740, 1046]); pick(g); } });
   }
-  // Modo Test: el camino del Modo Caos, pero eliges tú el equipo y los objetos
+  // Modo Test (solo en modo desarrollador): el camino del Modo Caos, pero eliges tú el equipo y los objetos
   {
     const g = TEST_GEN, b = document.createElement('button');
-    b.type = 'button'; b.className = 'card test'; b.style.setProperty('--c', g.color);
+    b.type = 'button'; b.className = 'card test dev-only'; b.hidden = !devMode; b.style.setProperty('--c', g.color);   // solo en modo desarrollador
     b.innerHTML = cardHTML(g, false).replace(`GEN ${g.roman}`, 'MODO TEST');
     b.setAttribute('aria-label', 'Modo Test: elige tu equipo y tus objetos');
     grid.appendChild(b);

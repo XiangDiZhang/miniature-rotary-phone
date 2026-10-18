@@ -296,7 +296,7 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
 
 /* ---- Móvil ---- */
 .lead-tab, .lead-shade, .m-team-slot { display: none; }
-.m-rail { display: contents; }   /* fuera del móvil en vertical no cuenta como caja (no descoloca la cuadrícula) */
+.m-rail, .adv-say { display: contents; }   /* fuera del móvil en vertical no cuentan como caja (no descolocan nada) */
 @media (max-width: 899px), (max-height: 559px) {
   .adv-grid { min-height: 0; }
 }
@@ -470,19 +470,30 @@ img.stone.px { image-rendering: pixelated; }
   .adv-stage #advBtns { min-height: 38px; gap: 6px; }
   .adv-stage #advBtns .btn { padding: 10px 16px; font-size: 11px; }
   .extra-chip { margin: 0; font-size: 10px; padding: 2px 9px; }
-  /* pestañas en el borde izquierdo, una encima de otra: Líder (texto) y Mochila y Diario (solo icono). Así no tapan nada de abajo
-     y la pantalla gana el hueco de la barra que iba al pie. El contenido deja libre esa franja */
-  body.wide-adv { padding: 6px 10px calc(8px + env(safe-area-inset-bottom, 0px)) 34px; }
-  body.wide-adv .m-rail { position: fixed; z-index: 70; left: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-  body.wide-adv .m-rail .lead-tab { position: static; transform: none; z-index: auto; }
-  .adv-tabs { position: static; flex-direction: column; gap: 4px; padding: 4px 4px 4px 3px; border-left: 0; border-radius: 0 10px 10px 0; }
-  .adv-tabs button { flex: none; width: 26px; height: 30px; padding: 0; display: grid; place-items: center; border-radius: 7px; position: relative; }
-  .adv-tabs .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .adv-tabs .tab-ico svg { width: 19px; height: 19px; display: block; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--cyan) 45%, transparent)); }
-  /* el panel (mochila o diario) sale desde la izquierda, junto a las pestañas */
-  .adv-grid { left: 38px; right: 10px; top: 50%; bottom: auto; height: min(420px, 62vh); transform: translate(-24px, -50%) scale(.97); }
+  /* pestañas flotando a la derecha (Líder / Ruta, Mochila y Diario): botones redondos con icono, uno encima de otro,
+     arriba a la derecha (en la esquina que deja libre la ruleta); no ocupan sitio, así que no descentran nada */
+  body.wide-adv { height: var(--app-h, 100dvh); padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px)); }
+  body.wide-adv .m-rail { position: fixed; z-index: 70; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 84px); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  body.wide-adv .m-rail .lead-tab, .adv-tabs button { flex: none; position: relative; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; border-radius: 50%; transform: none; rotate: none; writing-mode: horizontal-tb;
+    border: 1px solid color-mix(in srgb, var(--cyan) 45%, var(--line-2)); background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 10px color-mix(in srgb, var(--cyan) 20%, transparent); color: var(--fg); }
+  .adv-tabs { position: static; flex-direction: column; gap: 6px; padding: 0; border: 0; border-radius: 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+  .adv-tabs button.on, body.lead-open .m-rail .lead-tab { background: color-mix(in srgb, var(--cyan) 22%, var(--bg)); border-color: var(--cyan); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 25%, transparent), 0 6px 18px rgba(0,0,0,.45); }
+  .m-rail .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .m-rail .tab-ico, .m-rail .tab-ico svg { width: 21px; height: 21px; display: block; }
+  .m-rail .tab-ico svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--cyan) 40%, transparent)); }
+  /* los paneles (mochila, diario y líder) salen desde la derecha, junto a los botones */
+  .adv-grid { left: 10px; right: 54px; top: 50%; bottom: auto; height: min(440px, 64vh); transform: translate(24px, -50%) scale(.97); }
   .adv-grid.open { transform: translate(0, -50%); }
-  .adv-grid > .adv-card { box-shadow: 10px 0 30px rgba(0,0,0,.45); }
+  .adv-grid > .adv-card { box-shadow: -10px 0 30px rgba(0,0,0,.45); }
+  .leader-card { left: auto; right: 0; border-radius: 12px 0 0 12px; border-left: 1px solid color-mix(in srgb, var(--c) 55%, transparent); border-right: 0; transform: translate(104%, -50%); box-shadow: -8px 0 30px rgba(0,0,0,.45); }
+  body.lead-open .leader-card { transform: translate(-54px, -50%); border-radius: 12px; border-right: 1px solid color-mix(in srgb, var(--c) 55%, transparent); }
+  /* la ruleta arriba (sin hueco encima): lo que sobra queda debajo, y el botón de girar siempre se ve */
+  .adv-stage .adv-wbox { justify-content: flex-start; padding-top: 4px; }
+  /* el texto de la fase, en su propio cuadro (como la mochila): título, avisos y el texto */
+  .adv-say { display: flex; flex-direction: column; gap: 3px; padding: 7px 10px 8px; border-radius: 10px; border: 1px solid var(--line-2);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--cyan) 7%, transparent), color-mix(in srgb, var(--fg) 2%, transparent)); box-shadow: inset 0 1px 0 rgba(255,255,255,.03); }
+  .adv-say .extra-chip { align-self: flex-start; }
   /* línea de fases: los nombres largos van en dos líneas en vez de cortarse */
   #advPath.adv-path li { height: 56px; }
   #advPath li .pl { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.12; overflow-wrap: break-word; }
@@ -499,7 +510,7 @@ img.stone.px { image-rendering: pixelated; }
 /* ==== Móvil en horizontal: el diseño del ordenador, en pequeño y sin desplazarse:
    ruleta | información y diálogo | equipo, mochila y diario en una columna ==== */
 @media (orientation: landscape) and (max-height: 520px) {
-  body.wide-adv { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; padding: 6px 10px; }
+  body.wide-adv { height: 100vh; height: var(--app-h, 100dvh); min-height: 0; overflow: hidden; padding: 6px 10px; }
   body.wide-adv .wrap { height: 100%; max-width: none; gap: 6px; }
   body.wide-adv header { flex: none; flex-wrap: nowrap; align-items: center; padding-bottom: 4px; gap: 10px; }
   body.wide-adv .eyebrow { display: none; }

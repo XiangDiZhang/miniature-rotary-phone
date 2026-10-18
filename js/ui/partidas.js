@@ -3,7 +3,7 @@
 const genOf = k => k === 'caos' ? CHAOS_GEN : k === 'test' ? TEST_GEN : GENS.find(g => g.region.toLowerCase() === k);
 // partidas sin terminar: con equipo, sin perder y sin haber llegado al Hall de la Fama
 function activeSaves() {
-  return Object.keys(REGIONS).map(k => [k, loadRun(k)]).filter(([k, r]) => r && genOf(k) && r.team && r.team.length && !r.over && !r.histSaved);
+  return Object.keys(REGIONS).map(k => [k, loadRun(k)]).filter(([k, r]) => r && genOf(k) && (k !== 'test' || devMode) && r.team && r.team.length && !r.over && !r.histSaved);
 }
 const saveSpr = m => { const r = monSprite(m); return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : ''; };
 // dónde se quedó: el nombre de la parada (en el Modo Caos, el camino de esa partida)

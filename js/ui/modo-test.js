@@ -10,6 +10,7 @@ const testSave = () => store.setJSON(TEST_KEY, testSet);
 const tsSpr = (n, sh) => { const r = (sh && SPR.shiny.get(n)) || SPR.normal.get(n); return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : ''; };
 
 function openTestSetup() {
+  if (!devMode) return;   // el Modo Test es solo para el modo desarrollador
   if (!testSet) testLoad();
   let sh = $('tstShade');
   if (!sh) {

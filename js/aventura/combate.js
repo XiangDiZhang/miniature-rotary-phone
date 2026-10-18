@@ -153,7 +153,7 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
     const sub = again ? `${note || '¡Revancha! Misma ruleta, vuelve a girar.'}${retries ? ` (Te quedan ${retries} reintento${retries > 1 ? 's' : ''} de la poción.)` : ''} ${B.g} de ${B.n} quesitos verdes (${pct(B.p)}).`
       : `${who} te reta con ${listJoin(foe.map(pname))}. ${B.g} de ${B.n} quesitos verdes (${pct(B.p)}).${B.notes.length ? ' ' + B.notes.join(' · ') + '.' : ''}${extra}${run.team.length > 1 || boxList().length ? ' Puedes cambiar tu equipo en la Caja PC antes de girar.' : ''}`;
     spinUI(title, tfTxt + sub
-      + (tools ? (tfs.length ? ' Aún puedes usar la otra: una megaevolución y un Gigamax pueden ir a la vez.' : ' Pulsa la megapiedra o la Banda Dinamax de un Pokémon para transformarlo en este giro (una megaevolución y un Gigamax como mucho).') : ''), B.segs, 'COMBATE', r => {
+      + (tools && !tfs.length ? ' Pulsa la megapiedra o la Banda Dinamax de un Pokémon para transformarlo en este giro.' : ''), B.segs, 'COMBATE', r => {
       transformOff();      // la transformación solo dura este giro
       if (pot) renderPotion(pot, retries);   // este giro de revancha ya se ha gastado
       // la tarjeta de información dice cómo ha ido (y contra quién)
