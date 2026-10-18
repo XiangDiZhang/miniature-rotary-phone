@@ -50,3 +50,12 @@ const VILLAIN_SPR = { rocket: ['rocketgrunt', 'rocketgruntf'], magma: ['magmagru
 const trainerSprs = keys => typeof TRAINER_SPR === 'undefined' ? [] : [].concat(keys || []).map(k => TRAINER_SPR[k]).filter(Boolean);
 const rivalSprs = name => trainerSprs(RIVAL_SPR[name]);
 const villainSprs = key => trainerSprs(VILLAIN_SPR[key]);
+// Jefes de los equipos villanos: a partir de 6 medallas, el que te sale al paso es el jefe en persona (con su nombre en el juego)
+const VILLAIN_BOSS = { rocket: ['Giovanni', 'giovanni'], magma: ['Magno', 'maxie-gen6'], galaxia: ['Helio', 'cyrus'], plasma: ['Ghechis', 'ghetsis'],
+  flare: ['Lysson', 'lysandre'], skull: ['Guzmán', 'guzma-masters'], yell: ['Nerio', 'piers'], star: ['Cassiopea', 'penny'] };
+const BOSS_BADGES = 6;
+// a quién te enfrentas del equipo villano ahora: { boss, name (quien te reta), sprs }
+function villainFoe() {
+  const key = REG().villain || 'rocket', V = VIL(), B = badges() >= BOSS_BADGES && VILLAIN_BOSS[key];
+  return B ? { boss: true, name: `${B[0]}, el jefe del ${V.name},`, short: B[0], sprs: trainerSprs(B[1]) } : { boss: false, name: V.grunt, short: V.grunt, sprs: villainSprs(key) };
+}

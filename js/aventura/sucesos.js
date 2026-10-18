@@ -170,8 +170,9 @@ function rocketTeam() { const L = loc(), T = VIL().teams || ROCKET_TEAMS; return
 
 function doRocketWheel(txt) {
   const canSteal = allMine().length >= 1, st = stolenList();
-  const V = VIL(); setFoe(villainSprs(REG().villain || 'rocket'));   // los reclutas del equipo villano, en la tarjeta y en el escenario
-  spinUI(V.name, `${txt ? txt + ' ' : ''}¡El ${V.name} aparece!${st.length ? ` Tienen a tu ${st.map(mname).join(', ')}: ¡es tu oportunidad de recuperarlo!` : ''}`, [
+  // los reclutas del equipo villano (o, con muchas medallas, su jefe), en la tarjeta y en el escenario
+  const V = VIL(), F = villainFoe(); setFoe(F.sprs);
+  spinUI(V.name, `${txt ? txt + ' ' : ''}${F.boss ? `¡${F.short}, el jefe del ${V.name}, te sale al paso en persona!` : `¡El ${V.name} aparece!`}${st.length ? ` Tienen a tu ${st.map(mname).join(', ')}: ¡es tu oportunidad de recuperarlo!` : ''}`, [
     { label: 'Combate', short: 'COMBATE', color: '#a33ea1', w: st.length ? 4 : 2, k: 'fight' },
     ...(canSteal ? [{ label: 'Te roban', short: 'ROBO', color: '#ff5a46', w: 1, k: 'steal' }] : []),
     { label: 'Huyen', short: 'HUYEN', color: '#8592ab', w: 1, k: 'flee' }], V.short, r => {
@@ -182,8 +183,8 @@ function doRocketWheel(txt) {
 }
 function rocketBattle() {
   const L = loc(), V = VIL();
-  setFoe(villainSprs(REG().villain || 'rocket'));
-  battle(`${L.name} · ${V.name}`, V.grunt, rocketTeam(), 1, () => {
+  const F = villainFoe(); setFoe(F.sprs);
+  battle(`${L.name} · ${F.boss ? F.short : V.name}`, F.name, rocketTeam(), F.boss ? 2 : 1, () => {
     addPoints(PTS.rocket, `${V.name} derrotado`);
     let extra = '';
     const st = stolenList();
@@ -191,7 +192,7 @@ function rocketBattle() {
     renderAdv();
     advSay(`${V.flee}${extra} ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));
   }, ' Si pierdes no se acaba la partida… pero te robarán un Pokémon al azar de tu equipo o de tu caja.', () => {
-    rocketSteal(`${V.grunt} te ha ganado y se lleva un Pokémon cualquiera de los tuyos. No puedes hacer nada.`, false);
+    rocketSteal(`${F.name} te ha ganado y se lleva un Pokémon cualquiera de los tuyos. No puedes hacer nada.`, false);
   });
 }
 // robo de 1 Pokémon al azar de todo lo que tienes (equipo + caja). Tras perder el combate no hay escapatoria;
