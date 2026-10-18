@@ -122,7 +122,7 @@ function transformMon(m, kind) {
   const battleNow = curBattle;
   transformAnim(m, kind, from, { id: to, n: m.n, ty: formRec(to)[1][2], name: shown }, () => {
     m.tf = { from: form0, kind }; m.form = to;
-    log(kind === 'mega' ? `💎 ¡${from.name} megaevoluciona en ${shown}!` : `🔴 ¡${from.name} se gigamaxiza!`);
+    logm(kind === 'mega' ? `💎 ¡${from.name} megaevoluciona en ${shown}!` : `🔴 ¡${from.name} se gigamaxiza!`, { n: m.n, form: to, shiny: m.shiny });
     advToast(kind === 'mega' ? `💎 ¡${shown}!` : `🔴 ¡${shown}!`); saveRun();
   }, () => battleNow());   // los quesitos del combate se recalculan con su nueva forma
 }
@@ -146,7 +146,10 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
       + (tools && !tfm ? ' Pulsa la megapiedra o la Banda Dinamax de un Pokémon para transformarlo en este giro.' : ''), B.segs, 'COMBATE', r => {
       transformOff();      // la transformación solo dura este giro
       if (pot) renderPotion(pot, retries);   // este giro de revancha ya se ha gastado
-      if (r.ok) { end(); return onWin(); }
+      // la tarjeta de información dice cómo ha ido (y contra quién)
+      const vs = title.split(' · ').pop(), ace = foe.length ? foe[foe.length - 1] : null;
+      if (r.ok) { setNow(`¡Victoria contra ${vs}!`, { n: ace }); end(); return onWin(); }
+      setNow(`${vs} te ha ganado`, { n: ace });
       if (onLose) { end(); return onLose(); }
       if (retries > 0) { retries--; again = true; note = '¡Revancha! La poción aún aguanta.'; return advSay(`${who} te ha ganado… pero tu poción aún aguanta.`, () => advButtons([{ label: 'Volver a girar', fn: show }])); }
       // si te quedan pociones, se usa una sola, sin preguntar (primero la más flojita, para guardar las mejores)

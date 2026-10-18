@@ -39,7 +39,6 @@ function throwBall(n, legend = false, shiny, form = 0, sure = false) {
   if (shiny === undefined) shiny = Math.random() < SHINY_RATE;
   const nm0 = form ? mname({ n, form }) : pname(n);
   if (sure) {   // Sudowoodo, Snorlax… si toca capturarlo, se captura sin ruleta
-    log(`🎯 ¡${nm0} capturado sin resistencia!`);
     return advSay(`¡${nm0}${shiny ? ' (¡y es shiny!)' : ''} se deja atrapar sin oponer resistencia!`, () => advButtons([{ label: 'Lanzar la Poké Ball', fn: () => caught(n, shiny, legend, form) }]));
   }
   const green = Math.min(CAP_N - 1, captureGreen(n) + (run.ball ? 1 : 0)), kurt = run.ball, rar = rarityOf(n)[0];
@@ -51,7 +50,7 @@ function throwBall(n, legend = false, shiny, form = 0, sure = false) {
       spinUI(`Captura · ${pname(n)}`, `Rareza: ${rar}. ${green} de ${CAP_N} quesitos lo atrapan (${pct(green / CAP_N)}). Solo hay un intento.`,
         captureSegs(green), legend ? '★' : 'CAPTURA', r => {
           if (r.ok) return caught(n, shiny, legend, form);
-          log(`💨 ${pname(n)}: ${r.label.toLowerCase()}.`);
+          logm(`💨 ${nm0}: ${r.label.toLowerCase()}.`, { n, form, shiny }); setNow(`${nm0} se ha escapado`, { n: form || n, shiny });
           advSay(r.say(pname(n)) + (legend ? ' Se ha perdido en el horizonte…' : ''), goOn);
         }, { txt: `Capturando a ${nm0}${shiny ? ' ★' : ''}`, n: form || n, shiny });
     } }]));
@@ -67,6 +66,8 @@ function caught(n, shiny, legend, form) {
   }
   const m = addMon(n, shiny); if (form) m.form = form;
   const inTeam = run.team.includes(m), nm = mname(m);
+  logm(`🎯 ¡${nm}${shiny ? ' ★' : ''} capturado!${inTeam ? '' : ' Va a la caja.'}`, m);   // en el diario, con su forma (y su sprite shiny si lo es)
+  setNow(`¡${nm} capturado!`, { n: mid(m), shiny });
   addPoints(legend ? PTS.legend : PTS.capture, `${nm} capturado`);
   // legendario o singular (mítico): cada uno con su música; si además es shiny, suena después el brillo
   const [, , , , isLeg, isMyth] = BY_NUM.get(n);

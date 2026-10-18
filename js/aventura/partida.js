@@ -20,7 +20,11 @@ function saveBest() {
   const b = getBest(), prev = b[run.region] || 0; if (run.points <= prev) return false;
   b[run.region] = run.points; store.setJSON('ruleta-best', b); return true;
 }
-function log(t) { run.log.unshift(t); run.log = run.log.slice(0, 40); }
+function log(t) { run.log.unshift(t); run.log = run.log.slice(0, 40); if (typeof logNow === 'function') logNow(t); }
+// entrada del diario que lleva dentro (invisible) la forma exacta del Pokémon y si es shiny: así el diario enseña
+// el Vivillon con su motivo, el Raichu de Alola, la mega… y no la forma normal. m = { n, form, shiny }
+const LOG_MARK = '⁣';
+function logm(t, m) { log(m && m.n ? `${t}${LOG_MARK}${m.form || m.n}.${m.n}${m.shiny ? 's' : ''}` : t); }
 function addPoints(k, why) { run.points = Math.max(0, run.points + k); if (k) log(`${k > 0 ? '⭐ +' : '▼ '}${k} puntos · ${why}`); }
 const badges = () => run.badges.length;
 

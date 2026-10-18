@@ -125,6 +125,7 @@ function doDaycare() {
 function evolveSure(msg) {
   const cands = run.team.filter(canEvolve);
   if (!cands.length) return potionInstead(`${msg} Pero nadie de tu equipo puede evolucionar, así que recibes`);
+  advNow = evoNow('¡Alguien va a evolucionar!', cands); renderCard();
   advSay(`${msg} ¡Alguien va a evolucionar!`, () => advButtons([{ label: '¿Quién evoluciona?', fn: () => cands.length === 1 ? evolve(cands[0]) :
     spinUI('Evolución · ¿Quién?', 'La ruleta elige quién evoluciona.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m), evoNow('¿Quién evoluciona?', cands)) }]));
 }
@@ -137,7 +138,7 @@ function doTrade() {
     spinUI('Intercambio · ¿Qué recibes?', `Das a tu ${mname(m)}. A cambio puede llegarte cualquiera de los ${pool.length} Pokémon de la Pokédex (los legendarios, más difíciles).`, pool.map(n => wseg(n, isLegend(n) ? LEG_SLICE : 1)), 'RECIBES', r => {
       const gone = mname(m);
       if (run.team.includes(m)) run.team.splice(run.team.indexOf(m), 1); else run.box[run.box.indexOf(m)] = null;
-      log(`🔄 Cambias a ${gone} por ${pname(r.n)}.`); saveRun();
+      logm(`🔄 Cambias a ${gone} por ${pname(r.n)}.`, { n: r.n, shiny: r.shiny }); saveRun();
       tradeAnim(m, { n: r.n, shiny: r.shiny }, () => advSay(`¡Intercambio hecho! ${gone} se va y llega ${pname(r.n)}${r.shiny ? ' ¡shiny!' : ''}.`, () => advButtons([{ label: 'Recibir', fn: () => caught(r.n, r.shiny, false) }])));
     }, { txt: `Intercambio: das a ${mname(m)}`, n: mid(m), shiny: m.shiny });
     flyToCenter(m, from);
@@ -197,7 +198,7 @@ function rocketSteal(msg, ropeOk) {
       const ti = run.team.indexOf(q.m);
       if (ti >= 0) run.team.splice(ti, 1); else { const bi = run.box.indexOf(q.m); if (bi >= 0) run.box[bi] = null; }
       if (!run.team.length) { const bi = run.box.findIndex(Boolean); if (bi >= 0) { run.team.push(run.box[bi]); run.box[bi] = null; } }
-      run.stolen = [...stolenList(), q.m]; log(`🚨 ¡El ${V.name} te roba a ${mname(q.m)}!`); renderAdv(); saveRun();
+      run.stolen = [...stolenList(), q.m]; logm(`🚨 ¡El ${V.name} te roba a ${mname(q.m)}!`, q.m); renderAdv(); saveRun();
       // era tu único Pokémon: sin Pokémon no puedes seguir
       if (!allMine().length) { run.overMsg = `¡El ${V.name} se ha llevado a ${mname(q.m)}, tu único Pokémon! Sin Pokémon no puedes seguir.`; return gameOver(`el ${V.name}`); }
       advSay(`¡El ${V.name} se lleva a tu ${mname(q.m)}! Si vuelves a cruzarte con ellos y les ganas, lo recuperarás.`, goOn);

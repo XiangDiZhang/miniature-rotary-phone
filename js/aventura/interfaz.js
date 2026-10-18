@@ -221,28 +221,52 @@ function logMon(t, last) {
   const ms = [...t.matchAll(LOG_RX)]; return ms.length ? LOG_NAMES.get(ms[last ? ms.length - 1 : 0][1]) : 0;
 }
 function logHTML(t) {
+  // marca invisible del final (logm): la forma exacta, la especie y si es shiny
+  const mk = t.match(/⁣(\d+)\.(\d+)(s?)$/); if (mk) t = t.slice(0, mk.index);
   const em0 = (t.match(/^[^\p{L}\p{N}¡¿«(+-]+/u) || [''])[0], em = em0.trim(), tx = t.slice(em0.length);
   const L = LOG_ICONS[em] || { mon: 1 };
   if (L.pts) { const m = tx.match(/^([+-]?\d+) puntos · (.*)$/); if (m) return `<li class="lg pts${+m[1] < 0 ? ' neg' : ''}"><b>${+m[1] > 0 ? '+' : ''}${m[1].replace(/^\+/, '')}</b><span>${m[2]}</span></li>`; }
   if (L.place) return `<li class="lg place" style="--c:${L.c}"><span class="lg-pin">${itemImg(L.spr)}</span><span>${tx}</span></li>`;
-  const n = L.mon ? logMon(tx, L.mon === 'last') : 0, sh = /★|✦|shiny/i.test(tx);
+  const n = mk ? +mk[2] : L.mon ? logMon(tx, L.mon === 'last') : 0, sh = mk ? !!mk[3] : /★|✦|shiny/i.test(tx), fid = mk ? +mk[1] : n;
   const k = L.item && Object.keys(ITEMS).find(k => tx.includes(ITEMS[k].name)), it = k ? bagIcon(k) : '';
   const deco = it || (L.spr && itemImg(L.spr)) || (L.svg && LOG_SVG[L.svg]) || '';
-  const r = n && ((sh && SPR.shiny.get(n)) || SPR.normal.get(n));
+  const r = n && ((sh && (SPR.shiny.get(fid) || SPR.shiny.get(n))) || SPR.normal.get(fid) || SPR.normal.get(n));
   const main = r ? `<img class="lgm${r.px ? ' px' : ''}" src="${r.u}" alt="">` : deco || `<em>${em || '•'}</em>`;
   // con Pokémon: su icono se puede pulsar para ver su ficha (se abre agrandándose desde ahí)
-  const open = r ? ` lg-open" data-n="${n}" data-sh="${sh ? 1 : 0}" role="button" tabindex="0" title="Ver la ficha de ${pname(n)}` : '';
+  const open = r ? ` lg-open" data-n="${n}" data-f="${fid !== n ? fid : 0}" data-sh="${sh ? 1 : 0}" role="button" tabindex="0" title="Ver la ficha de ${pname(n)}` : '';
   return `<li class="lg${L.dim ? ' dim' : ''}${sh ? ' sh' : ''}" style="--c:${L.c || 'var(--cyan)'}"><span class="lg-ic${open}">${main}${r && deco ? `<i class="lg-b">${deco}</i>` : ''}</span><span class="lg-tx">${tx}</span></li>`;
 }
 
 // ---- Qué está pasando ahora (la tarjeta de información lo enseña arriba): se pone con cada ruleta y se borra al cambiar de parada ----
 let advNow = null;
+// para los momentos sin ruleta (tienda, té, premio, victoria…): la tarjeta dice qué está pasando
+function setNow(txt, extra) { advNow = { txt, ...(extra || {}) }; renderCard(); }
+// cada suceso escribe en el diario lo que ha pasado: eso mismo sale en la tarjeta (con su Pokémon, si lo hay),
+// hasta que la siguiente ruleta diga otra cosa. Los puntos y las llegadas a un sitio no cuentan.
+function logNow(t) {
+  if (!run || /^(⭐|▼|📍)/.test(t)) return;
+  const mk = t.match(/⁣(\d+)\.(\d+)(s?)$/); if (mk) t = t.slice(0, mk.index);
+  const em = (t.match(/^[^\p{L}\p{N}¡¿«(+-]+/u) || [''])[0], tx = t.slice(em.length).replace(/\.$/, ''), L = LOG_ICONS[em.trim()] || { mon: 1 };
+  const n = mk ? +mk[1] : L.mon ? logMon(tx, L.mon === 'last') : 0, sh = mk ? !!mk[3] : /★|✦|shiny/i.test(tx);
+  advNow = { txt: tx, n: n || null, shiny: sh, icon: em.trim() === '✨' && !n ? 'evo' : undefined }; renderCard();
+}
+// textos de la tarjeta para las ruletas de cada sitio o suceso (lo último del título)
+const NOW_PLACES = {
+  'Ruleta de evento': () => `¿Qué pasará en ${loc().name}?`, Cueva: 'Explorando la cueva', Pesca: 'Pescando', Robo: '¡Te intentan robar un Pokémon!',
+  'Mt. Moon': 'Explorando Mt. Moon', 'S.S. Anne': 'A bordo del S.S. Anne', 'Torre Pokémon': 'En la Torre Pokémon', 'Silph S.A.': 'Asaltando Silph S.A.',
+  'Central Energía': 'En la Central Energía', 'Calle Victoria': 'Cruzando la Calle Victoria', 'Bosque Verde': 'Buscando en el Bosque Verde',
+  Encinar: 'Buscando en el Encinar', 'Ruta Helada': 'Mirando bajo el hielo', Sudowoodo: '¡Un árbol que se mueve!', Ruleta: 'Jugando en el Casino',
+  Snorlax: '¡Un Snorlax bloquea el camino!', 'Casa de Bill': 'En la Casa de Bill', 'Dojo Karate': 'En el Dojo Karate', 'Zona Safari': 'En la Zona Safari',
+  'Aparece un legendario': '¡Aparece un legendario!',
+};
 function nowFrom(title) {
   // a = lo primero («Captura», «Gimnasio»…), b = lo último (el sitio puede llevar « · » dentro: «Rutas 1 · 22 · Pokémon salvaje»)
   const i = title.indexOf(' · '), j = title.lastIndexOf(' · '), a = i < 0 ? title : title.slice(0, i), b = j < 0 ? '' : title.slice(j + 3);
   if (b === 'Pokémon salvaje') return { txt: 'Buscando Pokémon salvajes' };
   if (b === 'Tu primer Pokémon') return { txt: 'Eligiendo tu primer Pokémon' };
-  if (/^Ruleta de (aventura|evento)/.test(b)) return { txt: b };
+  { const m = /^Ruleta de aventura (\d+)\/(\d+)$/.exec(b); if (m) return { txt: `¿Qué pasará por el camino? (${m[1]}/${m[2]})` }; }
+  { const k = NOW_PLACES[b] ? b : !b && NOW_PLACES[a] ? a : null; if (k) return { txt: typeof NOW_PLACES[k] === 'function' ? NOW_PLACES[k]() : NOW_PLACES[k] }; }
+  if (VILLAINS && Object.values(VILLAINS).some(v => v.name === title)) return { txt: `¡El ${title} aparece!` };
   if (/^(Gimnasio|Alto Mando|Rival|Campe)/.test(a)) return { txt: `Combatiendo contra ${b || a}` };
   switch (a) {
     case 'Captura': return { txt: `Capturando a ${b}` };
@@ -330,7 +354,7 @@ function renderCard() {
   const openLog = el => {
     const n = +el.dataset.n; if (!n || infoOpen) return;
     beep(820, .05, .03); infoNav = null; infoHome = null; infoOrigin = el;
-    withShiny(el.dataset.sh === '1', () => openInfo(n, el.getBoundingClientRect(), 0, null, true));
+    withShiny(el.dataset.sh === '1', () => openInfo(n, el.getBoundingClientRect(), +el.dataset.f || 0, null, true));   // con su forma (Vivillon Polar, Raichu de Alola…)
   };
   $('advLog').addEventListener('click', e => { const el = e.target.closest('.lg-open'); if (el) openLog(el); });
   $('advLog').addEventListener('keydown', e => { const el = e.target.closest('.lg-open'); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openLog(el); } });

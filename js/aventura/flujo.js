@@ -38,7 +38,7 @@ function phaseStarter() {
     R.starters.map(n => wseg(n)), 'INICIAL', r => {   // shiny como cualquier otro: 1 %
       run.starter = r.n;
       const sh = !!r.shiny;
-      addMon(r.n, sh); log(`🎉 Tu inicial es ${sh ? '✦ ' : ''}${pname(r.n)}. Recibes ${run.bag.potion} Poción${run.bag.potion > 1 ? 'es' : ''}.`);
+      const sm = addMon(r.n, sh); logm(`🎉 Tu inicial es ${sh ? "✦ " : ""}${pname(r.n)}. Recibes ${run.bag.potion} Poción${run.bag.potion > 1 ? "es" : ""}.`, sm);
       if (sh) { addPoints(PTS.shiny, `¡${pname(r.n)} shiny!`); advToast(`✦ ¡${pname(r.n)} SHINY! ✦`); shinySfx(); renderAdv(); const t = $('advTeam').querySelector('.tmw'); const rr = t && t.getBoundingClientRect(); shinyBurst(); if (rr) setTimeout(() => shinyBurst(rr.left + rr.width / 2, rr.top + rr.height / 2), 350); }
       advSay(sh ? `¡INCREÍBLE! ¡Tu ${pname(r.n)} es SHINY! Será tu compañero de viaje.` : `¡${pname(r.n)} será tu compañero de viaje!`, () => advButtons([{ label: `Salir de ${L.name} →`, fn: advNext }]));
     });
@@ -119,10 +119,10 @@ function phaseEvolve() {
     if (cands.length === 1) return evolve(cands[0]);
     spinUI('Evolución · ¿Quién?', '¡Alguien va a evolucionar! La ruleta elige quién.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m), evoNow('¿Quién evoluciona?', cands));
   };
-  if (ch >= 1) { run.evoFails = 0; return advSay('¡Tu equipo ha combatido tanto que esta vez la evolución es segura!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Continuar', fn: who }])); }
+  if (ch >= 1) { run.evoFails = 0; advNow = evoNow('¡Evolución segura!', cands); renderCard(); return advSay('¡Tu equipo ha combatido tanto que esta vez la evolución es segura!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Continuar', fn: who }])); }
   spinUI('Evolución · ¿Habrá suerte?', 'Si cae en dorado, alguien de tu equipo evolucionará (o, si nadie puede, recibes una poción).',
     [{ label: '¡Evolución!', short: '¡EVOLUCIÓN!', color: '#ffd84a', w: ch, ok: 1 }, { label: 'Nada', short: 'NADA', color: '#8592ab', w: 1 - ch }], 'EVOLUCIÓN', r => {
-      if (r.ok) { run.evoFails = 0; return advSay(cands.length ? '¡Algo está pasando! Uno de tus Pokémon empieza a brillar…' : '¡Ha caído en Evolución!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Ver premio', fn: who }])); }
+      if (r.ok) { run.evoFails = 0; advNow = evoNow('¡Habrá evolución!', cands); renderCard(); return advSay(cands.length ? '¡Algo está pasando! Uno de tus Pokémon empieza a brillar…' : '¡Ha caído en Evolución!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Ver premio', fn: who }])); }
       run.evoFails = fails + 1; log('🔸 Esta vez nadie evoluciona.');
       advSay('Esta vez no ha pasado nada… La próxima victoria tendrá más posibilidades.', goOn);
     }, evoNow(cands.length ? '¿Habrá evolución?' : '¿Habrá evolución? (nadie puede)', cands));
@@ -167,7 +167,7 @@ function applyEvo(m, o) {
   if (m.dmax && !gmaxForms(m).length) delete m.dmax;
   const toName = sname(m);
   addPoints(PTS.evolve, `${from} evoluciona`); advToast(`¡${from} evoluciona a ${toName}!`);
-  log(`✨ ¡${from} ha evolucionado a ${toName}!`);
+  logm(`✨ ¡${from} ha evolucionado a ${toName}!`, m);   // con su forma nueva (Vivillon Polar, Alcremie…)
   return [from, toName];
 }
 // evolución completa: uno solo, o dos a la vez si llevas el Repartir Exp. (la ruleta elige al segundo)
@@ -200,14 +200,14 @@ function gymRewards(next) {
   // Banda Dinamax: todos tus Pokémon con forma Gigamax que aún no la tengan (equipo y caja)
   const dm = allMine().filter(m => !m.dmax && gmaxForms(m).length);
   if (dm.length) steps.push(go => {
-    dm.forEach(m => m.dmax = 1); log(`🔴 Banda Dinamax para ${dm.map(mname).join(', ')}.`); advToast('🔴 ¡Banda Dinamax!'); renderAdv(); saveRun();
+    dm.forEach(m => m.dmax = 1); logm(`🔴 Banda Dinamax para ${dm.map(mname).join(", ")}.`, dm[0]); advToast('🔴 ¡Banda Dinamax!'); renderAdv(); saveRun();
     advSay(`¡El estadio vibra con energía Dinamax! ${listJoin(dm.map(mname))} ${dm.length > 1 ? 'reciben' : 'recibe'} la Banda Dinamax: en combate, púlsala para que se gigamaxice durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
   });
   // megapiedra: una por gimnasio, para uno de los Pokémon del equipo que puedan megaevolucionar (si hay varios, la ruleta decide)
   const opts = run.team.filter(m => !m.stone).flatMap(m => megaForms(m).map(f => ({ m, f })));
   if (opts.length) steps.push(go => {
     const give = ({ m, f }) => {
-      m.stone = f; const nm = mname({ n: m.n, form: f }), st = stoneName(f); log(`💎 ${mname(m)} recibe la ${st}.`); advToast(`💎 ¡${st} para ${mname(m)}!`); renderAdv(); saveRun();
+      m.stone = f; const nm = mname({ n: m.n, form: f }), st = stoneName(f); logm(`💎 ${mname(m)} recibe la ${st}.`, m); advToast(`💎 ¡${st} para ${mname(m)}!`); renderAdv(); saveRun();
       advSay(`¡El líder te da la ${st}! ${mname(m)} la lleva equipada: en combate, pulsa la piedra de su ficha para que megaevolucione en ${nm} durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
     };
     if (opts.length === 1) return give(opts[0]);
