@@ -6,7 +6,7 @@ function statColor(v) { return v < 50 ? '#ff6b5e' : v < 70 ? '#ffa24c' : v < 90 
 function spriteRec(n) { return (shinyMode && SPR.shiny.get(n)) || SPR.normal.get(n); }
 function thumb(n, tyOverride) {
   const r = spriteRec(n), ty = tyOverride || BY_NUM.get(n)[3];
-  return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : typePh(ty);
+  return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''} style="${sizeStyle(n)}">` : typePh(ty);
 }
 // Línea evolutiva completa, estés en la ficha que estés, con el mismo aspecto que la ficha abierta (shiny o no):
 //  · arriba, la línea normal: cada especie con sus variantes debajo (megas, Gigamax y otras formas);
@@ -158,7 +158,7 @@ function openInfo(n, from, formId, peek, keep) {
   const c = pc ? pc[0] : TYPE_COLORS[ty[0]], c2 = pc ? pc[1] : TYPE_COLORS[ty[1]] || c;
   const box = peek ? peek.root : $('info'); box.style.setProperty('--c', c); box.style.setProperty('--c2', c2); box.style.setProperty('--cn', c);
   const rec = spriteRec(sid);
-  const stage = rec ? `<div class="stage" style="--sw:${(rec.fw || .5).toFixed(3)};--sx:${(rec.fx || .5).toFixed(3)}"><div class="bob2"><img src="${rec.u}" alt="${name}"${rec.px ? ' class="px"' : ''} style="--fb:${(rec.fb || 0).toFixed(4)}"></div></div>`
+  const stage = rec ? `<div class="stage" style="--sw:${(rec.fw || .5).toFixed(3)};--sx:${(rec.fx || .5).toFixed(3)}"><div class="bob2"><img src="${rec.u}" alt="${name}"${rec.px ? ' class="px"' : ''} style="--fb:${(rec.fb || 0).toFixed(4)};${sizeStyle(sid)}"></div></div>`
     : `<div class="stage"><div class="bob2">${thumb(sid, ty)}</div></div>`;
   const hasShiny = SPR.shiny.has(sid);
   HERO.className = 'info-hero' + (FLYING.has(n) ? ' fly' : '');

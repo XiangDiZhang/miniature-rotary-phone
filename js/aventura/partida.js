@@ -57,7 +57,7 @@ const mid = m => m.form || m.n;                                 // id de su spri
 const regionTag = id => { const r = formRec(id); if (!r || r[1][8] !== 'reg') return null; const t = r[1][1].match(/Alola|Galar|Hisui|Paldea/); return t && t[0]; };
 // su sprite (con su forma y, si es shiny, el shiny); null si no hay sprites cargados
 function monSprite(m) { const id = mid(m); return (m.shiny && (SPR.shiny.get(id) || SPR.shiny.get(m.n))) || SPR.normal.get(id) || SPR.normal.get(m.n); }
-function monThumb(m) { const r = monSprite(m); return r ? `<img src="${r.u}" alt="">` : typePh(mtypes(m)); }
+function monThumb(m) { const r = monSprite(m); return r ? `<img src="${r.u}" alt="" style="${sizeStyle(m.form)}">` : typePh(mtypes(m)); }   // (Pumpkaboo y Gourgeist, a la escala de su tamaño)
 // a qué puede evolucionar ESTE Pokémon (según su forma) y con qué forma queda
 function evoOptions(m) {
   const all = EVO_KIDS.get(m.n) || [];

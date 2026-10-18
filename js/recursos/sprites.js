@@ -30,7 +30,7 @@ class SprRec {
 // cuadro del sprite en la Pokédex y en el equipo: apoyado en el suelo y con su sombra (o un rombo con sus colores si no hay sprite)
 function spriteCell(n, ty) {
   const rec = (shinyMode && SPR.shiny.get(n)) || SPR.normal.get(n);
-  if (rec) return `<span class="sp" style="--sw:${(rec.fw || 0.5).toFixed(3)};--sx:${(rec.fx || 0.5).toFixed(3)}"><span class="bob"><img src="${rec.u}" alt=""${rec.px ? ' class="px"' : ''} style="--fb:${(rec.fb || 0).toFixed(4)}" loading="lazy" decoding="async"></span></span>`;
+  if (rec) return `<span class="sp" style="--sw:${(rec.fw || 0.5).toFixed(3)};--sx:${(rec.fx || 0.5).toFixed(3)}"><span class="bob"><img src="${rec.u}" alt=""${rec.px ? ' class="px"' : ''} style="--fb:${(rec.fb || 0).toFixed(4)};${sizeStyle(n)}" loading="lazy" decoding="async"></span></span>`;
   const c1 = TYPE_COLORS[ty[0]] || '#8592ab', c2 = TYPE_COLORS[ty[1] || ty[0]] || c1;
   return `<span class="sp"><span class="bob ph-wrap"><i class="ph" style="--c1:${c1};--c2:${c2}"></i></span></span>`;
 }

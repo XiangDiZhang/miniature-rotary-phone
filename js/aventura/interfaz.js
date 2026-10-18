@@ -421,13 +421,13 @@ function renderCard() {
       </div>`;
   }
   el.style.setProperty('--c', c); el.hidden = false;
-  if (el._h !== html) { el._h = html; el.innerHTML = html; }   // (renderAdv la llama mucho: solo se redibuja si cambia)
+  if (el._h !== html) { el._h = html; el.innerHTML = html; groundSprites(el.querySelector('.lc-full')); }   // (renderAdv la llama mucho: solo se redibuja si cambia)
   // en el ordenador, el líder (Alto Mando, Campeón…) de cuerpo entero abajo a la derecha del escenario, sobre una peana de luz
   const fig = $('advLeadFig');
   if (fig) {
     const ls = L.kind === 'gym' ? leaderSprs(L.leader) : [], fh = ls.length ? `<span class="lf-glow"></span><span class="lf-row n${ls.length}">${ls.map(u => `<img src="${u}" alt="">`).join('')}</span>` : '';
     fig.style.setProperty('--c', c); fig.hidden = !ls.length; fig.dataset.n = ls.length;
-    if (fig._h !== fh) { fig._h = fh; fig.innerHTML = fh; }
+    if (fig._h !== fh) { fig._h = fh; fig.innerHTML = fh; groundSprites(fig.querySelector('.lf-row'), fig.querySelector('.lf-glow')); }
   }
   // pestaña del móvil: un botón redondo con icono (medalla en los combates de gimnasio y liga, mapa en el resto); el nombre, para los lectores de pantalla
   const lt = $('leadTab');
@@ -436,6 +436,33 @@ function renderCard() {
     const h = `<span class="tab-ico">${L.kind === 'gym' ? LEAD_SVG.gym : LEAD_SVG.map}</span><span class="t">${name}</span>`;
     if (lt._h !== h) { lt._h = h; lt.innerHTML = h; lt.title = name; lt.setAttribute('aria-label', name); }
   }
+}
+// Sprites de entrenadores con los pies en el suelo: cada imagen trae un hueco transparente distinto debajo de los pies (y su figura
+// no siempre está centrada). Se mide una vez por imagen (último píxel visible y centro de la figura) y se baja cada sprite lo justo
+// (--fy); con uno solo, la peana se centra bajo sus pies. Sirve igual para los grupos (cada personaje con su medida).
+const trainerFeet = new Map();
+function feetOf(im) {
+  if (trainerFeet.has(im.src)) return trainerFeet.get(im.src);
+  const w = im.naturalWidth, h = im.naturalHeight, out = { fb: 0, fx: .5 };
+  try {
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
+    const d = g.getImageData(0, 0, w, h).data; let maxY = -1, minX = w, maxX = -1;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { maxY = y; if (x < minX) minX = x; if (x > maxX) maxX = x; }
+    if (maxY >= 0) { out.fb = 1 - (maxY + 1) / h; out.fx = (minX + maxX + 1) / 2 / w; }
+  } catch (e) {}
+  trainerFeet.set(im.src, out); return out;
+}
+function groundSprites(row, glow) {
+  if (!row) return;
+  const imgs = [...row.querySelectorAll('img')];
+  const go = () => {
+    if (!imgs.every(im => im.complete && im.naturalWidth)) return;
+    const ft = imgs.map(feetOf);
+    imgs.forEach((im, i) => im.style.setProperty('--fy', (ft[i].fb * 100).toFixed(2) + '%'));
+    if (glow && imgs.length === 1) glow.style.setProperty('--gx', ((ft[0].fx - .5) / 1.2 * 100).toFixed(2) + '%');
+  };
+  imgs.forEach(im => { if (!(im.complete && im.naturalWidth)) im.addEventListener('load', go, { once: true }); });
+  go();
 }
 const LEAD_SVG = {
   gym: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2.5h8l-2 6h-4z" fill="#ff5a46" stroke="#10131c" stroke-width=".9"/><circle cx="12" cy="15" r="6.5" fill="#ffd84a" stroke="#10131c" stroke-width="1.1"/><path d="M12 11.2l1.2 2.5 2.7.3-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.3z" fill="#fff6c8" stroke="#b08a10" stroke-width=".6"/></svg>',

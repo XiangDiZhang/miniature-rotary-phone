@@ -24,6 +24,9 @@ const BOX_N = 30;
 // ---- Formas: regionales (Corsola de Galar…) y variantes naturales (Basculin raya blanca, tallas de Pumpkaboo…) ----
 const CAPTURE_FORMS = new Set([10016, 10247, 10004, 10005, 10025, 10027, 10028, 10029, 10030, 10031, 10032, 10123, 10124, 10125, 10126, 10152, 10184, 10191, 10186, 10248, 10254, 10257, 10258, 10259, 10260, 10261, 10262, 10255, 10263,
   ...VARIANTS.filter(v => v[2] === 666).map(v => v[0])]);   // los motivos de Vivillon
+// Pumpkaboo y Gourgeist: sus tamaños usan el mismo dibujo, así que se ven a otra escala (pequeño, grande, extragrande)
+const SIZE_SCALE = { 10027: .74, 10028: 1.16, 10029: 1.32, 10030: .78, 10031: 1.12, 10032: 1.26 };
+const sizeStyle = id => SIZE_SCALE[id] ? `scale:${SIZE_SCALE[id]};transform-origin:50% 100%;` : '';
 const BASE_FORM_NAME = { 550: 'Raya Roja', 413: 'Tronco Planta', 678: 'Macho', 710: 'Tamaño Normal', 711: 'Tamaño Normal', 741: 'Estilo Apasionado', 745: 'Forma Diurna', 849: 'Forma Aguda', 892: 'Estilo Brusco', 876: 'Macho', 902: 'Macho', 916: 'Macho', 925: 'Familia de cuatro', 931: 'Plumaje verde', 978: 'Forma curvada', 982: 'Binodular', 999: 'Forma cofre', 666: 'Motivo Floral', 869: 'Crema de Vainilla · Confite Fresa' };
 // evoluciones que solo hace una forma concreta
 const REG_REQ = { 862: 10175, 863: 10161, 864: 10173, 865: 10166, 866: 10168, 867: 10179, 902: 10247, 903: 10235, 904: 10234, 980: 10253 };
