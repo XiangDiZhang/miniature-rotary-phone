@@ -472,6 +472,7 @@ img.stone.px { image-rendering: pixelated; }
 /* Nuevo registro en la Pokédex (una especie que no tenías): una Pokédex roja pequeña con el Pokémon en su pantalla,
    en una esquina; no tapa el juego ni recibe toques y se va sola */
 .dex-pops { position: fixed; top: 70px; right: 16px; z-index: 94; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+.dex-pop { pointer-events: auto; cursor: pointer; } .dex-pop:hover { filter: brightness(1.1); }   /* (pulsar = abrir su ficha) */
 .dex-pop { --rd: #e3192f; --rd2: #a80d1f; zoom: 1.45; position: relative; width: 150px; padding: 8px 12px 10px 8px; border-radius: 12px 14px 14px 12px; color: #1b1f2a;
   background: linear-gradient(160deg, #ff4152, var(--rd) 45%, #c4122a); border: 2px solid #5e0712;
   box-shadow: inset -9px 0 0 var(--rd2), inset -11px 0 0 #ff5a68, inset 0 2px 0 rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.45), 0 0 18px rgba(227,25,47,.35);

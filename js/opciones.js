@@ -20,6 +20,8 @@ function applyTheme(t, save) {
   $('optTheme').setAttribute('aria-pressed', t === 'dark');
   readTheme();                                   // las ruletas leen sus colores del tema
   if (state.scene === 'roulette') drawWheel();
+  if (typeof advWheel !== 'undefined' && advWheel) { advWheel.dirty = true; advWheel.draw(); }   // la ruleta de la aventura, con los colores nuevos (si no, sus textos se quedaban del tema anterior)
+  if (typeof renderAdv === 'function' && state.scene === 'adv') renderAdv();
   if (save) store.set('ruleta-theme', t);
 }
 // ---- Colores del tema: un color neón principal (botones, bordes, brillo de la ruleta) y, si se quiere, un segundo color ----

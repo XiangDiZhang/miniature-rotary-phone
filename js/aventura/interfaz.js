@@ -36,6 +36,9 @@ function dexPop(n, shiny, wait, form) {
       + `<div class="dx-bezel"><div class="dx-dots"><i></i><i></i></div><div class="dx-screen"><div class="dx-plate"><b>${sname(m)}${shiny ? ' ★' : ''}</b>${ty}</div>`
       + `${r ? `<img src="${r.u}" alt="">` : ''}<small>Nº ${String(n).padStart(3, '0')}</small></div><div class="dx-under"><i></i><i class="dx-grill"></i></div></div>`
       + `<div class="dx-ctrl"><div class="dx-row"><i class="dx-round"></i><i class="dx-pill r"></i><i class="dx-pill b"></i></div><span class="dx-green">Nuevo registro</span><i class="dx-pad"></i></div>`;
+    // se puede pulsar: abre su ficha de la Pokédex (con esa forma y, si es shiny, en shiny)
+    el.title = 'Ver su ficha en la Pokédex'; el.setAttribute('role', 'button');
+    el.onclick = () => { const rr = el.getBoundingClientRect(); el.remove(); withShiny(!!shiny, () => openInfo(n, rr, form || 0, null, true)); };
     box.appendChild(el); beep(1319, .07, .03, 'triangle'); setTimeout(() => beep(1760, .12, .03, 'triangle'), 90);
     setTimeout(() => el.remove(), 3700);
   }, at - performance.now());
