@@ -13,7 +13,7 @@ $html = [IO.File]::ReadAllText("$raiz\index.html", $utf8)
 $leer = { param($rel) [IO.File]::ReadAllText((Join-Path $raiz $rel), $utf8) }
 
 # CSS: cada <link> local pasa a <style>; las imágenes que usa (url(../assets/...)) pasan a data URL
-$html = [regex]::Replace($html, '<link rel="stylesheet" href="(css/[^"]+)">', {
+$html = [regex]::Replace($html, '<link rel="stylesheet" href="(css/[^"?]+)(?:\?v=[^"]*)?">', {
   param($m)
   $css = & $leer $m.Groups[1].Value
   $css = [regex]::Replace($css, 'url\(\.\./(assets/img/[^)]+\.(webp|jpg|png))\)', { param($u)
@@ -23,7 +23,7 @@ $html = [regex]::Replace($html, '<link rel="stylesheet" href="(css/[^"]+)">', {
 })
 # JavaScript: cada <script src> local pasa a script en línea, en el mismo orden (al final del body, ya existe el DOM)
 $scripts = New-Object Text.StringBuilder
-$html = [regex]::Replace($html, '\s*<script src="((?:js|assets)/[^"]+)" defer></script>', {
+$html = [regex]::Replace($html, '\s*<script src="((?:js|assets)/[^"?]+)(?:\?v=[^"]*)?" defer></script>'   # (?v=… es el número de versión de herramientas\version.ps1), {
   param($m)
   $js = (& $leer $m.Groups[1].Value) -replace '</script', '<\/script'
   [void]$scripts.Append("<script>/* $($m.Groups[1].Value) */`n$js</script>`n")
