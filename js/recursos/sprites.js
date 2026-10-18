@@ -47,3 +47,6 @@ $('shinyBtn').onclick = () => {
   beep(shinyMode ? 988 : 660, 0.06, 0.03); syncShiny(); renderDex();
 };
 syncShiny();
+
+// imagen de la medalla de un gimnasio: su medalla (badgeId) o, en las pruebas de Alola, el cristal Z que dan (badgeItem)
+const badgeSpr = p => (p.badgeId && SPR.badge.get(p.badgeId)) || (p.badgeItem && SPR.item.get(p.badgeItem)) || null;

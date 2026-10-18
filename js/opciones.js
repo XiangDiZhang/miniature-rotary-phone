@@ -50,6 +50,20 @@ $('optTts').onclick = () => {
   if (ttsOn) speak('Locutor activado. ¡Que empiece la aventura!'); else try { speechSynthesis.cancel(); } catch (e) {}
 };
 syncText();
+// voz del locutor: las voces en español del navegador, de la más natural a la menos (★ = natural)
+function syncVoices() {
+  const sel = $('optVoice'); if (!sel) return;
+  const vs = ttsVoices();
+  sel.innerHTML = vs.length ? vs.map(v => `<option value="${v.name.replace(/"/g, '&quot;')}">${voiceScore(v) >= 25 ? '★ ' : ''}${v.name} (${v.lang})</option>`).join('')
+    : '<option value="">No hay voces en español en este navegador</option>';
+  sel.disabled = !vs.length; $('optVoiceTest').disabled = !vs.length;
+  if (ttsVoice) sel.value = ttsVoice.name;
+  $('optVoiceInfo').textContent = !vs.length ? 'Este navegador no tiene voces en español. Prueba en Edge o Chrome, o instala una voz española en tu sistema.'
+    : `${vs.length} ${vs.length > 1 ? 'voces' : 'voz'} en español. Las marcadas con ★ son las más naturales.`;
+}
+$('optVoice').onchange = e => { store.set('ruleta-voice', e.target.value); pickVoice(); beep(760); speak('¡Hola, Entrenador! Así sonará el locutor.', true); };
+$('optVoiceTest').onclick = () => { beep(880); speak('¡Un Pikachu salvaje! ¡Lanza la Poké Ball! Solo tienes una oportunidad.', true); };
+syncVoices();
 
 // ---- Ver las cinemáticas: con tu último equipo campeón, o el de tu partida de Johto, o uno de ejemplo ----
 function demoTeam() {

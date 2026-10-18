@@ -8,31 +8,64 @@ function thumb(n, tyOverride) {
   const r = spriteRec(n), ty = tyOverride || BY_NUM.get(n)[3];
   return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : typePh(ty);
 }
-// Línea evolutiva completa: cada especie de la línea con TODAS sus variantes debajo (megas, Gigamax, formas regionales y otras formas),
-// estés en la ficha que estés. Se ve con el mismo aspecto que la ficha abierta (si la ficha es shiny, toda la línea es shiny).
+// Línea evolutiva completa, estés en la ficha que estés, con el mismo aspecto que la ficha abierta (shiny o no):
+//  · arriba, la línea normal: cada especie con sus variantes debajo (megas, Gigamax y otras formas);
+//  · debajo, separada por una línea suave, una sección por cada forma regional (Alola, Galar, Hisui, Paldea) con SU línea evolutiva,
+//    incluidas las evoluciones que solo hace esa forma (Perrserker, Cursola, Mr. Rime…). Si el antecesor no tiene forma regional
+//    (Pikachu → Raichu de Alola), se ve en gris para entender de dónde sale.
 const VAR_TAG = { mega: 'MEGA', gmax: 'GMAX', reg: '', form: '' };
+const REG_ORDER = ['Alola', 'Galar', 'Hisui', 'Paldea'];
+const formTag = f => f[8] !== 'reg' ? null : f[0] === 10178 ? 'Galar' : (f[1].match(/Alola|Galar|Hisui|Paldea/) || [])[0] || null;   // 10178: Modo Daruma de Galar
+// especies que solo salen de una forma regional (REG_REQ): de qué región son
+const regOnly = k => { const req = REG_REQ[k], r = req && FORM_OF.get(req); return r ? formTag(r[1]) : null; };
 function evoHTML(n, formId) {
   const ids = CHAINS.get(INFO[n - 1][12]);
-  const kids = id => ids.filter(k => INFO[k - 1][13] === id);
-  const roots = ids.filter(k => !INFO[k - 1][13] || !ids.includes(INFO[k - 1][13]));
-  const variants = id => {
-    const l = FORMS[id] || []; if (!l.length) return '';
-    const own = dexHas(id), many = l.length > 8;
-    return `<div class="evo-vars${many ? ' many' : ''}">${l.map(f => { const lb = formLabel(id, f), tag = VAR_TAG[f[8]] || '';
-      return own ? `<button class="evo-var${id === n && f[0] === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${f[0]}" title="${lb}"><span class="th">${thumb(f[0], f[2])}</span>${many ? '' : `<span class="vl">${tag ? `<b>${tag}</b>` : ''}${lb.replace(/^Mega-|^Gigantamax |\s*Gigamax$/g, '')}</span>`}</button>`
-        : `<button class="evo-var locked" type="button" disabled title="???"><span class="th">${thumb(f[0], f[2])}</span></button>`; }).join('')}</div>`;
+  const par = k => INFO[k - 1][13];
+  const kids = id => ids.filter(k => par(k) === id);
+  const roots = ids.filter(k => !par(k) || !ids.includes(par(k)));
+  const own = id => dexHas(id);
+  const varBtn = (id, f, many) => { const lb = formLabel(id, f), tag = VAR_TAG[f[8]] || '';
+    return own(id) ? `<button class="evo-var${id === n && f[0] === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${f[0]}" title="${lb}"><span class="th">${thumb(f[0], f[2])}</span>${many ? '' : `<span class="vl">${tag ? `<b>${tag}</b>` : ''}${lb.replace(/^Mega-|^Gigantamax |\s*Gigamax$/g, '')}</span>`}</button>`
+      : `<button class="evo-var locked" type="button" disabled title="???"><span class="th">${thumb(f[0], f[2])}</span></button>`; };
+  const vars = (id, list) => list.length ? `<div class="evo-vars${list.length > 8 ? ' many' : ''}">${list.map(f => varBtn(id, f, list.length > 8)).join('')}</div>` : '';
+  // tarjeta de una especie (fid = su forma; link = antecesor normal que solo se muestra para dar contexto)
+  const card = (id, fid = 0, extra = [], link = false) => {
+    const f = fid && FORM_OF.get(fid)[1], ty = f ? f[2] : null, lb = f ? formLabel(id, f) : baseFormName(id);
+    const btn = own(id) ? `<button class="evo-card${link ? ' link' : ''}${id === n && fid === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${fid}"><span class="th">${thumb(fid || id, ty)}</span><span class="tx">${lb}<small>Nº ${padN(id)}</small></span></button>`
+      : `<button class="evo-card locked${link ? ' link' : ''}" type="button" disabled><span class="th">${thumb(fid || id, ty)}</span><span class="tx">???<small>Nº ${padN(id)}</small></span></button>`;
+    return `<div class="evo-node">${btn}${vars(id, extra)}</div>`;
   };
-  const card = id => `<div class="evo-node">${dexHas(id) ? `<button class="evo-card${id === n && !formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="0"><span class="th">${thumb(id)}</span><span class="tx">${baseFormName(id)}<small>Nº ${padN(id)}</small></span></button>`
-    : `<button class="evo-card locked" type="button" disabled><span class="th">${thumb(id)}</span><span class="tx">???<small>Nº ${padN(id)}</small></span></button>`}${variants(id)}</div>`;
-  if (ids.length < 2) return (FORMS[n] || []).length ? `<p class="empty-note">No evoluciona, pero tiene ${FORMS[n].length > 1 ? 'estas variantes' : 'esta variante'}:</p><div class="evo">${card(n)}</div>` : '<p class="empty-note">No evoluciona.</p>';
-  // por etapas (columnas); cada evolución lleva al lado cómo se consigue
-  let stage = roots, html = '', first = true;
-  while (stage.length) {
-    html += `<div class="evo-col">${stage.map(id => first ? card(id) : `<div class="evo-step"><span class="evo-m">${INFO[id - 1][14] || '—'}</span>${card(id)}</div>`).join('')}</div>`;
-    first = false;
-    stage = stage.flatMap(kids);
-  }
-  return `<div class="evo">${html}</div>`;
+  // una línea por etapas (columnas); nodes: especie -> [[forma, variantes, enlace]]; cada evolución lleva al lado cómo se consigue
+  const line = nodes => {
+    let stage = roots, html = '', first = true;
+    while (stage.length) {
+      const here = stage.filter(id => nodes.has(id));
+      if (here.length) {
+        html += `<div class="evo-col">${here.flatMap(id => nodes.get(id).map(([fid, extra, link]) => first ? card(id, fid, extra, link)
+          : `<div class="evo-step"><span class="evo-m">${INFO[id - 1][14] || '—'}</span>${card(id, fid, extra, link)}</div>`)).join('')}</div>`;
+        first = false;
+      }
+      stage = stage.flatMap(kids);
+    }
+    return `<div class="evo">${html}</div>`;
+  };
+  // línea normal: sin las evoluciones que solo hace una forma regional; debajo de cada una, sus variantes no regionales
+  const base = new Map(ids.filter(k => !regOnly(k)).map(k => [k, [[0, (FORMS[k] || []).filter(f => !formTag(f)), false]]]));
+  // líneas regionales
+  const tags = REG_ORDER.filter(t => ids.some(k => regOnly(k) === t || (FORMS[k] || []).some(f => formTag(f) === t)));
+  const regional = tags.map(t => {
+    const nodes = new Map();
+    ids.forEach(k => {
+      if (regOnly(k) === t) return nodes.set(k, [[0, (FORMS[k] || []).filter(f => !formTag(f)), false]]);
+      const fs = (FORMS[k] || []).filter(f => formTag(f) === t), main = fs.filter(f => f[1].includes(t));
+      if (main.length) nodes.set(k, main.map((f, i) => [f[0], i ? [] : fs.filter(x => !x[1].includes(t)), false]));   // Modo Daruma, debajo de su forma
+    });
+    [...nodes.keys()].forEach(k => { const p = par(k); if (p && ids.includes(p) && !nodes.has(p)) nodes.set(p, [[0, [], true]]); });
+    return `<div class="evo-fam reg"><p class="evo-fam-h">Forma de ${t}</p>${line(nodes)}</div>`;
+  });
+  if (ids.length < 2 && !tags.length) return (FORMS[n] || []).length ? `<p class="empty-note">No evoluciona, pero tiene ${FORMS[n].length > 1 ? 'estas variantes' : 'esta variante'}:</p>${line(base)}` : '<p class="empty-note">No evoluciona.</p>';
+  if (!tags.length) return line(base);
+  return `<div class="evo-fam"><p class="evo-fam-h">${ids.length < 2 ? 'No evoluciona · forma normal' : 'Forma normal'}</p>${line(base)}</div>${regional.join('')}`;
 }
 function effHTML(types) {
   const mult = {};

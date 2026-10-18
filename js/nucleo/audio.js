@@ -19,6 +19,11 @@ function beep(freq = 660, dur = 0.08, vol = 0.04, type = 'sine') {
   } catch (e) {}
 }
 const chord = notes => notes.forEach((f, i) => setTimeout(() => beep(f, 0.22, 0.04), i * 70));
+// objeto conseguido: fanfarria corta (ta-ta-ta-táaa), como al recibir un objeto en los juegos
+function itemSfx() {
+  if (!soundOn) return;
+  [[784, 0, .1], [988, .09, .1], [1175, .18, .1], [1568, .3, .42]].forEach(([f, t, d]) => setTimeout(() => { beep(f, d, .05, 'triangle'); beep(f / 2, d, .025, 'square'); }, t * 1000));
+}
 // ✦ sonido shiny: tres destellos agudos, un barrido que sube brillando y una campanita final
 function shinySfx() {
   if (!soundOn) return;

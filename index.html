@@ -127,6 +127,7 @@
       <div class="tool-row">
         <div class="seg" id="dexGens" role="group" aria-label="Generación"></div>
         <div class="seg" id="dexClass" role="group" aria-label="Categoría"></div>
+        <div class="seg" id="dexOwn" role="group" aria-label="Desbloqueados"></div>
         <button class="clear-btn" id="dexClear" type="button" hidden>LIMPIAR ×</button>
       </div>
       <div class="types" id="dexTypes" role="group" aria-label="Tipos (hasta 2)"></div>
@@ -175,7 +176,8 @@
       <div class="opt-row"><div class="l"><b>Modo</b><span>Usuario: la Pokédex se completa capturando en tus partidas · Desarrollador: todo desbloqueado</span></div><button class="toggle" id="optMode" type="button" aria-pressed="false">USUARIO</button></div>
       <div class="opt-row"><div class="l"><b>Animaciones</b><span>Pokémon con vida, deslizamientos y efectos</span></div><button class="toggle" id="optMotion" type="button" aria-pressed="true">ON</button></div>
       <div class="opt-row"><div class="l"><b>Velocidad del texto</b><span>Lo rápido que se escriben los diálogos: lenta, normal, rápida o al instante</span></div><button class="toggle" id="optTSpeed" type="button">NORMAL</button></div>
-      <div class="opt-row"><div class="l"><b>Locutor</b><span>Una voz lee en alto el texto de la aventura (usa la voz de tu sistema)</span></div><button class="toggle" id="optTts" type="button" aria-pressed="false">OFF</button></div>
+      <div class="opt-row"><div class="l"><b>Locutor</b><span>Una voz lee en alto el texto de la aventura (voces de tu navegador y tu sistema, gratis)</span></div><button class="toggle" id="optTts" type="button" aria-pressed="false">OFF</button></div>
+      <div class="opt-row"><div class="l"><b>Voz del locutor</b><span id="optVoiceInfo">Se elige sola la más natural en español; puedes cambiarla y probarla</span></div><div class="voice-pick"><select class="sel" id="optVoice" aria-label="Voz del locutor"></select><button class="toggle" id="optVoiceTest" type="button">PROBAR</button></div></div>
       <div class="opt-row"><div class="l"><b>Hall de la Fama</b><span>Vuelve a ver la cinemática con tu último equipo campeón</span></div><button class="toggle" id="optHof" type="button">VER</button></div>
       <div class="opt-row"><div class="l"><b>Derrota</b><span>Ver la animación de cuando pierdes (con tu último equipo)</span></div><button class="toggle" id="optLose" type="button">VER</button></div>
     </div>

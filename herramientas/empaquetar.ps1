@@ -16,7 +16,9 @@ $leer = { param($rel) [IO.File]::ReadAllText((Join-Path $raiz $rel), $utf8) }
 $html = [regex]::Replace($html, '<link rel="stylesheet" href="(css/[^"]+)">', {
   param($m)
   $css = & $leer $m.Groups[1].Value
-  $css = [regex]::Replace($css, 'url\(\.\./(assets/img/[^)]+\.webp)\)', { param($u) 'url(data:image/webp;base64,' + [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $raiz $u.Groups[1].Value))) + ')' })
+  $css = [regex]::Replace($css, 'url\(\.\./(assets/img/[^)]+\.(webp|jpg|png))\)', { param($u)
+    $tipo = @{ webp = 'image/webp'; jpg = 'image/jpeg'; png = 'image/png' }[$u.Groups[2].Value]
+    "url(data:$tipo;base64," + [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $raiz $u.Groups[1].Value))) + ')' })
   "<style>/* $($m.Groups[1].Value) */`n$css</style>"
 })
 # JavaScript: cada <script src> local pasa a script en línea, en el mismo orden (al final del body, ya existe el DOM)

@@ -6,3 +6,6 @@
 .opt-row .l span { font-size: 13px; color: var(--fg-soft); }
 .toggle { font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--fg-soft); cursor: pointer; min-width: 72px; }
 .toggle[aria-pressed="true"] { background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
+/* voz del locutor: lista de voces y botón para probarla */
+.voice-pick { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
+.voice-pick .sel { max-width: min(320px, 60vw); }

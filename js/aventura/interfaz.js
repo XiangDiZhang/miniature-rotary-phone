@@ -77,7 +77,7 @@ function phaseLook(p) {
   if (p.kind === 'prep') return { icon: PH_ICON.peak, label: shortPlace(REG().league || 'Liga').replace(/^(la|el)\s+/, ''), kind: 'Preparación' };
   if (p.kind === 'gym' && p.role === 'champ') return { icon: PH_ICON.crown, label: p.leader, kind: 'Campeón' };
   if (p.kind === 'gym' && p.role === 'elite') return { icon: PH_ICON.star, label: p.leader, kind: 'Alto Mando' };
-  if (p.kind === 'gym') { const sp = SPR.badge.get(p.badgeId);
+  if (p.kind === 'gym') { const sp = badgeSpr(p);
     return { icon: sp ? `<img src="${sp.u}" alt="">` : PH_ICON.medal, label: p.leader, kind: REG().trials ? 'Prueba' : 'Gimnasio', tc: TYPE_COLORS[p.typeName] || 'var(--kanto)' }; }
   return { icon: PH_ICON.dot, label: shortPlace(p.name), kind: p.kind === 'route' ? 'Ruta' : p.kind === 'rival' ? 'Rival' : 'Ciudad' };
 }
@@ -143,20 +143,31 @@ function renderAdv() {
   // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
   const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);
-  const bag = (items.map(([k, v]) => `<span class="bag-slot" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${BAG_ICON[k] || BAG_ICON.potion}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
-    + stones.map(m => { const nm = mname({ n: m.n, form: m.stone }), st = stoneName(m.stone); return `<span class="bag-slot gem" style="--c:${TYPE_COLORS[formRec(m.stone)[1][2][0]]}" title="${st} (${nm}), equipada en ${mname(m)}. En combate, púlsala en su ficha para megaevolucionar durante ese giro."><span class="bag-ico">${stoneHTML(m.stone)}</span><span class="bag-nm">${st}</span></span>`; }).join('')
-    + (bands.length ? `<span class="bag-slot gem" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${DMAX_SVG}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
-    + (run.ball ? `<span class="bag-slot buff" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${BAG_ICON.ball}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
+  const bag = (items.map(([k, v]) => `<span class="bag-slot" data-k="${k}" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${BAG_ICON[k] || BAG_ICON.potion}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
+    + stones.map(m => { const nm = mname({ n: m.n, form: m.stone }), st = stoneName(m.stone); return `<span class="bag-slot gem" data-k="st${m.stone}" style="--c:${TYPE_COLORS[formRec(m.stone)[1][2][0]]}" title="${st} (${nm}), equipada en ${mname(m)}. En combate, púlsala en su ficha para megaevolucionar durante ese giro."><span class="bag-ico">${stoneHTML(m.stone)}</span><span class="bag-nm">${st}</span></span>`; }).join('')
+    + (bands.length ? `<span class="bag-slot gem" data-k="dmax" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${DMAX_SVG}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
+    + (run.ball ? `<span class="bag-slot buff" data-k="ball" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${BAG_ICON.ball}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
     || '<span class="bag-empty">Mochila vacía</span>')
     + (stolenList().length ? `<span class="bag-note">Robado por el ${VIL().name}: ${stolenList().map(mname).join(', ')}</span>` : '');
   if ($('advBag')._h !== bag) { $('advBag')._h = bag; $('advBag').innerHTML = bag; }
+  // objeto nuevo (o uno más de los que ya tenías): suena la fanfarria y su hueco de la mochila salta
+  const counts = { ...Object.fromEntries(items), ...Object.fromEntries(stones.map(m => ['st' + m.stone, 1])), dmax: bands.length, ball: run.ball ? 1 : 0 };
+  const prev = renderAdv.bagRun === run ? renderAdv.bagCounts : null;
+  renderAdv.bagRun = run; renderAdv.bagCounts = counts;
+  const got = prev ? Object.keys(counts).filter(k => counts[k] > (prev[k] || 0)) : [];
+  if (got.length) {
+    itemSfx();
+    got.forEach(k => { const el = $('advBag').querySelector(`[data-k="${k}"]`); if (el) { el.classList.remove('got'); void el.offsetWidth; el.classList.add('got'); setTimeout(() => el.classList.remove('got'), 1200); } });
+    // en el móvil la mochila va en su pestaña: la pestaña también avisa
+    const tab = $('advTabs') && $('advTabs').querySelector('[data-tab="1"]'); if (tab && tab.offsetParent) { tab.classList.remove('got'); void tab.offsetWidth; tab.classList.add('got'); setTimeout(() => tab.classList.remove('got'), 1200); }
+  }
   const best = getBest()[run.region];
   $('advPoints').innerHTML = `<b>${run.points}</b><span>pts · ${rank(run.points)}</span>`; $('advPoints').title = `Puntos de la partida · rango ${rank(run.points)}${best ? ` · récord ${best}` : ''}`;
   // estuche de medallas: las 8 de la región; las conseguidas brillan y las que faltan se ven apagadas
   const gyms = REG().path.filter(p => p.badge), bKey = pathKey.split(':')[0] + gyms.map(p => p.badge).join() + '|' + run.badges.join();
   if ($('advBadges')._k !== bKey) {
     $('advBadges')._k = bKey;
-    $('advBadges').innerHTML = gyms.map(p => { const got = run.badges.includes(p.badge), sp = SPR.badge.get(p.badgeId);
+    $('advBadges').innerHTML = gyms.map(p => { const got = run.badges.includes(p.badge), sp = badgeSpr(p);
       return `<span class="bdg${got ? ' got' : ''}" title="${p.badge}${got ? '' : ' (por conseguir)'}">${sp ? `<img src="${sp.u}" alt="${p.badge}">` : `<i>◆</i>`}</span>`; }).join('');
   }
   const lg = run.log.join('\n');
@@ -172,7 +183,7 @@ function leaderHTML(L) {
   const weak = TYPES.filter(t => eff(t, [T]) > 1);       // tipos que le hacen mucho daño
   const danger = TYPES.filter(d => eff(T, [d]) > 1);     // tipos que sufren con sus ataques
   const role = L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? (/^Campeona/.test(L.name) ? 'Campeona' : 'Campeón') : REG().trials ? (/^Gran/.test(L.name) ? 'Kahuna' : 'Capitán') : `Líder · ${L.name}`;
-  const bsp = L.badgeId && SPR.badge.get(L.badgeId);
+  const bsp = badgeSpr(L);
   return { c: TYPE_COLORS[T], html: `<div class="lc-spr${bsp ? ' medal' : ''}">${phaseLook(L).icon}</div>
     <div class="lc-top"><small>${role}${done ? ' · ✓ derrotado' : ''}</small><b>${L.leader}</b><div>${chip(T)}</div></div>
     <div class="lc-rows">

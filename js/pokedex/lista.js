@@ -1,5 +1,5 @@
 // Pokédex: filtros, numeración y lista de Pokémon
-const dexFilter = { q: '', gen: 0, types: [], cls: '' };
+const dexFilter = { q: '', gen: 0, types: [], cls: '', own: '' };   // own: 'own' = solo los que ya has desbloqueado en tus partidas
 let shownRows = [];          // filas que se ven ahora (la ficha navega por ellas)
 let lastDexKey = '';         // si cambian los filtros, la lista vuelve arriba
 const NAME_KEY = new Map(DEX.map(r => [r[0], norm(r[1])]));   // nombres sin tildes, para buscar
@@ -15,6 +15,7 @@ function segRow(el, list, key) {
 }
 segRow($('dexGens'), [[0, 'TODAS'], ...ROMAN.slice(1).map((r, i) => [i + 1, r, 'Generación ' + r])], 'gen');
 segRow($('dexClass'), [['', 'TODOS'], ['leg', 'LEGEND.', 'Legendarios'], ['myth', 'SINGUL.', 'Singulares']], 'cls');
+segRow($('dexOwn'), [['', 'TODOS'], ['own', 'DESBLOQUEADOS', 'Solo los Pokémon que ya has conseguido en tus partidas']], 'own');
 $('dexTypes').innerHTML = Object.keys(TYPE_COLORS).map(t => `<button class="tbtn" type="button" data-t="${t}" style="${typeVars(t)}" title="${t}" aria-label="${t}" aria-pressed="false">${typeSvg(t)}</button>`).join('');
 $('dexTypes').querySelectorAll('.tbtn').forEach(b => b.onclick = () => {
   const t = b.dataset.t, sel = dexFilter.types, i = sel.indexOf(t);
@@ -26,8 +27,8 @@ function syncTypes() {
   $('dexTypes').classList.toggle('picked', dexFilter.types.length > 0);
 }
 $('dexClear').onclick = () => {
-  Object.assign(dexFilter, { q: '', gen: 0, types: [], cls: '' }); $('dexSearch').value = '';
-  ['dexGens', 'dexClass'].forEach(id => $(id).querySelectorAll('button').forEach((x, i) => x.setAttribute('aria-pressed', i === 0)));
+  Object.assign(dexFilter, { q: '', gen: 0, types: [], cls: '', own: '' }); $('dexSearch').value = '';
+  ['dexGens', 'dexClass', 'dexOwn'].forEach(id => $(id).querySelectorAll('button').forEach((x, i) => x.setAttribute('aria-pressed', i === 0)));
   syncTypes(); beep(440); renderDex();
 };
 
@@ -83,8 +84,9 @@ function renderDex() {
     (!dexFilter.gen || g === dexFilter.gen) &&
     dexFilter.types.every(t => ty.includes(t)) &&
     (!dexFilter.cls || (dexFilter.cls === 'leg' ? leg : myth)) &&
+    (!dexFilter.own || PDX.c.has(n)) &&
     (!q || NAME_KEY.get(n).includes(q) || (qn && (String(num).startsWith(qn) || String(n).startsWith(qn))) || q === '0' && num === 0));
-  const active = !!(dexFilter.q || dexFilter.gen || dexFilter.types.length || dexFilter.cls);
+  const active = !!(dexFilter.q || dexFilter.gen || dexFilter.types.length || dexFilter.cls || dexFilter.own);
   $('dexClear').hidden = !active;
   $('dexCount').textContent = `${devMode ? '' : `${base.filter(r => PDX.c.has(r[1][0])).length} CONSEGUIDOS · `}${rows.length} DE ${base.length} · ${reg ? 'POKÉDEX DE ' + reg.name.toUpperCase() + ' (' + reg.games.toUpperCase() + ')' : 'POKÉDEX NACIONAL'}${dexFilter.types.length ? ' · ' + dexFilter.types.join(' + ').toUpperCase() : ''}`;
   $('dexSub').hidden = true;
@@ -95,7 +97,7 @@ function renderDex() {
   if (look === listKey) return rail.refresh(showTicks, reset);
   listKey = look; clearTimeout(fillTimer);
   const list = $('dexList');
-  if (!rows.length) { list.innerHTML = '<li class="dex-empty">Ningún Pokémon coincide con la búsqueda.</li>'; return rail.refresh(showTicks, reset); }
+  if (!rows.length) { list.innerHTML = `<li class="dex-empty">${dexFilter.own && !PDX.c.size ? 'Aún no has desbloqueado ningún Pokémon: captúralos en tus partidas.' : 'Ningún Pokémon coincide con la búsqueda.'}</li>`; return rail.refresh(showTicks, reset); }
   const label = reg ? reg.name.slice(0, 3).toUpperCase() : genStart ? 'GEN ' + ROMAN[dexFilter.gen] + ' ·' : 'Nº';
   const html = from => rows.slice(from, from + (from ? CHUNK : FIRST)).map(r => dexItem(r, label, !genStart && !reg)).join('');
   list.innerHTML = html(0);

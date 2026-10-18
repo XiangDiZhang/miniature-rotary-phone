@@ -1,12 +1,31 @@
 // Aventura: cinemáticas de derrota, Hall de la Fama y evolución
+// ---- Escenario de las dos salas (assets/img/hall-fama.jpg y hall-derrota.jpg, 1408 × 768) ----
+// Todo se coloca en % de la imagen, así encaja con el dibujo en cualquier pantalla. La imagen cubre la pantalla
+// sin recortar el podio: en pantallas estrechas se ve un poco más pequeña, con su propio fondo difuminado alrededor.
+const HALL = {
+  frames: [27.13, 36.29, 45.45, 54.55, 63.71, 72.8],   // centro de los 6 marcos de la pared (Hall de la Fama)
+  slots: [26.7, 36.1, 45.4, 54.7, 64, 73.4],           // sitio de cada Pokémon encima del podio
+  top: 71,                                              // altura de los pies sobre el podio
+  stairs: { l: [[17.6, 79], [20.6, 71]], r: [[82.4, 79], [79.4, 71]] },   // escalones de los lados del podio: abajo y arriba
+};
+// los Pokémon ocupan los sitios del centro (con 3, los 3 de en medio)
+const hallSlots = n => { const s = Math.floor((6 - Math.min(6, n)) / 2); return Array.from({ length: Math.min(6, n) }, (_, i) => s + i); };
+// sprite apoyado en el suelo: se baja lo que mide el hueco vacío bajo los pies
+function hallSprite(m, cls) {
+  const r = monSprite(m), ty = mtypes(m), c1 = TYPE_COLORS[ty[0]] || '#8592ab', c2 = TYPE_COLORS[ty[1] || ty[0]] || c1;
+  return r ? `<img class="${cls}" src="${r.u}" alt=""${r.px ? '' : ' data-hd="1"'} style="--fb:${(r.fb || 0).toFixed(3)}">` : `<span class="${cls} ph-wrap"><i class="ph" style="--c1:${c1};--c2:${c2}"></i></span>`;
+}
+
 function loseScreen(who, done, team) {
   team = (team || run.team.concat(stolenList())).slice(0, 6);
   if (!team.length && run) team = [...boxList()].slice(0, 6);
   const sh = document.createElement('div'); sh.className = 'lose';
   let rain = ''; for (let i = 0; i < 70; i++) rain += `<i style="--x:${Math.random() * 100}%;--d:${.5 + Math.random() * .5}s;--dl:${Math.random() * 2}s;--h:${30 + Math.random() * 50}px"></i>`;
-  sh.innerHTML = `<div class="lose-bg"></div><div class="lose-rain">${rain}</div>
-    <div class="lose-row">${team.map((m, i) => `<div class="lose-mon" style="--i:${i}"><div class="lose-sp">${monThumb(m)}</div><span>${dname(m)}</span></div>`).join('')}</div>
-    <div class="lose-txt"><small>${who ? 'Contra ' + who : 'Fin del viaje'}</small><b>Derrota</b><span>Tus Pokémon se han debilitado…</span></div>
+  const at = hallSlots(team.length);
+  sh.innerHTML = `<div class="hall-blur lose-blur"></div><div class="hall-stage lose-stage">
+      ${team.map((m, i) => `<div class="hall-mon lose-mon" style="--x:${HALL.slots[at[i]]}%;--y:${HALL.top}%;--i:${i}"><div class="lose-sp">${hallSprite(m, 'spr')}</div><span class="hall-tag">${dname(m)}</span></div>`).join('')}
+    </div><div class="lose-rain">${rain}</div>
+    <div class="lose-txt"><small>${who ? 'Contra ' + who : 'Fin del viaje'}</small><span>Tus Pokémon se han debilitado…</span></div>
     <div class="lose-end"><button class="btn" type="button">Continuar</button></div><span class="hof-skip">Toca para saltar</span>`;
   document.body.appendChild(sh);
   loseMusic();
@@ -19,30 +38,45 @@ function loseScreen(who, done, team) {
   sh.addEventListener('click', () => { if (!sh.classList.contains('done')) finale(); });
 }
 
+// ---- Hall de la Fama: cada Pokémon sube por la alfombra, trepa por los escalones del podio y se coloca en su sitio;
+// al llegar, su retrato (quieto) aparece en el marco de la pared que tiene detrás, con su nombre en la placa ----
 function hallOfFame(done, data) {
   if (!data && run) saveHistory(true);
   if (window.__noCine) return done && done();   // (pruebas automáticas)
   data = data || saveHof();
-  const team = data.team.slice(0, 6);
+  const team = data.team.slice(0, 6), at = hallSlots(team.length);
   const sh = document.createElement('div'); sh.className = 'hof';
-  const n = team.length, gap = Math.min(15, 80 / Math.max(1, n));
-  const slots = team.map((m, i) => 50 + (i - (n - 1) / 2) * gap);
   let conf = ''; for (let i = 0; i < 46; i++) conf += `<i style="--x:${Math.random() * 100}%;--d:${3 + Math.random() * 3}s;--dl:${Math.random() * 3}s;--r:${Math.random() * 360}deg;--c:${['#ffd84a', '#ff5a46', '#5ad1c8', '#fff3c4', '#b46cff'][i % 5]}"></i>`;
-  sh.innerHTML = `<div class="hof-bg"></div><div class="hof-shafts"></div>
-    <div class="hof-title"><small>${data.name} · Liga Pokémon</small><b>Hall de la Fama</b></div>
-    <div class="hof-crown" aria-hidden="true">♛</div>
-    <div class="hof-row">${team.map((m, i) => `<div class="hof-mon${m.shiny ? ' shiny' : ''}" style="--to:${slots[i]}%;--i:${i};--c:${TYPE_COLORS[mtypes(m)[0]]}"><div class="hof-walk">${monThumb(m)}</div><span class="hof-plate">${dname(m)}</span></div>`).join('')}</div>
+  sh.innerHTML = `<div class="hall-blur hof-blur"></div><div class="hall-stage hof-stage"><div class="hof-shafts"></div>
+      ${team.map((m, i) => `<div class="hof-frame${m.shiny ? ' shiny' : ''}" style="--x:${HALL.frames[at[i]]}%;--c:${TYPE_COLORS[mtypes(m)[0]]}">${hallSprite(m, 'pic')}</div><span class="hof-name" style="--x:${HALL.frames[at[i]]}%">${dname(m)}</span>`).join('')}
+      ${team.map((m, i) => `<div class="hall-mon hof-mon${m.shiny ? ' shiny' : ''}" style="--x:${HALL.slots[at[i]]}%;--y:${HALL.top}%;--i:${i};--c:${TYPE_COLORS[mtypes(m)[0]]}"><div class="hof-walk">${hallSprite(m, 'spr')}</div></div>`).join('')}
+    </div>
     <div class="hof-confetti">${conf}</div>
-    <div class="hof-end"><b>¡Nuevo Campeón de ${data.name}!</b><span>${data.points} puntos · rango ${data.rank} · ${data.badges} medallas</span><button class="btn" type="button">Continuar</button></div>
+    <div class="hof-end"><small>${data.name} · Liga Pokémon</small><b>¡Nuevo Campeón de ${data.name}!</b><span>${data.points} puntos · rango ${data.rank} · ${data.badges} medallas</span><button class="btn" type="button">Continuar</button></div>
     <span class="hof-skip">Toca para saltar</span>`;
   document.body.appendChild(sh);
   const crownIn = hofMusic() || 8.4;
-  // desfile: cada Pokémon entra caminando por la alfombra y se coloca en su sitio
-  const mons = [...sh.querySelectorAll('.hof-mon')];
-  mons.forEach((el, i) => setTimeout(() => el.classList.add('go'), 1200 + i * 900));
-  const finale = () => { if (sh.classList.contains('crowned')) return; mons.forEach(el => el.classList.add('go', 'arrived')); sh.classList.add('crowned');
-    const r = sh.querySelector('.hof-crown').getBoundingClientRect(); setTimeout(() => shinyBurst(r.left + r.width / 2, r.top + r.height / 2), 500); };
-  const tm = setTimeout(finale, Math.max(1200 + n * 900 + 1400, crownIn * 1000));
+  const mons = [...sh.querySelectorAll('.hof-mon')], frames = [...sh.querySelectorAll('.hof-frame')], names = [...sh.querySelectorAll('.hof-name')];
+  // al llegar a su sitio: deja de andar, celebra y su retrato aparece en el marco
+  const arrive = i => { if (mons[i].classList.contains('arrived')) return; mons[i].classList.add('arrived'); frames[i].classList.add('lit'); names[i].classList.add('lit'); beep(660 + i * 80, .08, .03); };
+  // recorrido (en % del escenario): sube por la alfombra, va a los escalones de su lado, sube al podio y camina hasta su sitio
+  const walk = (el, i) => {
+    if (sh.classList.contains('crowned')) return;   // si se ha saltado la cinemática, ya está en su sitio
+    const x = HALL.slots[at[i]], side = x < 50 ? HALL.stairs.l : HALL.stairs.r;
+    const pts = [[50, 104, 1.25], [50, 84, 1.1], [side[0][0], side[0][1], 1.05], [side[1][0], side[1][1], 1], [x, HALL.top, 1]];
+    el.classList.add('go');
+    if (reduceMotion || !el.animate) return arrive(i);
+    const kf = pts.map(([px, py, s], k) => ({ left: px + '%', top: py + '%', scale: s, offset: [0, .32, .55, .72, 1][k] }));
+    el.animate(kf, { duration: 3400, easing: 'linear', fill: 'backwards' }).onfinish = () => arrive(i);
+  };
+  mons.forEach((el, i) => setTimeout(() => walk(el, i), 1200 + i * 900));
+  const finale = () => {
+    if (sh.classList.contains('crowned')) return;
+    mons.forEach((el, i) => { el.getAnimations().forEach(a => a.cancel()); el.classList.add('go'); arrive(i); });
+    sh.classList.add('crowned');
+    const r = sh.querySelector('.hof-end b').getBoundingClientRect(); setTimeout(() => shinyBurst(r.left + r.width / 2, r.top + r.height / 2), 500);
+  };
+  const tm = setTimeout(finale, Math.max(1200 + team.length * 900 + 3600, crownIn * 1000));
   const close = () => { clearTimeout(tm); sh.classList.add('out'); setTimeout(() => { sh.remove(); done && done(); }, 500); };
   sh.querySelector('.hof-end button').onclick = e => { e.stopPropagation(); close(); };
   sh.addEventListener('click', () => { if (!sh.classList.contains('crowned')) finale(); });
