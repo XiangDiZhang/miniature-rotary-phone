@@ -117,11 +117,11 @@ body.wide-adv .wrap { max-width: 1120px; }
 .lc-art img:nth-child(2):nth-last-child(2) { z-index: 1; }
 /* fondo: de cintura para arriba, grande (cubre buena parte de la tarjeta), abajo a la derecha, con la cabeza casi arriba */
 .lc-big { left: 88%; right: auto; transform: translateX(-50%);   /* centrado bien a la derecha de la tarjeta */
-   top: calc(4px - 100% * .23); height: 190%;   /* (sube lo que mide el hueco vacío encima de la cabeza) */
+   top: calc(6px - 190% * var(--ht, .23)); height: 190%;   /* (sube lo que mide el hueco vacío encima de la cabeza: --ht, lo mide headTop) */
   opacity: .2; filter: saturate(.85);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%); }
 /* si el líder son varios personajes, el fondo los enseña a todos: más pequeños y montados */
-.lc-art.many .lc-big { left: 78%; top: calc(4px - 100% * .14); height: 118%; }   /* (más pequeños, para que quepan todos sin cortarse) */
+.lc-art.many .lc-big { left: 78%; top: calc(6px - 118% * var(--ht, .12)); height: 118%; }   /* (más pequeños, para que quepan todos sin cortarse) */
 /* (los de delante se montan hacia la derecha: la fila se corre a la izquierda para que el grupo quede centrado) */
 .lc-art.n2 .lc-big { transform: translateX(-63%); } .lc-art.n3 .lc-big { transform: translateX(-67.3%); }
 /* delante, de cuerpo entero: de abajo hasta 3/4 del alto de la tarjeta */
@@ -684,3 +684,7 @@ img.stone.px { image-rendering: pixelated; }
 .lc-art img { transform: translateX(var(--tx, 0)) translateY(var(--fy, 0)); }
 .lf-row img { transform: translateX(var(--tx, 0)) translateY(calc(var(--fy, 0%) - 10px)); }   /* (los pies, en el centro de la peana) */
 .lf-glow { transform: translateX(var(--gx, 0)); }
+/* mochila: se desplaza como la Pokédex (sin barra; se arrastra con el ratón o el dedo) y se difumina arriba y abajo */
+#advBag { scrollbar-width: none; cursor: grab; -webkit-user-select: none; user-select: none; overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(transparent, #000 8px, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(transparent, #000 8px, #000 calc(100% - 16px), transparent); }
+#advBag::-webkit-scrollbar { display: none; } #advBag.dragging { cursor: grabbing; }

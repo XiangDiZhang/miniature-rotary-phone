@@ -111,11 +111,11 @@ function fitHistory() {
   const over = document.documentElement.scrollHeight - innerHeight; if (over > 0) v.style.height = Math.max(140, h - Math.ceil(over / z)) + 'px';
 }
 addEventListener('resize', fitHistory);
-// el historial se arrastra con el ratón como la Pokédex (con el dedo ya se desplaza solo), con inercia al soltar
+// el historial y la mochila se arrastran con el ratón como la Pokédex (con el dedo ya se desplazan solos), con inercia al soltar
 (() => {
   let d = null;
   document.addEventListener('pointerdown', e => {
-    const v = e.target.closest && e.target.closest('.hist-view'); if (!v || e.pointerType !== 'mouse' || e.button > 0 || e.target.closest('button')) return;
+    const v = e.target.closest && e.target.closest('.hist-view, .drag-scroll'); if (!v || e.pointerType !== 'mouse' || e.button > 0 || e.target.closest('button')) return;
     cancelAnimationFrame(v._glide); d = { v, y: e.clientY, top: v.scrollTop, last: e.clientY, t: performance.now(), vel: 0, moved: false };
   });
   addEventListener('pointermove', e => {

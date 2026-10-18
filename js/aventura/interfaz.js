@@ -59,7 +59,8 @@ function spinUI(title, sub, segs, center, onLand, now) {
   if (advNow && advNow.icon && WHEEL_ICONS[advNow.icon]) { advWheel.centerIcon = WHEEL_ICONS[advNow.icon]; advWheel.draw(); advWheel.idle(); }
   advWheel.onLand = r => { advWheel.enabled = false; onLand(r); renderAdv(); saveRun(); };
   advWheel.onStart = () => { advButtons([]); advSay('Girando…'); renderAdv(); };   // (la megapiedra deja de poder pulsarse)
-  advSay(introText ? introText + ' ' + sub : sub); introText = ''; advButtons([{ label: 'Girar', fn: () => advWheel.spin(1) }]);
+  // (en los combates de gimnasio y liga no se antepone el texto de llegada: el reto ya dice quién es, y la tarjeta, su tipo)
+  advSay(introText && !(loc() && loc().kind === 'gym') ? introText + ' ' + sub : sub); introText = ''; advButtons([{ label: 'Girar', fn: () => advWheel.spin(1) }]);
 }
 // tarjeta del equipo con el mismo diseño que la Pokédex (fondo, número, sprite, nombre y tipos)
 function teamTile(m, i) {
@@ -434,7 +435,7 @@ function renderCard() {
       </div>`;
   }
   el.style.setProperty('--c', c); el.hidden = false;
-  if (el._h !== html) { el._h = html; el.innerHTML = html; groundSprites(el.querySelector('.lc-full')); }   // (renderAdv la llama mucho: solo se redibuja si cambia)
+  if (el._h !== html) { el._h = html; el.innerHTML = html; groundSprites(el.querySelector('.lc-full')); headTop(el.querySelector('.lc-big')); }   // (renderAdv la llama mucho: solo se redibuja si cambia)
   // en el ordenador, el líder (Alto Mando, Campeón…) de cuerpo entero abajo a la derecha del escenario, sobre una peana de luz
   const fig = $('advLeadFig');
   if (fig) {
@@ -456,14 +457,22 @@ function renderCard() {
 const trainerFeet = new Map();
 function feetOf(im) {
   if (trainerFeet.has(im.src)) return trainerFeet.get(im.src);
-  const w = im.naturalWidth, h = im.naturalHeight, out = { fb: 0, fx: .5 };
+  const w = im.naturalWidth, h = im.naturalHeight, out = { fb: 0, fx: .5, ft: 0 };   // ft = hueco vacío encima de la cabeza
   try {
     const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
-    const d = g.getImageData(0, 0, w, h).data; let maxY = -1, minX = w, maxX = -1;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { maxY = y; if (x < minX) minX = x; if (x > maxX) maxX = x; }
-    if (maxY >= 0) { out.fb = 1 - (maxY + 1) / h; out.fx = (minX + maxX + 1) / 2 / w; }
+    const d = g.getImageData(0, 0, w, h).data; let maxY = -1, minY = -1, minX = w, maxX = -1;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { if (minY < 0) minY = y; maxY = y; if (x < minX) minX = x; if (x > maxX) maxX = x; }
+    if (maxY >= 0) { out.fb = 1 - (maxY + 1) / h; out.fx = (minX + maxX + 1) / 2 / w; out.ft = minY / h; }
   } catch (e) {}
   trainerFeet.set(im.src, out); return out;
+}
+// busto de fondo de la tarjeta: se coloca con la cabeza justo debajo del borde de arriba (cada sprite trae un hueco distinto encima)
+function headTop(big) {
+  if (!big) return;
+  const imgs = [...big.querySelectorAll('img')];
+  const go = () => { if (!imgs.every(im => im.complete && im.naturalWidth)) return; big.style.setProperty('--ht', Math.min(...imgs.map(im => feetOf(im).ft)).toFixed(4)); };
+  imgs.forEach(im => { if (!(im.complete && im.naturalWidth)) im.addEventListener('load', go, { once: true }); });
+  go();
 }
 function groundSprites(row, glow) {
   if (!row) return;
