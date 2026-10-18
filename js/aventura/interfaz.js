@@ -68,9 +68,10 @@ const dmaxIcon = () => { const r = SPR.item && SPR.item.get(DMAX_SPR.spr); retur
 // icono de la megapiedra de cada mega (Charizardita X, Lucarita Z…); si faltara, una gema dibujada
 const stoneHTML = id => { const r = stoneIcon(id); return r ? `<img class="stone${MEGA_STONES[id][0].startsWith('gen9/') ? '' : ' px'}" src="${r.u}" alt="">` : GEM_SVG; };
 function toolsHTML(m, i) {
-  const live = canTransform(), out = [];
-  if (m.stone && formRec(m.stone)) { const nm = stoneName(m.stone);
+  const out = [];
+  if (m.stone && formRec(m.stone)) { const nm = stoneName(m.stone), live = canTransform('mega', m);
     out.push(`<button class="tm-tool mega${m.tf && m.tf.kind === 'mega' ? ' on' : live ? ' live' : ''}" type="button" data-tool="mega" data-i="${i}" title="${nm}${live ? ': pulsa para megaevolucionar en este giro' : ': úsala en combate'}" aria-label="${nm} de ${name4(m)}">${stoneHTML(m.stone)}</button>`); }
+  const live = canTransform('gmax', m);
   if (m.dmax && gmaxForms(m).length) out.push(`<button class="tm-tool dmax${m.tf && m.tf.kind === 'gmax' ? ' on' : live ? ' live' : ''}" type="button" data-tool="gmax" data-i="${i}" title="Banda Dinamax${live ? ': pulsa para gigamaxizarlo en este giro' : ': úsala en combate'}" aria-label="Banda Dinamax de ${name4(m)}">${dmaxIcon()}</button>`);
   return out.length ? `<span class="tm-tools">${out.join('')}</span>` : '';
 }

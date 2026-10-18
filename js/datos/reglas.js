@@ -51,7 +51,7 @@ const MEGA_FORM_ONLY = { 10326: 10025, 10323: 10258, 10324: 10259, 10318: -1, 10
 const GMAX_FORM_ONLY = { 10228: 10184, 10227: 10191 };                                         // Toxtricity grave, Urshifu fluido
 // el resto de megas y gigamax son de la forma normal (ni regionales ni otras formas, salvo las variantes de Alcremie)
 function transformsOf(m, cls) {
-  const only = cls === 'mega' ? MEGA_FORM_ONLY : GMAX_FORM_ONLY, form = m.bf !== undefined ? m.bf : (m.form || 0);
+  const only = cls === 'mega' ? MEGA_FORM_ONLY : GMAX_FORM_ONLY, form = m.bf !== undefined ? m.bf : m.tf ? m.tf.from : (m.form || 0);   // (transformado: su forma de antes)
   const plain = !form || (m.n === 869 && form >= 20000);
   return (FORMS[m.n] || []).filter(f => f[8] === cls && (only[f[0]] !== undefined ? only[f[0]] === form : plain)).map(f => f[0]);
 }
