@@ -2,7 +2,7 @@
 // Líderes de gimnasio, capitanes y kahunas, Alto Mando y Campeones: su nombre en el juego -> su sprite
 // (los que salen en varias regiones, como Koga, Bruno o Lance, son la misma persona y usan el mismo)
 // (los que son varios personajes, una lista: salen todos juntos)
-// (se usan versiones de pie: Brock, Aníbal, Camila y Roy tienen la normal agachada, de rodillas o tumbada; Bruno, Denio, Mirto
+// (se usan versiones de pie: Brock, Aníbal, Camus, Camila y Roy tienen la normal agachada, de rodillas o tumbada; Bruno, Denio, Mirto
 //  y Koga no tienen ninguna de pie en la carpeta)
 const LEADER_SPR = {
   // Kanto
@@ -18,7 +18,7 @@ const LEADER_SPR = {
   'Roco': 'roark', 'Gardenia': 'gardenia', 'Fantina': 'fantina', 'Brega': 'maylene', 'Mananti': 'crasherwake', 'Acerón': 'byron', 'Inverna': 'candice', 'Lectro': 'volkner',
   'Alecrán': 'aaron', 'Gaia': 'bertha', 'Fausto': 'flint', 'Delos': 'lucian', 'Cintia': 'cynthia',
   // Teselia
-  'Millo, Zeo y Maíz': ['chili', 'cilan', 'cress'], 'Aloe': 'lenora', 'Camus': 'burgh', 'Camila': 'elesa-masters2', 'Yakón': 'clay', 'Gerania': 'skyla', 'Junco': 'brycen', 'Lirio': 'drayden',
+  'Millo, Zeo y Maíz': ['chili', 'cilan', 'cress'], 'Aloe': 'lenora', 'Camus': 'burgh-masters', 'Camila': 'elesa-masters2', 'Yakón': 'clay', 'Gerania': 'skyla', 'Junco': 'brycen', 'Lirio': 'drayden',
   'Anís': 'shauntal', 'Aza': 'marshal', 'Catleya': 'caitlin', 'Lotto': 'grimsley', 'Mirto': 'alder',
   // Kalos
   'Violeta': 'viola', 'Lino': 'grant', 'Corelia': 'korrina', 'Amaro': 'ramos', 'Lem': 'clemont', 'Valeria': 'valerie', 'Ástrid': 'olympia', 'Édel': 'wulfric',
