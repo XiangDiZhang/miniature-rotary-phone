@@ -245,8 +245,7 @@ function transformAnim(m, kind, A, B, onSwap, onEnd) {
   const mega = kind === 'mega', shade = document.createElement('div'); shade.className = 'evo-shade';
   const pop = document.createElement('div'); pop.className = `evo-pop tf-pop ${mega ? 'tf-mega' : 'tf-gmax'}`; pop.style.setProperty('--c', mega ? (TYPE_COLORS[B.ty[0]] || '#b46cff') : '#ff2d55');
   let fx = '';
-  if (mega) for (let i = 0; i < 12; i++) fx += `<i style="--a:${i * 30}deg;--dl:${(i * .05).toFixed(2)}s"></i>`;
-  else for (let i = 0; i < 9; i++) fx += `<i style="--x:${(Math.random() * 100).toFixed(0)}%;--y:${(Math.random() * 100).toFixed(0)}%;--s:${(.7 + Math.random() * .9).toFixed(2)};--dl:${(Math.random() * .8).toFixed(2)}s"></i>`;
+  if (!mega) for (let i = 0; i < 9; i++) fx += `<i style="--x:${(Math.random() * 100).toFixed(0)}%;--y:${(Math.random() * 100).toFixed(0)}%;--s:${(.7 + Math.random() * .9).toFixed(2)};--dl:${(Math.random() * .8).toFixed(2)}s"></i>`;
   pop.innerHTML = `<div class="tf-bg"></div><div class="tf-fx">${fx}</div>${mega ? '<div class="tf-orb"></div><div class="tf-sym"></div>' : '<div class="tf-bolt"></div>'}
     <div class="stage2">${picHTML(A, m.shiny, 'a')}${picHTML(B, m.shiny, 'b hide')}</div>
     <p class="cap"><small>${mega ? 'Megaevolución' : 'Gigamax'}</small>${mega ? `¡La ${stoneName(m.stone)} de ${A.name} reacciona!` : `¡${A.name} absorbe la energía Dinamax!`}</p><span class="skip">Toca para saltar</span>`;
@@ -262,7 +261,7 @@ function transformAnim(m, kind, A, B, onSwap, onEnd) {
     chord(mega ? [784, 988, 1318, 1568] : [262, 330, 392, 523]);
     cap.innerHTML = `<small>${mega ? 'Megaevolución' : 'Gigamax'}</small>¡${A.name} ${mega ? 'ha megaevolucionado en' : 'se ha convertido en'} <b>${B.name}</b>!`; cap.classList.add('win');
     const r = pop.getBoundingClientRect(); setTimeout(() => shinyBurst(r.left + r.width / 2, r.top + r.height * .42), 150);
-    timer = setTimeout(close, 1700);
+    timer = setTimeout(close, mega ? 2400 : 1700);   // (la megaevolución deja ver su símbolo unos segundos)
   };
   const close = () => {
     if (stage > 1) return; stage = 2; clearTimeout(timer);
@@ -272,5 +271,5 @@ function transformAnim(m, kind, A, B, onSwap, onEnd) {
   };
   requestAnimationFrame(() => pop.classList.add('go'));
   shade.addEventListener('click', () => stage === 0 ? reveal() : close());
-  timer = setTimeout(reveal, 1900);
+  timer = setTimeout(reveal, mega ? 1800 : 1900);
 }
