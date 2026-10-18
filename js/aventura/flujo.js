@@ -273,5 +273,14 @@ function initAdv() {
   $('advTabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; sheet(b.dataset.tab); beep(700, .03, .02); });
   // tocar fuera del panel lo cierra (salvo si se está usando la Caja PC o una ficha)
   addEventListener('pointerdown', e => { if ($('advGrid').classList.contains('open') && !e.target.closest('#advGrid, #advTabs, .pc-shade, .info-shade, .tm-ghost')) sheet(null); });
-  $('advNew').onclick = () => { advWheel.stop(); advStart(true); };
+  // «Nueva partida» no empieza de golpe: el botón se cambia por «¿Seguro? Sí · No» (y vuelve solo a los 6 s)
+  $('advNew').onclick = () => {
+    const b = $('advNew'); if (b.hidden) return; b.hidden = true; beep(520, .06, .03);
+    const box = document.createElement('span'); box.className = 'new-confirm';
+    box.innerHTML = '<em>¿Empezar de nuevo?</em><button class="mini-btn yes" type="button">Sí</button><button class="mini-btn no" type="button">No</button>';
+    b.after(box);
+    const back = () => { clearTimeout(t); box.remove(); b.hidden = false; }, t = setTimeout(back, 6000);
+    box.querySelector('.yes').onclick = () => { back(); beep(880, .06, .03); advWheel.stop(); advStart(true); };
+    box.querySelector('.no').onclick = () => { back(); beep(440, .06, .03); };
+  };
 }

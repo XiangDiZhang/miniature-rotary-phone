@@ -10,15 +10,12 @@ function fitFont(ctx, text, maxW, fs) {
   const w = ctx.measureText(text).width; if (w <= maxW) return;
   ctx.font = `600 ${Math.max(9, Math.floor(fs * maxW / w))}px "Chakra Petch", system-ui, sans-serif`;
 }
+// iconos que pueden ir en el centro de la ruleta (encima del texto): de momento, el de la evolución (flechas doradas que suben y destellos)
+const EVO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="eg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff9f43"/><stop offset="1" stop-color="#ffe27a"/></linearGradient></defs>'
+  + '<path d="M14 46 32 28l18 18" fill="none" stroke="url(#eg)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 31 32 19l12 12" fill="none" stroke="url(#eg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>'
+  + '<path d="M50 6l2.2 5.8L58 14l-5.8 2.2L50 22l-2.2-5.8L42 14l5.8-2.2z" fill="#fff6c8"/><path d="M13 9l1.4 3.6L18 14l-3.6 1.4L13 19l-1.4-3.6L8 14l3.6-1.4z" fill="#fff6c8"/><path d="M54 40l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z" fill="#ffe27a"/></svg>';
+const WHEEL_ICONS = { evo: Object.assign(new Image(), { src: 'data:image/svg+xml,' + encodeURIComponent(EVO_SVG) }) };
 const clip = (ctx, t, maxW) => { while (ctx.measureText(t).width > maxW && t.length > 3) t = t.slice(0, -2) + '…'; return t; };
-// Pokémon de dos tipos: su quesito lleva los dos colores (mitad y mitad). Solo si el quesito va con el color de su primer tipo
-// (los de captura, combate… tienen su propio color y no se tocan)
-function dualColor(s) {
-  if (!s.n && !s.m) return null;
-  let ty = null;
-  try { ty = s.m ? mtypes(s.m) : s.n > 10000 ? (formRec(s.n) || [0, [0, 0, null]])[1][2] : ptypes(s.n); } catch (e) { return null; }
-  return ty && ty[1] && s.color === TYPE_COLORS[ty[0]] && TYPE_COLORS[ty[1]] !== s.color ? TYPE_COLORS[ty[1]] : null;
-}
 // El dibujo va en dos partes para que girar y arrastrar no pesen:
 //  · una capa con lo que no cambia mientras gira (colores, brillos, separadores y textos), dibujada una vez y luego solo rotada;
 //  · encima, en cada fotograma, los sprites (con sus saltitos cuando está parada), el centro y la flecha.
@@ -45,8 +42,8 @@ class Wheel {
   set(segs, center = '?') {
     if (this === advWheel) { wheelRelease(this.keepM); }
     const tot = segs.reduce((a, s) => a + (s.w || 1), 0); let acc = 0;
-    this.segs = segs.map(s => { const a = (s.w || 1) / tot * TAU, o = { ...s, a0: acc, arc: a, color2: s.color2 || dualColor(s) }; acc += a; return o; });
-    this.glow = -1; this.center = center; this.centerColor = null; this.centerImg = null; this.rot = Math.random() * TAU;
+    this.segs = segs.map(s => { const a = (s.w || 1) / tot * TAU, o = { ...s, a0: acc, arc: a }; acc += a; return o; });
+    this.glow = -1; this.center = center; this.centerColor = null; this.centerImg = null; this.centerIcon = null; this.rot = Math.random() * TAU;
     this.keepM = null; this.centerM = null; this.dirty = true;
     this.pokemon = this.segs.some(s => s.n);
     if (this.segs.some(x => x.m)) this.segs.forEach(x => { if (x.m) x.hideImg = true; });
@@ -169,8 +166,12 @@ class Wheel {
         ctx.fillText(clip(ctx, this.centerName, inner * 1.5), c, c + inner * .55); }
     } else {
       ctx.fillStyle = this.centerColor || W.center; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      const ct = String(this.center); ctx.font = `500 ${Math.round(R * (ct.length > 6 ? .07 : ct.length > 3 ? .1 : .16))}px "Chakra Petch", system-ui, sans-serif`;
-      ctx.fillText(clip(ctx, ct, inner * 1.55), c, c + 1);
+      const ct = String(this.center), ic = this.centerIcon && this.centerIcon.complete && this.centerIcon.naturalWidth ? this.centerIcon : null;
+      // con icono: el icono arriba (con un brillo que late) y el texto, más pequeño, debajo
+      if (ic) { const s = inner * .78, t = performance.now() / 1000, p = reduceMotion ? 0 : (Math.sin(t * 2.6) + 1) / 2;
+        ctx.save(); ctx.shadowColor = '#ffd84a'; ctx.shadowBlur = 8 + p * 14; ctx.drawImage(ic, c - s / 2, c - s * .72, s, s); ctx.restore(); }
+      ctx.font = `500 ${Math.round(R * (ic ? .055 : ct.length > 6 ? .07 : ct.length > 3 ? .1 : .16))}px "Chakra Petch", system-ui, sans-serif`;
+      ctx.fillText(clip(ctx, ct, inner * 1.55), c, ic ? c + inner * .42 : c + 1);
     }
     if (this.hubEl && this.hubEl._h !== hub) { this.hubEl._h = hub; this.hubEl.hidden = !hub; if (hub) this.hubEl.setAttribute('aria-label', hub === 'GIRAR' ? 'Girar la ruleta' : 'Seguir'); }
     // flecha a la derecha, apuntando al centro
@@ -192,7 +193,7 @@ class Wheel {
     if (this.idling || reduceMotion) return; this.idling = true;
     let last = 0;
     const loop = now => {
-      if (!(this.segs.some(s => s._sp0) || this.centerImg) || !this.cv.isConnected || state.scene !== 'adv' || document.hidden) { this.idling = false; return; }
+      if (!(this.segs.some(s => s._sp0) || this.centerImg || this.centerIcon) || !this.cv.isConnected || state.scene !== 'adv' || document.hidden) { this.idling = false; return; }
       if (!this.spinning && !this.drag && this.cv.offsetParent && now - last > 33) { last = now; this.draw(); }
       requestAnimationFrame(loop);
     };

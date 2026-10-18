@@ -68,7 +68,7 @@ function pick(g) {
     const saved = loadRun(key), cont = saved && saved.team && saved.team.length, best = getBest()[key];
     $('advEntry').innerHTML = (cont ? `<button class="btn" type="button" id="advCont">Continuar partida</button>` : '') + `<button class="btn${cont ? ' ghostbtn' : ''}" type="button" id="advGo">${cont ? 'Nueva aventura' : 'Empezar aventura →'}</button>` + (best ? `<p class="wip" style="flex-basis:100%;padding:8px">RÉCORD EN ${g.region.toUpperCase()} · ${best} PUNTOS · RANGO ${rank(best, key)}</p>` : '');
     if (cont) $('advCont').onclick = () => { chord([659, 880, 1175]); run = saved; advStart(false, key); };
-    renderHistory(key);
+    histFilter = 'all'; renderHistory(key); requestAnimationFrame(fitHistory);
     $('advGo').onclick = () => { chord([659, 880, 1175]); advStart(true, key); };
   } else { $('advEntry').innerHTML = `<p class="wip">LA AVENTURA DE ${g.region.toUpperCase()} LLEGARÁ PRONTO</p>`; $('advHist').innerHTML = ''; }
 }

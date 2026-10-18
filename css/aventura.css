@@ -108,9 +108,24 @@ svg.pcbox .hd { stroke: color-mix(in srgb, var(--cyan) 30%, var(--bg)); stroke-w
 .pc-peek img.px { image-rendering: pixelated; }
 .pc-open:hover svg.pcbox { animation: boxBob .5s ease; }
 @keyframes boxBob { 40% { transform: translateY(-2px) rotate(-6deg); } }
-.tm-mv svg.pcbox { width: 16px; height: 16px; }
+/* iconos de los paneles (Equipo, Mochila, Diario): en un círculo con brillo, como el botón de la Caja PC */
+.card-ico { flex: none; width: 30px; height: 30px; margin-right: -4px; display: grid; place-items: center; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--cyan) 55%, transparent);
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--cyan) 22%, transparent), transparent 70%); box-shadow: 0 0 12px color-mix(in srgb, var(--cyan) 30%, transparent), inset 0 0 8px color-mix(in srgb, var(--cyan) 15%, transparent); }
+.card-ico svg { width: 20px; height: 20px; display: block; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--cyan) 55%, transparent)); }
+svg.deco .ln { fill: none; stroke: var(--cyan); stroke-width: 1.3; stroke-linecap: round; }
+svg.deco .lid-l { fill: none; stroke: var(--cyan); stroke-width: 1.1; }
+.adv-card:hover .card-ico svg { animation: boxBob .5s ease; }
+.tm-mv { padding: 0; line-height: 0; }
+.tm-mv svg.pcbox { display: block; width: 16px; height: 16px; margin: 0; }
+.lc-spr.lc-ico svg { width: 72%; height: 72%; stroke: none; filter: drop-shadow(0 0 6px rgba(255,216,74,.6)); }
 .m-team-slot .adv-team .tm-mv svg.pcbox { width: 13px; height: 13px; }
 .adv-new { align-self: flex-start; margin-top: 0; }
+/* confirmación de «Nueva partida»: Sí / No en el sitio del botón */
+.new-confirm { flex: none; display: inline-flex; align-items: center; gap: 6px; animation: fadeIn .2s ease both; }
+.new-confirm em { font: 500 10px var(--f-mono); font-style: normal; letter-spacing: .1em; color: var(--fg-soft); text-transform: uppercase; }
+.card-head .new-confirm .mini-btn { padding: 5px 12px; }
+.new-confirm .yes { color: #ff8a7a; border-color: #ff5a46; } .new-confirm .yes:hover { background: rgba(255,90,70,.15); }
+.new-confirm .no { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 60%, transparent); }
 .adv-log { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--fg-soft); overflow: auto; display: flex; flex-direction: column; gap: 5px; scrollbar-width: thin; }
 .adv-log li:first-child { color: var(--fg); }
 /* diario visual: icono (Pokémon con el objeto en la esquina), puntos en fichas y separadores por sitio */

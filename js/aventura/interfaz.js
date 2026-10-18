@@ -14,6 +14,7 @@ function spinUI(title, sub, segs, center, onLand, now) {
   advNow = now || nowFrom(title); renderCard();
   $('advStep').textContent = title; $('advRpm').textContent = '';
   advWheel.set(segs, center); advWheel.enabled = true;
+  if (advNow && advNow.icon && WHEEL_ICONS[advNow.icon]) { advWheel.centerIcon = WHEEL_ICONS[advNow.icon]; advWheel.draw(); advWheel.idle(); }
   advWheel.onLand = r => { advWheel.enabled = false; onLand(r); renderAdv(); saveRun(); };
   advWheel.onStart = () => { advButtons([]); advSay('Girando…'); renderAdv(); };   // (la megapiedra deja de poder pulsarse)
   advSay(introText ? introText + ' ' + sub : sub); introText = ''; advButtons([{ label: 'Girar', fn: () => advWheel.spin(1) }]);
@@ -231,8 +232,8 @@ function nowFrom(title) {
     case 'Captura': return { txt: `Capturando a ${b}` };
     case 'Forma': return { txt: `¿Qué forma tiene ${b}?` };
     case 'Legendario': return { txt: `¡Ha aparecido ${b}!` };
-    case 'Evolución': return { txt: b === '¿Quién?' ? '¿Quién evoluciona?' : b === '¿Habrá suerte?' ? '¿Habrá evolución?' : /^Alcremie/.test(b) ? 'Evolucionando a Alcremie' : `Evoluciona ${b}` };
-    case 'Repartir Exp.': return { txt: 'Repartir Exp.: ¿quién más evoluciona?' };
+    case 'Evolución': return { txt: b === '¿Quién?' ? '¿Quién evoluciona?' : b === '¿Habrá suerte?' ? '¿Habrá evolución?' : /^Alcremie/.test(b) ? 'Evolucionando a Alcremie' : `Evoluciona ${b}`, icon: 'evo' };
+    case 'Repartir Exp.': return { txt: 'Repartir Exp.: ¿quién más evoluciona?', icon: 'evo' };
     case 'Megapiedra': return { txt: 'Repartiendo una megapiedra' };
     case 'Intercambio': return { txt: b === '¿A quién das?' ? 'Intercambio: ¿a quién das?' : 'Intercambio: ¿qué recibes?' };
     case 'Huevo': return { txt: 'Eclosionando un huevo' };
@@ -251,7 +252,8 @@ function leaderHTML(L) {
   const weak = TYPES.filter(t => eff(t, [T]) > 1);       // tipos que le hacen mucho daño
   const danger = TYPES.filter(d => eff(T, [d]) > 1);     // tipos que sufren con sus ataques
   const role = L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? (/^Campeona/.test(L.name) ? 'Campeona' : 'Campeón') : REG().trials ? (/^Gran/.test(L.name) ? 'Kahuna' : 'Capitán') : `Líder · ${L.name}`;
-  const bsp = badgeSpr(L), N = advNow, ni = nowImg(N);
+  // con los líderes, el círculo enseña siempre su medalla (más adelante, el sprite del personaje), nunca un Pokémon
+  const bsp = badgeSpr(L), N = advNow, ni = null;
   return { c: TYPE_COLORS[T], html: `<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
     <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div>${chip(T)}</div></div>
     <div class="lc-rows">
@@ -260,13 +262,16 @@ function leaderHTML(L) {
       <div class="lc-row lc-team">${teamMarks(L.rivalStarter ? [...L.team, evoAt(rivalStarter(), 2)] : L.team, T)}</div>
     </div>` };
 }
-// tus Pokémon contra el equipo del líder (tabla de tipos completa, igual que en el combate):
-// ▲ suma verdes · ▼ suma rojos (▲▲ / ▼▼ = dos). Cambia al tocar el equipo o la caja.
+// tus Pokémon contra el TIPO del líder (el de su gimnasio, con la tabla de tipos completa):
+//   ▼ si el tipo del líder le pega fuerte: eff(T, sus tipos) > 1 (▼▼ si es ×4)
+//   ▲ si alguno de sus tipos le pega fuerte al tipo del líder: eff(su tipo, [T]) > 1
+//   · si no (resistir, como Planta contra Eléctrico, cuenta como neutro)
+// Ojo: el combate sí mira los tipos reales de cada Pokémon del rival (los Emolga de Camila son también Volador).
 function teamMarks(foe, T) {
   if (!run.team.length) return '';
-  const sets = foeSets(foe || [], T);
-  return '<em>Tu equipo</em>' + run.team.map(m => { const x = matchup(m, sets), a = x.g, d = x.r;
-    const tip = `${mname(m)}: sus ataques ${xTxt(x.off)} de media · recibe ${xTxt(x.def)}`;
+  return '<em>Tu equipo</em>' + run.team.map(m => { const my = mtypes(m), hit = eff(T, my), mine = bestHit(my, [T]);
+    const d = hit >= 4 ? 2 : hit > 1 ? 1 : 0, a = mine > 1 ? 1 : 0;
+    const tip = `${mname(m)} (${my.join('/')}): el tipo ${T} le hace ${xTxt(hit)} · sus ataques le hacen ${xTxt(mine)}`;
     return `<span class="lmark ${a && !d ? 'up' : d && !a ? 'down' : a && d ? 'mix' : ''}" title="${tip}">${mname(m)} ${'▲'.repeat(a)}${'▼'.repeat(d)}${!a && !d ? '·' : ''}</span>`; }).join('');
 }
 // sprite del Pokémon de lo que está pasando (el que intentas capturar, el que evoluciona, el as del rival…)
@@ -283,8 +288,8 @@ function renderCard() {
     const kind = { leg: 'Camino', prep: 'Preparación', start: 'Inicio', route: 'Ruta', city: 'Ciudad', rival: 'Rival' }[L.kind] || '';
     const places = (L.local || []).map(k => `<span class="lchip" style="--tc:#ff9f43">${EVENTS[k].label}</span>`).join('');
     // lo que está pasando va en grande (Capturando a Pikachu…) y el sitio, encima en pequeño
-    const N = advNow, ni = nowImg(N);
-    html = `<div class="lc-spr${ni ? ' lc-mon' : ''}">${ni || phaseLook(L).icon}</div>
+    const N = advNow, ni = nowImg(N) || (N && N.icon === 'evo' ? EVO_SVG : null);
+    html = `<div class="lc-spr${ni ? ' lc-mon' : ''}${N && N.icon && !nowImg(N) ? ' lc-ico' : ''}">${ni || phaseLook(L).icon}</div>
       <div class="lc-top">${N ? `${nowLine(N, `${kind} · ${L.name}`)}<b class="lc-doing">${N.txt}</b>` : `<small>${kind}${L.to ? ' · hacia ' + L.to : ''}</small><b>${L.name}</b>`}</div>
       <div class="lc-rows">
         ${L.local ? `<div class="lc-row"><em>Sitios</em>${places || '—'}</div>` : ''}

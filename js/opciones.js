@@ -67,11 +67,29 @@ applyTheme(theme, false);
 // ---- Modo usuario (la Pokédex se completa capturando) o desarrollador (todo desbloqueado) ----
 // las animaciones de prueba (Hall de la Fama, derrota, intercambio, evolución, mega y Gigamax) solo se ven en modo desarrollador
 function syncMode() { $('optMode').textContent = devMode ? 'DESARROLLADOR' : 'USUARIO'; $('optMode').setAttribute('aria-pressed', devMode); document.querySelectorAll('.dev-only').forEach(el => el.hidden = !devMode); }
+// pasar a desarrollador pide la contraseña; volver a usuario, no
+const DEV_PASS = 'SuscribeteALukeDiver514';
+function setMode(dev) { devMode = dev; store.set('ruleta-mode', dev ? 'dev' : 'user'); beep(dev ? 988 : 660, .06, .03); syncMode(); renderDex(); }
+const closePass = () => { $('devPass').hidden = true; $('devPassIn').value = ''; $('devMsg').textContent = ''; $('devPass').classList.remove('bad'); };
 $('optMode').onclick = () => {
-  devMode = !devMode; store.set('ruleta-mode', devMode ? 'dev' : 'user');
-  beep(devMode ? 988 : 660, .06, .03); syncMode(); renderDex();
+  if (devMode) return setMode(false);
+  if (!$('devPass').hidden) return closePass();
+  $('devPass').hidden = false; $('devPassIn').focus(); beep(700, .05, .03);
 };
+$('devPass').onsubmit = e => {
+  e.preventDefault();
+  if ($('devPassIn').value === DEV_PASS) { closePass(); setMode(true); chord([659, 880, 1175]); return; }
+  $('devMsg').textContent = 'Contraseña incorrecta'; $('devPass').classList.remove('bad'); void $('devPass').offsetWidth; $('devPass').classList.add('bad');
+  $('devPassIn').select(); beep(180, .18, .05, 'square');
+};
+$('devPassNo').onclick = () => { closePass(); beep(440, .05, .03); };
 syncMode();
+
+// ---- Nombre de entrenador (más adelante habrá más cosas del perfil) ----
+const trainerName = () => (store.get('ruleta-trainer') || '').trim() || 'Entrenador';
+$('optTrainer').value = store.get('ruleta-trainer') || '';
+$('optTrainer').oninput = e => store.set('ruleta-trainer', e.target.value.replace(/[<>]/g, '').slice(0, 16));
+$('optTrainer').onchange = () => beep(760, .05, .03);
 
 // ---- Animaciones ----
 function syncMotion() { $('optMotion').textContent = reduceMotion ? 'OFF' : 'ON'; $('optMotion').setAttribute('aria-pressed', !reduceMotion); document.documentElement.classList.toggle('nomotion', reduceMotion); }
@@ -106,7 +124,7 @@ function voiceInfo(msg) {
     : n ? `${n} ${n > 1 ? 'voces' : 'voz'} en español en tu navegador (★ las más naturales) y ${ONLINE_VOICES.length} voces en línea.` : 'Tu navegador no tiene voces en español: elige una voz en línea, o prueba en Edge o Chrome.');
 }
 const voiceFail = () => voiceInfo('Esa voz en línea no responde ahora (¿sin internet?). Mientras tanto se usa la de tu navegador.');
-$('optVoice').onchange = e => { store.set('ruleta-voice', e.target.value); pickVoice(); voiceInfo(); beep(760); speak('¡Hola, Entrenador! Así sonará el locutor.', true, voiceFail); };
+$('optVoice').onchange = e => { store.set('ruleta-voice', e.target.value); pickVoice(); voiceInfo(); beep(760); speak(`¡Hola, ${trainerName()}! Así sonará el locutor.`, true, voiceFail); };
 $('optVoiceTest').onclick = () => { beep(880); speak('¡Un Pikachu salvaje! ¡Lanza la Poké Ball! Solo tienes una oportunidad.', true, voiceFail); };
 syncVoices();
 

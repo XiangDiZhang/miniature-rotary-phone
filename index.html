@@ -173,6 +173,7 @@
   <section class="scene" id="scene-options" hidden>
     <p class="label">Opciones</p>
     <div class="opt-list">
+      <div class="opt-row"><div class="l"><b>Nombre de entrenador</b><span>Sale en los diálogos, en tus partidas y en las imágenes que exportes</span></div><input class="txt-in trainer-in" id="optTrainer" type="text" maxlength="16" placeholder="Entrenador" autocomplete="off" spellcheck="false" aria-label="Nombre de entrenador"></div>
       <div class="opt-row"><div class="l"><b>Sonido</b><span>Efectos al moverte, al girar y al ganar</span></div><button class="toggle" id="optSound" type="button" aria-pressed="true">ON</button></div>
       <div class="opt-row"><div class="l"><b>Tema</b><span>Oscuro o claro</span></div><button class="toggle" id="optTheme" type="button" aria-pressed="true">OSCURO</button></div>
       <div class="opt-row"><div class="l"><b>Colores del tema</b><span>Elige el color neón de la interfaz (y un segundo color, si quieres)</span></div><button class="toggle" id="optColors" type="button" aria-expanded="false">PERSONALIZAR</button></div>
@@ -187,7 +188,13 @@
         </div>
         <div class="cp-preview" id="cpPreview" aria-hidden="true"><i></i><span>Vista previa</span><b></b></div>
       </div>
-      <div class="opt-row"><div class="l"><b>Modo</b><span>Usuario: la Pokédex se completa capturando en tus partidas · Desarrollador: todo desbloqueado</span></div><button class="toggle" id="optMode" type="button" aria-pressed="false">USUARIO</button></div>
+      <div class="opt-row"><div class="l"><b>Modo</b><span>Usuario: la Pokédex se completa capturando en tus partidas · Desarrollador: todo desbloqueado (con contraseña)</span></div><button class="toggle" id="optMode" type="button" aria-pressed="false">USUARIO</button></div>
+      <form class="dev-pass" id="devPass" hidden autocomplete="off">
+        <label for="devPassIn">Contraseña de desarrollador</label>
+        <input class="txt-in" id="devPassIn" type="password" autocomplete="off" spellcheck="false">
+        <button class="toggle" type="submit">ENTRAR</button><button class="toggle" id="devPassNo" type="button">CANCELAR</button>
+        <span class="dev-msg" id="devMsg" aria-live="polite"></span>
+      </form>
       <div class="opt-row"><div class="l"><b>Animaciones</b><span>Pokémon con vida, deslizamientos y efectos</span></div><button class="toggle" id="optMotion" type="button" aria-pressed="true">ON</button></div>
       <div class="opt-row"><div class="l"><b>Velocidad del texto</b><span>Lo rápido que se escriben los diálogos: lenta, normal, rápida o al instante</span></div><button class="toggle" id="optTSpeed" type="button">NORMAL</button></div>
       <div class="opt-row"><div class="l"><b>Locutor</b><span>Una voz lee en alto el texto de la aventura (voces de tu navegador y tu sistema, gratis)</span></div><button class="toggle" id="optTts" type="button" aria-pressed="false">OFF</button></div>
@@ -272,9 +279,8 @@
         </dl>
       </div>
     </div>
-    <div class="btns" id="advEntry"></div>
+    <div class="entry-row"><div class="btns" id="advEntry"></div><div class="btns"><button class="btn ghostbtn" id="changeBtn" type="button">← Cambiar generación</button></div></div>
     <div class="hist" id="advHist"></div>
-    <div class="btns"><button class="btn ghostbtn" id="changeBtn" type="button">← Cambiar generación</button></div>
   </section>
 
   <!-- AVENTURA: ruleta, diálogo, línea de fases, paneles de equipo / mochila / diario y Caja PC -->

@@ -28,7 +28,7 @@ function show(scene) {
   document.body.classList.remove('side-open');
   if (scene === 'dex') scrollTo(0, 0);
   if (scene === 'dex') renderDex();
-  if (scene === 'menu') { typeText($('menuText'), 'Bienvenido, Entrenador. ¿Qué generación quieres jugar? Si no te decides, deja que gire la ruleta.'); markActive(cursor); if (!icoRunning) icoLoop(); renderSavesCard(); }
+  if (scene === 'menu') { typeText($('menuText'), `Bienvenido, ${trainerName()}. ¿Qué generación quieres jugar? Si no te decides, deja que gire la ruleta.`); markActive(cursor); if (!icoRunning) icoLoop(); renderSavesCard(); }
   if (scene === 'saves') renderSaves();
   if (scene === 'roulette') { sizeWheel(); resetRoulette(); }
 }

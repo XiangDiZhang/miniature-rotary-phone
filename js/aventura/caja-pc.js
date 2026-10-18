@@ -12,6 +12,15 @@ function moveMon(toBox, i) {
 // icono de la Caja PC: una caja de almacenamiento con el emblema de la Poké Ball (no hay sprite oficial en la carpeta de sprites)
 const PC_BOX_SVG = '<svg class="pcbox" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h17v10.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z" class="bx"/><path d="M2.5 5.2h19a.8.8 0 0 1 .8.8v2.6a.4.4 0 0 1-.4.4H2.1a.4.4 0 0 1-.4-.4V6a.8.8 0 0 1 .8-.8z" class="lid"/><path d="M9.5 7.1h5" class="hd"/>'
   + '<path d="M8.2 15a3.8 3.8 0 0 1 7.6 0z" fill="#ff5a46"/><path d="M8.2 15a3.8 3.8 0 0 0 7.6 0z" fill="#f4f6fb"/><path d="M8.2 15h7.6" stroke="#10131c" stroke-width="1.1"/><circle cx="12" cy="15" r="1.3" fill="#f4f6fb" stroke="#10131c" stroke-width="1"/></svg>';
+// iconos de los paneles de la aventura (mismo estilo que la caja): el equipo (tres Poké Balls), la mochila y el diario
+const CARD_ICONS = {
+  team: '<svg class="pcbox deco" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.6" cy="15.6" r="3.9" class="bx"/><circle cx="18.4" cy="15.6" r="3.9" class="bx"/><path d="M1.7 15.6h7.8M14.5 15.6h7.8" class="ln"/>'
+    + '<path d="M5.6 11.2a6.4 6.4 0 0 1 12.8 0z" fill="#ff5a46"/><path d="M5.6 11.2a6.4 6.4 0 0 0 12.8 0z" fill="#f4f6fb"/><circle cx="12" cy="11.2" r="6.4" fill="none" stroke="#10131c" stroke-width="1.1"/><path d="M5.6 11.2h12.8" stroke="#10131c" stroke-width="1.1"/><circle cx="12" cy="11.2" r="1.9" fill="#f4f6fb" stroke="#10131c" stroke-width="1.1"/></svg>',
+  bag: '<svg class="pcbox deco" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 8V6.5a3.5 3.5 0 0 1 7 0V8" class="ln"/><rect x="4" y="7.6" width="16" height="14" rx="3.6" class="bx"/><path d="M4 12.4c2.6 1.4 13.4 1.4 16 0" class="lid-l"/>'
+    + '<rect x="8" y="14.6" width="8" height="5" rx="1.6" class="lid"/><circle cx="12" cy="13.6" r="1.4" fill="#ffd84a" stroke="#10131c" stroke-width=".8"/></svg>',
+  log: '<svg class="pcbox deco" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="2.8" width="15" height="18.4" rx="2.2" class="bx"/><path d="M8.2 2.8v18.4" class="ln"/><path d="M11 8.2h5.4M11 11.4h5.4M11 14.6h3.4" class="ln"/>'
+    + '<path d="M14.6 2.8v6.4l1.6-1.3 1.6 1.3V2.8z" fill="#ff5a46"/></svg>',
+};
 // botón de la caja (en la tarjeta del equipo): icono, cuántos hay y los tres primeros que guardas, en miniatura
 function pcButtonHTML() {
   const list = boxList(), peek = list.slice(0, 3).map(m => { const r = monSprite(m); return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : ''; }).join('');
@@ -127,6 +136,8 @@ function closePC() { $('pcShade').hidden = true; pcSel = null; }
   addEventListener('pointerup', up); addEventListener('pointercancel', () => up());
   $('pcOpen').onclick = openPC; $('pcClose').onclick = closePC;
   $('pcShade').querySelector('.pc-ico').innerHTML = PC_BOX_SVG;
+  // icono delante del título de cada panel (Equipo, Mochila, Diario)
+  ['team', 'bag', 'log'].forEach((k, i) => { const h = document.querySelector(`[data-card="${i}"] .card-head .label`); if (h) h.insertAdjacentHTML('afterbegin', `<span class="card-ico">${CARD_ICONS[k]}</span>`); });
   const tag = $('pcShade').querySelector('.pc-tag.box'); if (tag) tag.insertAdjacentHTML('afterbegin', `<i class="pc-tag-ico">${PC_BOX_SVG}</i>`);
   addEventListener('keydown', e => { if (e.key === 'Escape' && !$('pcShade').hidden) { e.stopImmediatePropagation(); closePC(); } }, true);
 })();

@@ -74,14 +74,90 @@ function saveHistory(won) {
   store.setJSON('ruleta-hist', [e, ...store.getJSON('ruleta-hist', [])].slice(0, 40));
   saveRun();
 }
+// Historial de la región: un hueco con su propio desplazamiento (la página no crece), con filtro Todas · Victorias · Derrotas
+// y, en cada partida, «Exportar imagen» (tu entrenador a la izquierda con su nombre y tus 6 Pokémon a la derecha)
+let histRegion = null, histFilter = 'all';
+const histWhen = t => { const d = new Date(t); return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' · ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); };
 function renderHistory(region) {
   const el = $('advHist'); if (!el) return;
-  const h = store.getJSON('ruleta-hist', []).filter(x => !region || x.region === region);
-  if (!h.length) { el.innerHTML = '<p class="label">Historial de partidas</p><p class="hist-empty">Aún no has terminado ninguna partida en esta región.</p>'; return; }
+  if (region !== undefined) histRegion = region;
+  const all = store.getJSON('ruleta-hist', []).filter(x => !histRegion || x.region === histRegion);
+  if (!all.length) { el.innerHTML = '<p class="label">Historial de partidas</p><p class="hist-empty">Aún no has terminado ninguna partida en esta región.</p>'; return; }
+  const won = all.filter(x => x.won).length, h = all.filter(x => histFilter === 'all' || (histFilter === 'won') === x.won);
   const mini = m => `<span class="hist-mon${m.shiny ? ' shiny' : ''}" title="${dname(m)}${m.nick ? ' (' + sname(m) + ')' : ''}">${monThumb(m)}<em>${dname(m)}</em></span>`;
-  el.innerHTML = `<p class="label">Historial de partidas</p><div class="hist-list">${h.map(x => {
-    const d = new Date(x.t), when = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' · ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    return `<div class="hist-row ${x.won ? 'won' : 'lost'}"><div class="hist-head"><b>${x.won ? 'Victoria · Campeón' : 'Derrota' + (x.lostTo ? ' · contra ' + x.lostTo : '')}</b><span>${when}</span><span class="hist-pts">${x.points} pts · ${x.rank} · ${x.badges} medallas</span></div><div class="hist-team">${x.team.map(mini).join('')}</div></div>`; }).join('')}</div>`;
+  el.innerHTML = `<div class="hist-top"><p class="label">Historial de partidas</p><div class="seg hist-seg" role="group" aria-label="Filtrar el historial">${[['all', 'Todas', all.length], ['won', 'Victorias', won], ['lost', 'Derrotas', all.length - won]].map(([k, t, n]) => `<button type="button" data-f="${k}" aria-pressed="${histFilter === k}">${t} <b>${n}</b></button>`).join('')}</div></div>
+    <div class="hist-view"><div class="hist-list">${h.length ? h.map(x => `<div class="hist-row ${x.won ? 'won' : 'lost'}"><div class="hist-head"><b>${x.won ? 'Victoria · Campeón' : 'Derrota' + (x.lostTo ? ' · contra ' + x.lostTo : '')}</b><span>${histWhen(x.t)}</span><span class="hist-pts">${x.points} pts · ${x.rank} · ${x.badges} medallas</span><button class="mini-btn hist-exp" type="button" data-t="${x.t}" title="Exportar imagen: tu entrenador y tus 6 Pokémon de esta partida">⇩ Imagen</button></div><div class="hist-team">${x.team.map(mini).join('')}</div></div>`).join('')
+      : `<p class="hist-empty">No hay ${histFilter === 'won' ? 'victorias' : 'derrotas'} en esta región.</p>`}</div></div>`;
+  el.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { histFilter = b.dataset.f; beep(700, .04, .02); renderHistory(); });
+  el.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { const x = all.find(e => String(e.t) === b.dataset.t); if (x) { beep(880, .05, .03); exportRun(x); } });
+  fitHistory();
+}
+// el hueco llega justo hasta abajo de la pantalla: así se desplaza dentro y la página no
+function fitHistory() {
+  const v = document.querySelector('#advHist .hist-view'); if (!v || state.scene !== 'chosen') return;
+  const top = v.getBoundingClientRect().top + scrollY;
+  let h = Math.max(200, Math.floor(innerHeight - top - 22)); v.style.height = h + 'px';
+  // lo que quede por debajo (márgenes de la página) también cuenta: se descuenta para que la página no se desplace
+  const over = document.documentElement.scrollHeight - innerHeight; if (over > 0) v.style.height = Math.max(200, h - over) + 'px';
+}
+addEventListener('resize', fitHistory);
+
+// ---- Imagen de una partida: tu entrenador (de momento, una silueta neón; más adelante, su sprite) con su nombre debajo,
+// y a la derecha tus 6 Pokémon con su nombre, más la región, el resultado y los puntos. Se ve en grande y se puede descargar. ----
+async function exportRun(x) {
+  const Wd = 1200, Hg = 630, cv = document.createElement('canvas'); cv.width = Wd; cv.height = Hg;
+  const g = cv.getContext('2d'), gen = typeof genOf === 'function' && genOf(x.region), C = (gen && gen.color) || '#7fd6ff';
+  const css = getComputedStyle(document.documentElement), acc = css.getPropertyValue('--cyan').trim() || '#7fd6ff';
+  try { await document.fonts.ready; } catch (e) {}
+  const F = (w, s, f = 'Chakra Petch') => `${w} ${s}px "${f}", system-ui, sans-serif`;
+  // fondo: oscuro, con el brillo de la región y la franja diagonal de las fichas
+  g.fillStyle = '#0b0f1a'; g.fillRect(0, 0, Wd, Hg);
+  let gr = g.createRadialGradient(260, 330, 20, 260, 330, 520); gr.addColorStop(0, C + '55'); gr.addColorStop(1, 'transparent'); g.fillStyle = gr; g.fillRect(0, 0, Wd, Hg);
+  gr = g.createRadialGradient(900, 120, 10, 900, 120, 600); gr.addColorStop(0, acc + '33'); gr.addColorStop(1, 'transparent'); g.fillStyle = gr; g.fillRect(0, 0, Wd, Hg);
+  g.save(); g.globalAlpha = .12; g.fillStyle = C; g.beginPath(); g.moveTo(Wd * .62, 0); g.lineTo(Wd, 0); g.lineTo(Wd, Hg * .3); g.lineTo(Wd * .4, Hg); g.lineTo(0, Hg); g.lineTo(0, Hg * .55); g.closePath(); g.fill(); g.restore();
+  g.strokeStyle = C; g.lineWidth = 2; g.shadowColor = C; g.shadowBlur = 18; g.strokeRect(14, 14, Wd - 28, Hg - 28); g.shadowBlur = 0;
+  // entrenador: silueta neón (gorra, cabeza, cuerpo) sobre una peana, y su nombre debajo
+  const tx = 230, ty = 300;
+  g.save(); g.fillStyle = C + '22'; g.beginPath(); g.ellipse(tx, ty + 205, 130, 26, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = C; g.lineWidth = 3; g.shadowColor = C; g.shadowBlur = 22; g.stroke();
+  g.lineWidth = 5; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = '#e7edf8'; g.shadowColor = acc; g.fillStyle = 'rgba(231,237,248,.06)';
+  g.beginPath(); g.arc(tx, ty - 95, 46, 0, Math.PI * 2); g.fill(); g.stroke();                                   // cabeza
+  g.beginPath(); g.moveTo(tx - 52, ty - 112); g.quadraticCurveTo(tx, ty - 175, tx + 52, ty - 112); g.lineTo(tx + 92, ty - 104); g.lineTo(tx + 50, ty - 96); g.closePath(); g.fillStyle = C; g.fill(); g.stroke();   // gorra
+  g.fillStyle = 'rgba(231,237,248,.06)'; g.beginPath(); g.moveTo(tx - 80, ty + 190); g.lineTo(tx - 72, ty + 10); g.quadraticCurveTo(tx, ty - 40, tx + 72, ty + 10); g.lineTo(tx + 80, ty + 190); g.closePath(); g.fill(); g.stroke();   // cuerpo
+  g.beginPath(); g.arc(tx, ty + 70, 22, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(tx - 22, ty + 70); g.lineTo(tx + 22, ty + 70); g.stroke();   // Poké Ball del pecho
+  g.restore();
+  const name = (typeof trainerName === 'function' ? trainerName() : 'Entrenador');
+  g.textAlign = 'center'; g.fillStyle = '#e7edf8'; g.font = F(600, 40); g.shadowColor = C; g.shadowBlur = 14; g.fillText(name, tx, ty + 270); g.shadowBlur = 0;
+  g.font = F(500, 15, 'IBM Plex Mono'); g.fillStyle = C; g.fillText('ENTRENADOR', tx, ty + 296);
+  // cabecera de la derecha
+  const rx = 480; g.textAlign = 'left';
+  g.font = F(500, 16, 'IBM Plex Mono'); g.fillStyle = acc; g.fillText(`RULETA POKÉMON · ${(x.name || '').toUpperCase()}`, rx, 72);
+  g.font = F(600, 44); g.fillStyle = x.won ? '#7ee0a1' : '#ff8a7a'; g.fillText(x.won ? '¡Campeón!' : 'Derrota' + (x.lostTo ? ' · ' + x.lostTo : ''), rx, 120);
+  g.font = F(500, 18, 'IBM Plex Mono'); g.fillStyle = '#a9b4c8'; g.fillText(`${x.points} PTS · RANGO ${x.rank} · ${x.badges} MEDALLAS · ${histWhen(x.t).toUpperCase()}`, rx, 154);
+  // los 6 Pokémon: 3 × 2 casillas con el color de su tipo, su sprite y su nombre
+  const team = x.team.slice(0, 6), load = m => new Promise(res => { const r = monSprite(m); if (!r) return res(null); const im = new Image(); im.onload = () => res({ im, px: !!r.px }); im.onerror = () => res(null); im.src = r.u; });
+  const imgs = await Promise.all(team.map(load)), cw = 220, ch = 200, gx = 14, gy = 16, y0 = 182;
+  for (let i = 0; i < 6; i++) {
+    const cx = rx + (i % 3) * (cw + gx), cy = y0 + Math.floor(i / 3) * (ch + gy), m = team[i];
+    g.save(); g.beginPath(); g.roundRect ? g.roundRect(cx, cy, cw, ch, 10) : g.rect(cx, cy, cw, ch); g.clip();
+    g.fillStyle = 'rgba(255,255,255,.035)'; g.fillRect(cx, cy, cw, ch);
+    if (m) { const ty2 = mtypes(m), c1 = TYPE_COLORS[ty2[0]] || '#8592ab', c2 = TYPE_COLORS[ty2[1]] || c1, lg = g.createLinearGradient(cx + cw, cy, cx, cy + ch);
+      lg.addColorStop(0, 'rgba(255,255,255,.5)'); lg.addColorStop(.3, c1); lg.addColorStop(.75, c2); lg.addColorStop(1, 'transparent');
+      g.globalAlpha = .2; g.fillStyle = lg; g.beginPath(); g.moveTo(cx + cw * .68, cy); g.lineTo(cx + cw, cy); g.lineTo(cx + cw, cy + ch * .24); g.lineTo(cx + cw * .4, cy + ch); g.lineTo(cx, cy + ch); g.lineTo(cx, cy + ch * .5); g.closePath(); g.fill(); g.globalAlpha = 1;
+      g.fillStyle = c1; g.shadowColor = c1; g.shadowBlur = 10; g.fillRect(cx, cy, 40, 3); g.shadowBlur = 0;
+      const im = imgs[i]; if (im) { g.imageSmoothingEnabled = !im.px; const s = 150; g.drawImage(im.im, cx + (cw - s) / 2, cy + 8, s, s); }
+      g.textAlign = 'center'; g.font = F(600, 19); g.fillStyle = m.shiny ? '#ffd84a' : '#e7edf8'; g.fillText(dname(m), cx + cw / 2, cy + ch - 16); }
+    else { g.strokeStyle = 'rgba(255,255,255,.12)'; g.setLineDash([6, 6]); g.strokeRect(cx + 1, cy + 1, cw - 2, ch - 2); g.setLineDash([]); }
+    g.restore();
+    g.strokeStyle = m ? (TYPE_COLORS[mtypes(m)[0]] || '#8592ab') + '88' : 'transparent'; g.lineWidth = 1.5; g.beginPath(); g.roundRect ? g.roundRect(cx, cy, cw, ch, 10) : g.rect(cx, cy, cw, ch); g.stroke();
+  }
+  const url = cv.toDataURL('image/png'), file = `ruleta-pokemon-${x.region}-${new Date(x.t).toISOString().slice(0, 10)}.png`;
+  // vista previa con «Descargar» (en algunos sitios el navegador no deja descargar sin más: así siempre se puede guardar la imagen)
+  const sh = document.createElement('div'); sh.className = 'exp-shade';
+  sh.innerHTML = `<div class="exp-box frame"><img src="${url}" alt="Imagen de la partida"><div class="btns"><a class="btn" href="${url}" download="${file}">Descargar</a><button class="btn ghostbtn" type="button">Cerrar</button></div></div>`;
+  document.body.appendChild(sh);
+  const close = () => sh.remove();
+  sh.querySelector('button').onclick = close; sh.addEventListener('click', e => { if (e.target === sh) close(); });
 }
 // guarda el equipo campeón para poder volver a ver el Hall de la Fama desde Opciones
 function saveHof() {
