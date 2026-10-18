@@ -21,7 +21,10 @@ function newTag(el) {
   place(); setTimeout(() => t.remove(), 2400);
 }
 // «Nuevo registro» en la Pokédex: aviso pequeño en la esquina con el dibujo de la Pokédex, sin tapar nada ni recibir toques
+// salen de uno en uno (son grandes): cada uno espera a que se vaya el anterior
+let dexPopFree = 0;
 function dexPop(n, shiny, wait) {
+  const at = Math.max(performance.now() + (wait || 0), dexPopFree); dexPopFree = at + 3500;
   setTimeout(() => {
     if (!run) return;
     let box = document.querySelector('.dex-pops'); if (!box) { box = document.createElement('div'); box.className = 'dex-pops'; document.body.appendChild(box); }
@@ -34,7 +37,7 @@ function dexPop(n, shiny, wait) {
       + `<div class="dx-ctrl"><div class="dx-row"><i class="dx-round"></i><i class="dx-pill r"></i><i class="dx-pill b"></i></div><span class="dx-green">Nuevo registro</span><i class="dx-pad"></i></div>`;
     box.appendChild(el); beep(1319, .07, .03, 'triangle'); setTimeout(() => beep(1760, .12, .03, 'triangle'), 90);
     setTimeout(() => el.remove(), 3700);
-  }, wait || 0);
+  }, at - performance.now());
 }
 function advToast(t) { const el = document.createElement('div'); el.className = 'adv-toast'; el.textContent = t; $('advToasts').appendChild(el); setTimeout(() => el.remove(), 3200); }
 function advButtons(list) {

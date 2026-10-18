@@ -23,6 +23,15 @@ function buildMenu() {
     grid.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 740, 1046]); pick(g); } });
   }
+  // Modo Test: el camino del Modo Caos, pero eliges tú el equipo y los objetos
+  {
+    const g = TEST_GEN, b = document.createElement('button');
+    b.type = 'button'; b.className = 'card test'; b.style.setProperty('--c', g.color);
+    b.innerHTML = cardHTML(g, false).replace(`GEN ${g.roman}`, 'MODO TEST');
+    b.setAttribute('aria-label', 'Modo Test: elige tu equipo y tus objetos');
+    grid.appendChild(b);
+    items.push({ el: b, act: () => { chord([523, 740, 988]); pick(g); } });
+  }
   GENS.forEach(g => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'card'; b.style.setProperty('--c', g.color);
@@ -54,7 +63,7 @@ function pick(g) {
   state.chosen = g.id;
   $('chosenCard').style.setProperty('--c', g.color);
   $('chosenGhost').textContent = g.roman;
-  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : 'GENERACIÓN ' + g.roman;
+  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : g === TEST_GEN ? 'MODO TEST' : 'GENERACIÓN ' + g.roman;
   $('chosenRegion').textContent = g.region;
   $('chosenRange').textContent = `Nº ${pad(g.from)}–${pad(g.to)}`;
   $('chosenCount').textContent = g.to - g.from + 1;
@@ -62,6 +71,7 @@ function pick(g) {
   $('chosenGames').textContent = g.games;
   show('chosen');
   typeText($('chosenText'), g === CHAOS_GEN ? 'Modo Caos: 8 gimnasios de cualquier región, un Alto Mando y un Campeón al azar. Cada partida es distinta. ¿Te atreves?'
+    : g === TEST_GEN ? 'Modo Test: el camino del Modo Caos, pero tú eliges los Pokémon de tu equipo y los objetos de tu mochila. No cuenta para la Pokédex ni para los récords.'
     : `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);
   const key = g.region.toLowerCase();
   if (REGIONS[key]) {
@@ -69,6 +79,6 @@ function pick(g) {
     $('advEntry').innerHTML = (cont ? `<button class="btn" type="button" id="advCont">Continuar partida</button>` : '') + `<button class="btn${cont ? ' ghostbtn' : ''}" type="button" id="advGo">${cont ? 'Nueva aventura' : 'Empezar aventura →'}</button>` + (best ? `<p class="wip" style="flex-basis:100%;padding:8px">RÉCORD EN ${g.region.toUpperCase()} · ${best} PUNTOS · RANGO ${rank(best, key)}</p>` : '');
     if (cont) $('advCont').onclick = () => { chord([659, 880, 1175]); run = saved; advStart(false, key); };
     histFilter = 'all'; renderHistory(key); requestAnimationFrame(fitHistory);
-    $('advGo').onclick = () => { chord([659, 880, 1175]); advStart(true, key); };
+    $('advGo').onclick = () => { chord([659, 880, 1175]); if (key === 'test') openTestSetup(); else advStart(true, key); };
   } else { $('advEntry').innerHTML = `<p class="wip">LA AVENTURA DE ${g.region.toUpperCase()} LLEGARÁ PRONTO</p>`; $('advHist').innerHTML = ''; }
 }

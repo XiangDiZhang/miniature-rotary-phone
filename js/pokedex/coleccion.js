@@ -5,6 +5,7 @@ const PDX = { c: new Set(), s: new Set() };
 const dexHas = n => devMode || PDX.c.has(n);            // conseguido (o modo desarrollador)
 const dexShiny = n => devMode || PDX.s.has(n);          // su shiny se puede ver en la Pokédex
 function dexRegister(n, shiny) {
+  if (run && run.region === 'test') return;   // el Modo Test no cuenta para la Pokédex
   const nc = !PDX.c.has(n), ns = shiny && !PDX.s.has(n); if (!nc && !ns) return;
   PDX.c.add(n); if (shiny) PDX.s.add(n);
   store.setJSON('ruleta-dex', { c: [...PDX.c], s: [...PDX.s] });

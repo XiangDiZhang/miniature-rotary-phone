@@ -580,7 +580,7 @@ function chaosPath(plan) {
   chaosCache = { plan, path };
   return path;
 }
-const chaosRun = () => run && run.region === 'caos' && run.chaos && run.chaos.gyms ? run.chaos : null;
+const chaosRun = () => run && (run.region === 'caos' || run.region === 'test') && run.chaos && run.chaos.gyms ? run.chaos : null;
 REGIONS.caos = {
   name: 'Caos', prof: 'un profesor muy despistado', range: [1, 1025], rankScale: 4, potions: 1, league: 'la Liga del Caos', chaos: true,
   legends: [...new Set(KEYS9.flatMap(k => REGIONS[k].legends))],
@@ -592,3 +592,11 @@ REGIONS.caos = {
   get path() { const c = chaosRun(); return c ? chaosPath(c) : REGIONS.kanto.path; },
   end: () => '¡Has sobrevivido al Caos y eres su Campeón! Has completado la aventura con',
 };
+
+// ===================== MODO TEST =====================
+// Como el Modo Caos (mismo camino al azar), pero empiezas con el equipo y los objetos que tú eliges (js/ui/modo-test.js).
+// Para probar: no cuenta para la Pokédex ni para los récords.
+const TEST_GEN = { id: 11, roman: 'T', region: 'Test', from: 1, to: 1025, year: 'Tú eliges', games: 'Elige tu equipo y tus objetos; camino del Modo Caos', color: '#3fd0c9' };
+REGIONS.test = Object.defineProperties({}, Object.getOwnPropertyDescriptors(REGIONS.caos));
+Object.assign(REGIONS.test, { name: 'Test', prof: 'el laboratorio de pruebas', league: 'la Liga de Pruebas', test: true,
+  end: () => '¡Has superado el Modo Test! Has completado la aventura con' });

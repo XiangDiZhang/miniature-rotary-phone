@@ -1,7 +1,8 @@
 // Aventura: flujo de la partida (fases, evolución, gimnasios, final)
-function advStart(fresh, region) {
+// prep (opcional): prepara la partida nueva antes de empezar (el Modo Test pone ahí tu equipo y tus objetos)
+function advStart(fresh, region, prep) {
   region = region || (run && run.region) || 'kanto';
-  if (fresh || !run || run.region !== region) run = newRun(region);
+  if (fresh || !run || run.region !== region) { run = newRun(region); if (prep) prep(run); }
   normBox(); [...run.team, ...boxList()].forEach(m => dexRegister(m.n, m.shiny));
   show('adv'); $('eyebrow').textContent = 'Aventura · ' + REG().name;
   renderAdv(); fitAdv(); requestAnimationFrame(fitAdv); advNext();

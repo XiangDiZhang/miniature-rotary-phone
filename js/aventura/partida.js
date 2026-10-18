@@ -4,19 +4,20 @@ let run = null, advWheel = null;
 const REG = () => REGIONS[run.region];
 const loc = () => REG().path[run.step];
 const VIL = () => VILLAINS[(run && REG().villain) || 'rocket'];
-function newRun(region = 'kanto') { return { chaos: region === 'caos' ? chaosPlan() : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
+function newRun(region = 'kanto') { return { chaos: region === 'caos' || region === 'test' ? chaosPlan() : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
 function saveRun() { run.t = Date.now(); store.setJSON('ruleta-run-' + run.region, run); }   // t: cuándo se jugó por última vez (Partidas en curso)
 function loadRun(region) {
   const r = store.getJSON('ruleta-run-' + region);
   if (!(r && REGIONS[r.region] && r.v === 5 && (r.region !== 'kanto' || r.kv === 2))) return null;   // partidas de versiones antiguas: no valen
   // si se guardó en mitad de un combate, cada Pokémon vuelve a su forma normal (también si estaba megaevolucionado o Gigamax)
   [...(r.team || []), ...(r.box || []).filter(Boolean), ...(Array.isArray(r.stolen) ? r.stolen : r.stolen ? [r.stolen] : [])].forEach(restoreForm);
-  if (r.region === 'caos' && !(r.chaos && r.chaos.gyms)) return null;
+  if ((r.region === 'caos' || r.region === 'test') && !(r.chaos && r.chaos.gyms)) return null;
   return r;
 }
 // récord de puntos de cada región
 const getBest = () => store.getJSON('ruleta-best', {});
 function saveBest() {
+  if (run.region === 'test') return false;   // el Modo Test no cuenta para los récords
   const b = getBest(), prev = b[run.region] || 0; if (run.points <= prev) return false;
   b[run.region] = run.points; store.setJSON('ruleta-best', b); return true;
 }
