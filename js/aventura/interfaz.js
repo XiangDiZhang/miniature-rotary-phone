@@ -23,16 +23,17 @@ function newTag(el) {
 // «Nuevo registro» en la Pokédex: aviso pequeño en la esquina con el dibujo de la Pokédex, sin tapar nada ni recibir toques
 // salen de uno en uno (son grandes): cada uno espera a que se vaya el anterior
 let dexPopFree = 0;
-function dexPop(n, shiny, wait) {
+// (form: la forma exacta que has conseguido: su dibujo, su nombre y sus tipos, p. ej. Articuno de Galar)
+function dexPop(n, shiny, wait, form) {
   const at = Math.max(performance.now() + (wait || 0), dexPopFree); dexPopFree = at + 3500;
   setTimeout(() => {
     if (!run) return;
     let box = document.querySelector('.dex-pops'); if (!box) { box = document.createElement('div'); box.className = 'dex-pops'; document.body.appendChild(box); }
     // una Pokédex roja: lente azul y luces arriba, el Pokémon en la pantalla con su nombre y tipos, y los botones abajo
-    const r = (shiny && SPR.shiny.get(n)) || SPR.normal.get(n), el = document.createElement('div'); el.className = 'dex-pop';
-    const ty = BY_NUM.get(n)[3].map(t => `<em style="--t:${TYPE_COLORS[t]}">${t.slice(0, 5)}</em>`).join('');
+    const m = { n, form: form || 0, shiny }, id = form || n, r = (shiny && SPR.shiny.get(id)) || SPR.normal.get(id) || SPR.normal.get(n), el = document.createElement('div'); el.className = 'dex-pop';
+    const ty = mtypes(m).map(t => `<em style="--t:${TYPE_COLORS[t]}">${t.slice(0, 5)}</em>`).join('');
     el.innerHTML = `<div class="dx-top"><i class="dx-lens"></i><i class="dx-led r"></i><i class="dx-led y"></i><i class="dx-led g"></i></div>`
-      + `<div class="dx-bezel"><div class="dx-dots"><i></i><i></i></div><div class="dx-screen"><div class="dx-plate"><b>${pname(n)}${shiny ? ' ★' : ''}</b>${ty}</div>`
+      + `<div class="dx-bezel"><div class="dx-dots"><i></i><i></i></div><div class="dx-screen"><div class="dx-plate"><b>${sname(m)}${shiny ? ' ★' : ''}</b>${ty}</div>`
       + `${r ? `<img src="${r.u}" alt="">` : ''}<small>Nº ${String(n).padStart(3, '0')}</small></div><div class="dx-under"><i></i><i class="dx-grill"></i></div></div>`
       + `<div class="dx-ctrl"><div class="dx-row"><i class="dx-round"></i><i class="dx-pill r"></i><i class="dx-pill b"></i></div><span class="dx-green">Nuevo registro</span><i class="dx-pad"></i></div>`;
     box.appendChild(el); beep(1319, .07, .03, 'triangle'); setTimeout(() => beep(1760, .12, .03, 'triangle'), 90);
@@ -227,7 +228,7 @@ function renderAdv() {
   }
   // especie que no estaba en tu Pokédex: después del «¡NUEVO!», un aviso pequeño con su dibujo y «Nuevo registro»
   // (también al evolucionar a una especie nueva, que no tiene «¡NUEVO!», y entonces sale antes)
-  if (dexFresh.size) { const wait = fresh.length ? 1300 : 400; [...dexFresh].forEach(([n, sh], i) => dexPop(n, sh, wait + i * 900)); dexFresh.clear(); }
+  if (dexFresh.size) { const wait = fresh.length ? 1300 : 400; [...dexFresh.values()].forEach((d, i) => dexPop(d.n, d.shiny, wait + i * 900, d.form)); dexFresh.clear(); }
   // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
   const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);

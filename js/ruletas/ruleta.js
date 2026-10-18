@@ -160,7 +160,7 @@ class Wheel {
     ctx.strokeStyle = W.glow; ctx.beginPath(); ctx.arc(c, c, inner - 10, 0, TAU); ctx.stroke();
     const hub = this.hub();
     if (this.centerImg) {   // el Pokémon elegido, subido al centro de la ruleta
-      const hs = (inner - 14) * 1.5, t = performance.now() / 1000, up = reduceMotion ? 0 : Math.abs(Math.sin(t * 3.2)) * hs * .06;
+      const hs = (inner - 14) * 1.5, t = (performance.now() - (this.centerT0 || 0)) / 1000, up = reduceMotion ? 0 : Math.abs(Math.sin(t * 3.2)) * hs * .06;
       ctx.save(); ctx.beginPath(); ctx.arc(c, c, inner - 11, 0, TAU); ctx.clip(); ctx.imageSmoothingEnabled = false;
       ctx.drawImage(this.centerImg, c - hs / 2, c - hs / 2 - up - hs * .14, hs, hs); ctx.restore();
       if (this.centerName) { ctx.fillStyle = W.center; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `600 ${Math.round(Math.max(9, R * .055))}px "Chakra Petch", system-ui, sans-serif`;

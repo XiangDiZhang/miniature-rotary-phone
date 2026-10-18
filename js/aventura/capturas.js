@@ -64,7 +64,7 @@ function caught(n, shiny, legend, form) {
     return advSay(`¡${pname(n)} tiene ${segs.length} formas distintas! ¿Cuál te ha tocado?`, () => advButtons([{ label: 'Girar la ruleta de formas', fn: () =>
       spinUI(`Forma · ${pname(n)}`, `Todas las formas tienen la misma probabilidad (${pct(1 / segs.length)} cada una).`, segs, 'FORMA', r => caught(n, shiny, legend, r.form), { txt: `¿Qué forma tiene tu ${pname(n)}?`, n, shiny }) }]));
   }
-  const m = addMon(n, shiny); if (form) m.form = form;
+  const m = addMon(n, shiny, form);
   const inTeam = run.team.includes(m), nm = mname(m);
   logm(`🎯 ¡${nm}${shiny ? ' ★' : ''} capturado!${inTeam ? '' : ' Va a la caja.'}`, m);   // en el diario, con su forma (y su sprite shiny si lo es)
   setNow(`¡${nm} capturado!`, { n: mid(m), shiny });

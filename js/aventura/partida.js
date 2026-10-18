@@ -43,7 +43,7 @@ function boxAdd(m) { normBox(); const i = run.box.findIndex(x => !x); if (i >= 0
 const allMine = () => [...run.team, ...boxList()];
 // Pokémon que tiene el villano (pueden ser varios); se recuperan todos al ganarle
 const stolenList = () => !run.stolen ? [] : Array.isArray(run.stolen) ? run.stolen : [run.stolen];
-function addMon(n, shiny) { const m = { n, shiny: !!shiny }; dexRegister(n, !!shiny); if (run.team.length < 6) run.team.push(m); else boxAdd(m); return m; }
+function addMon(n, shiny, form) { const m = { n, shiny: !!shiny }; if (form) m.form = form; dexRegister(n, !!shiny, form); if (run.team.length < 6) run.team.push(m); else boxAdd(m); return m; }
 
 // ---- Tus Pokémon: { n: especie, form: id de la forma (0 = normal), shiny, nick } ----
 const wildForms = n => (FORMS[n] || []).filter(f => (f[8] === 'reg' && f[0] !== 10178) || CAPTURE_FORMS.has(f[0]));

@@ -85,7 +85,7 @@ function hallOfFame(done, data) {
 // ---- Desde dónde sale un Pokémon del equipo hacia una cinemática: el centro de la ruleta, su quesito o su ficha ----
 function monRect(m) {
   const W = advWheel, cr = W && W.cv.getBoundingClientRect(), k = cr && cr.width / W.size;
-  if (W && W.centerM === m && cr.width) return { left: cr.left + cr.width * .36, top: cr.top + cr.height * .36, width: cr.width * .28, height: cr.height * .28, wheel: 'center' };
+  if (W && W.centerM === m && cr.width) return { ...centerBox(W), wheel: 'center' };
   const seg = W && W.segs.find(x => x.m === m && x._sp && !x.hideImg);
   if (seg && cr.width && W.cv.offsetParent) { const s = seg._sp.sz * k; return { left: cr.left + seg._sp.x * k - s / 2, top: cr.top + seg._sp.y * k - s / 2, width: s, height: s, wheel: seg }; }
   const tile = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m);

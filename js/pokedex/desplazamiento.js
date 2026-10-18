@@ -100,7 +100,7 @@ const rail = (() => {
       // Modo Test: la Pokédex está en «modo elegir» y el toque añade ese Pokémon a tu equipo de prueba
       if (li && typeof dexPick === 'function' && dexPick) { dexPick(+li.dataset.n); li.animate && li.animate([{ transform: 'scale(.9)', filter: 'brightness(1.8)' }, { transform: 'none', filter: 'none' }], { duration: 300 }); return; }
       if (li && li.classList.contains('locked')) { beep(220, .06, .03); return; }
-      if (li) { infoOrigin = null; infoNav = null; openInfo(+li.dataset.n, li.getBoundingClientRect()); }
+      if (li) { infoOrigin = null; infoNav = null; openInfo(+li.dataset.n, li.getBoundingClientRect(), +(li.dataset.form || 0)); }
       return;
     }
     const s = drag.s, a = s[0], b = s[s.length - 1], dt = (b[0] - a[0]) / 1000;

@@ -59,13 +59,16 @@ const FIRST = 60, CHUNK = 160;
 function dexItem([num, [n, name, g, ty, leg, myth]], label, plainNum) {
   // en modo shiny, el cuadro toma los colores del sprite shiny; si no, los de sus tipos
   const own = dexHas(n), sm = shinyMode && own && dexShiny(n);
-  const sp = sm && SPR.shiny.get(n), pc = sp && sp.pc;
+  // si de esta especie solo tienes otra forma (Articuno de Galar…), el cuadro enseña esa forma: su dibujo, su nombre y sus tipos
+  const fid = own && !devMode && !PDX.f.has(n) ? dexFirstForm(n) || 0 : 0, fr = fid && FORM_OF.get(fid);
+  if (fr) { ty = fr[1][2]; name = formLabel(n, fr[1]); }
+  const sp = sm && SPR.shiny.get(fid || n), pc = sp && sp.pc;
   const c = !own ? '#4a5263' : pc ? pc[0] : TYPE_COLORS[ty[0]] || '#8592ab', c2c = !own ? c : pc ? pc[1] : TYPE_COLORS[ty[1]] || c, shown = padN(num);
-  const keep = shinyMode; shinyMode = sm; const cell = spriteCell(n, ty); shinyMode = keep;
+  const keep = shinyMode; shinyMode = sm; const cell = spriteCell(fid || n, ty); shinyMode = keep;
   if (!own) return `<li class="mon locked" data-n="${n}" data-g="${g}" style="--c:${c};--c2:${c2c}">` +
     `<span class="bg${shown.length > 3 ? ' d4' : ''}" aria-hidden="true">${shown}</span>` +
     `<span class="top"><span class="no">${label} ${shown}</span></span>` + cell + `<span class="nm">???</span><span class="ty"></span></li>`;
-  return `<li class="mon${FLYING.has(n) ? ' fly' : ''}" data-n="${n}" data-g="${g}" style="--c:${c};--c2:${c2c};--dur:${(2.6 + (n * 37 % 13) / 10).toFixed(1)}s;--del:-${(n * 53 % 30) / 10}s">` +
+  return `<li class="mon${FLYING.has(n) ? ' fly' : ''}" data-n="${n}"${fid ? ` data-form="${fid}"` : ''} data-g="${g}" style="--c:${c};--c2:${c2c};--dur:${(2.6 + (n * 37 % 13) / 10).toFixed(1)}s;--del:-${(n * 53 % 30) / 10}s">` +
     `<span class="bg${shown.length > 3 ? ' d4' : ''}" aria-hidden="true">${shown}</span>` +
     `<span class="top"><span class="no">${label} ${shown}</span>${leg ? '<small>LEG</small>' : myth ? '<small>SING</small>' : plainNum ? `<span>GEN ${ROMAN[g]}</span>` : ''}</span>` +
     cell +
@@ -94,7 +97,7 @@ function renderDex() {
   const showTicks = !reg && !genStart, key = JSON.stringify([numMode, dexFilter]), reset = key !== lastDexKey;
   lastDexKey = key;
   // misma lista que ya está dibujada (p. ej. al volver a abrir la Pokédex): solo se vuelve a medir
-  const look = JSON.stringify([key, devMode, shinyMode, PDX.c.size, PDX.s.size]);
+  const look = JSON.stringify([key, devMode, shinyMode, PDX.c.size, PDX.s.size, PDX.f.size]);
   if (look === listKey) return rail.refresh(showTicks, reset);
   listKey = look; clearTimeout(fillTimer);
   const list = $('dexList');

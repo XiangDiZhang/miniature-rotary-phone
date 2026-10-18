@@ -3,7 +3,7 @@
 function advStart(fresh, region, prep) {
   region = region || (run && run.region) || 'kanto';
   if (fresh || !run || run.region !== region) { run = newRun(region); if (prep) prep(run); }
-  normBox(); [...run.team, ...boxList()].forEach(m => dexRegister(m.n, m.shiny));
+  normBox(); [...run.team, ...boxList()].forEach(m => dexRegister(m.n, m.shiny, m.form));
   show('adv'); $('eyebrow').textContent = 'Aventura · ' + REG().name;
   renderAdv(); fitAdv(); requestAnimationFrame(fitAdv); advNext();
 }
@@ -141,6 +141,8 @@ const evoNow = (txt, mons) => ({ txt, icon: 'evo', mons: mons.slice(0, 6) });
 function toCenter(m) {
   if (advWheel.centerM === m) { advWheel.keepM = m; return null; }
   const r = monRect(m); advWheel.keepM = m;
+  // si sale de su quesito, el quesito se queda vacío al momento (si no, se vería en el quesito y volando a la vez)
+  if (r && r.wheel && r.wheel !== 'center') { r.wheel.hideImg = true; advWheel.draw(); }
   return r && r.wheel !== 'center' ? r : null;
 }
 // ¿en qué evoluciona? (si hay varias especies posibles, ruleta) y después ¿qué variante? (Alcremie, Vivillon, Lycanroc…)
@@ -170,7 +172,7 @@ function evoVariant(m, o, cb) {
 }
 // cambia los datos de un Pokémon que evoluciona (la megapiedra y la Banda Dinamax solo se quedan si le siguen sirviendo)
 function applyEvo(m, o) {
-  const from = mname(m); m.n = o.n; if (o.form) m.form = o.form; else delete m.form; dexRegister(o.n, m.shiny);
+  const from = mname(m); m.n = o.n; if (o.form) m.form = o.form; else delete m.form; dexRegister(o.n, m.shiny, o.form);
   if (m.stone && !megaForms(m).includes(m.stone)) { const ok = megaForms(m); if (ok.length) m.stone = ok[0]; else delete m.stone; }
   if (m.dmax && !gmaxForms(m).length) delete m.dmax;
   const toName = sname(m);

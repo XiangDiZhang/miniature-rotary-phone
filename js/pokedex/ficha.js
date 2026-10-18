@@ -23,9 +23,10 @@ function evoHTML(n, formId) {
   const par = k => INFO[k - 1][13];
   const kids = id => ids.filter(k => par(k) === id);
   const roots = ids.filter(k => !par(k) || !ids.includes(par(k)));
-  const own = id => dexHas(id);
+  // conseguida: la especie (la tarjeta de su forma normal, solo si tienes esa forma exacta) y cada variante por separado
+  const own = (id, fid = 0) => dexHasForm(id, fid);
   const varBtn = (id, f, many) => { const lb = formLabel(id, f), tag = VAR_TAG[f[8]] || '';
-    return own(id) ? `<button class="evo-var${id === n && f[0] === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${f[0]}" title="${lb}"><span class="th">${thumb(f[0], f[2])}</span>${many ? '' : `<span class="vl">${tag ? `<b>${tag}</b>` : ''}${lb.replace(/^Mega-|^Gigantamax |\s*Gigamax$/g, '')}</span>`}</button>`
+    return own(id, f[0]) ? `<button class="evo-var${id === n && f[0] === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${f[0]}" title="${lb}"><span class="th">${thumb(f[0], f[2])}</span>${many ? '' : `<span class="vl">${tag ? `<b>${tag}</b>` : ''}${lb.replace(/^Mega-|^Gigantamax |\s*Gigamax$/g, '')}</span>`}</button>`
       : `<button class="evo-var locked" type="button" disabled title="???"><span class="th">${thumb(f[0], f[2])}</span></button>`; };
   // variantes de la MISMA especie (no son evoluciones): colgadas de su tarjeta con una rama y un rótulo que dice qué son
   // rótulo largo y, para cuando la línea va muy justa, uno corto
@@ -37,7 +38,7 @@ function evoHTML(n, formId) {
   // tarjeta de una especie (fid = su forma; link = antecesor normal que solo se muestra para dar contexto)
   const card = (id, fid = 0, extra = [], link = false) => {
     const f = fid && FORM_OF.get(fid)[1], ty = f ? f[2] : null, lb = f ? formLabel(id, f) : baseFormName(id);
-    const btn = own(id) ? `<button class="evo-card${link ? ' link' : ''}${id === n && fid === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${fid}"><span class="th">${thumb(fid || id, ty)}</span><span class="tx">${lb}<small>Nº ${padN(id)}</small></span></button>`
+    const btn = own(id, fid) ? `<button class="evo-card${link ? ' link' : ''}${id === n && fid === formId ? ' cur' : ''}" type="button" data-go="${id}" data-form="${fid}"><span class="th">${thumb(fid || id, ty)}</span><span class="tx">${lb}<small>Nº ${padN(id)}</small></span></button>`
       : `<button class="evo-card locked${link ? ' link' : ''}" type="button" disabled><span class="th">${thumb(fid || id, ty)}</span><span class="tx">???<small>Nº ${padN(id)}</small></span></button>`;
     return `<div class="evo-node${extra.length ? ' fam' : ''}">${btn}${vars(id, extra)}</div>`;
   };
@@ -134,6 +135,8 @@ const withShiny = (s, f) => { const s0 = shinyMode; shinyMode = s; try { return 
 function openInfo(n, from, formId, peek, keep) {
   // su versión shiny solo se ve si alguna vez lo conseguiste shiny (en modo desarrollador, todas)
   if (!infoNav && shinyMode && !dexShiny(n)) { shinyMode = false; try { return openInfo(n, from, formId, peek); } finally { shinyMode = true; } }
+  // si de esta especie no tienes la forma normal (solo Articuno de Galar, por ejemplo), la ficha se abre en la forma que tienes
+  if (!infoNav && !devMode && !formId && PDX.c.has(n) && !PDX.f.has(n)) formId = dexFirstForm(n) || 0;
   const row = BY_NUM.get(n); if (!row) return;
   const I = INFO[n - 1], F = formId && (FORMS[n] || []).find(f => f[0] === formId);
   const [, baseName, g, baseTy, leg, myth] = row;

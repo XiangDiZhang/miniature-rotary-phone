@@ -19,6 +19,13 @@ const offTile = m => onWheel.has(m) || flyingHome.has(m);
 const flights = new Map();
 function flight(m, f) { const old = flights.get(m); if (old && old !== f) old.remove(); flights.set(m, f); return f; }
 function landedFly(m, f) { if (flights.get(m) === f) flights.delete(m); f.remove(); }
+// dónde y de qué tamaño dibuja la ruleta al Pokémon del centro (en px de la pantalla): así lo que vuela al centro, o sale de él,
+// coincide justo con el dibujo (mismo tamaño y misma altura; el dibujo va un poco subido para dejar sitio al nombre)
+function centerBox(W) {
+  const cr = W.cv.getBoundingClientRect(), k = cr.width / W.size, g = W.geo(), hs = (g.inner - 14) * 1.5 * k;
+  const x = cr.left + cr.width / 2, y = cr.top + cr.height / 2 - hs * .14;
+  return { x, y, s: hs, left: x - hs / 2, top: y - hs / 2, width: hs, height: hs };
+}
 // los Pokémon que están en la ruleta vuelven volando a su ficha (desde su quesito o desde el centro)
 function wheelRelease(keep) {
   let any = false;
@@ -32,7 +39,7 @@ function wheelRelease(keep) {
     const seg = W.segs.find(x => x.m === m && x._sp && !x.hideImg), atC = W.centerM === m;
     if (!seg && !atC) return done();
     const rec = monSprite(m); if (!rec) return done();
-    const from = atC ? { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2, s: cr.width * .27 } : { x: cr.left + seg._sp.x * k, y: cr.top + seg._sp.y * k, s: seg._sp.sz * k };
+    const from = atC ? centerBox(W) : { x: cr.left + seg._sp.x * k, y: cr.top + seg._sp.y * k, s: seg._sp.sz * k };
     if (seg) seg.hideImg = true; if (atC) { W.centerImg = null; W.centerM = null; } W.draw();
     const to = (t.querySelector('.sp') || t).getBoundingClientRect(), f = document.createElement('div'); f.className = 'fly-mon';
     f.innerHTML = `<img src="${rec.u}" alt="">`; f.style.width = f.style.height = from.s + 'px'; f.style.left = (from.x - from.s / 2) + 'px'; f.style.top = (from.y - from.s / 2) + 'px'; document.body.appendChild(flight(m, f));
@@ -85,12 +92,17 @@ function flyToCenter(m, from) {
   onWheel.add(m); const tile = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m); if (tile) tile.classList.add('on-wheel');
   if (!rec) return;
   const W = advWheel; W.centerM = m; W.centerName = dname(m);
-  const set = () => { const x = new Image(); x.onload = () => { if (W.centerM !== m) return; W.centerImg = x; W.draw(); }; x.src = rec.u; };
-  const cr = W.cv.getBoundingClientRect(), cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+  // done (opcional): cuando el dibujo del centro ya está puesto (entonces se quita el que vuela: nunca se ven los dos)
+  // (al ponerlo, el bote del centro empieza desde abajo: sin salto al llegar)
+  const set = done => { const x = new Image(); x.onload = () => { if (W.centerM === m) { W.centerImg = x; W.centerT0 = performance.now(); W.draw(); } if (done) done(); }; x.onerror = () => done && done(); x.src = rec.u; };
   if (reduceMotion || !from) return set();
-  const S = cr.width * .27, f = document.createElement('div'); f.className = 'fly-mon'; f.innerHTML = `<img src="${rec.u}" alt="">`;
-  f.style.width = f.style.height = S + 'px'; f.style.left = (cx - S / 2) + 'px'; f.style.top = (cy - S / 2) + 'px'; document.body.appendChild(flight(m, f));
-  const dx = from.left + from.width / 2 - cx, dy = from.top + from.height / 2 - cy, sc = Math.max(.3, from.height / S);
+  // vuela hasta el sitio y el tamaño exactos en que la ruleta lo dibuja en el centro
+  const C = centerBox(W), S = C.s, f = document.createElement('div'); f.className = 'fly-mon'; f.innerHTML = `<img src="${rec.u}" alt="">`;
+  f.style.width = f.style.height = S + 'px'; f.style.left = C.left + 'px'; f.style.top = C.top + 'px'; document.body.appendChild(flight(m, f));
+  const dx = from.left + from.width / 2 - C.x, dy = from.top + from.height / 2 - C.y, sc = Math.max(.3, from.height / S);
   f.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sc})` }, { transform: `translate(${dx * .4}px, ${dy * .4 - 80}px) scale(${(sc + 1) / 2 + .15}) rotate(-8deg)`, offset: .55 },
-    { transform: 'scale(1.15)', offset: .85 }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.3,.6,.35,1)', fill: 'forwards' }).onfinish = () => { if (flights.get(m) === f) set(); setTimeout(() => landedFly(m, f), 60); beep(880, .07, .03); };
+    { transform: 'scale(1.12)', offset: .85 }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.3,.6,.35,1)', fill: 'forwards' }).onfinish = () => {
+    if (flights.get(m) !== f) return f.remove();
+    set(() => landedFly(m, f)); beep(880, .07, .03);
+  };
 }
