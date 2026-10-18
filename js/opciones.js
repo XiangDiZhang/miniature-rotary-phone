@@ -91,6 +91,40 @@ $('optTrainer').value = store.get('ruleta-trainer') || '';
 $('optTrainer').oninput = e => store.set('ruleta-trainer', e.target.value.replace(/[<>]/g, '').slice(0, 16));
 $('optTrainer').onchange = () => beep(760, .05, .03);
 
+// ---- Sprite de entrenador: se elige entre todos los de assets/sprites/entrenadores.js (con buscador) ----
+function syncTrainerSpr() { const u = playerTrainerSpr(); $('optTrainerImg').src = u || ''; $('optTrainerImg').hidden = !u; }
+syncTrainerSpr();
+$('optTrainerSpr').onclick = () => {
+  beep(740, .05, .03);
+  let sh = $('trnShade');
+  if (!sh) {
+    sh = document.createElement('div'); sh.className = 'trn-shade'; sh.id = 'trnShade';
+    sh.innerHTML = `<div class="trn" role="dialog" aria-modal="true" aria-label="Sprite de entrenador">
+      <div class="trn-bar"><b>Sprite de entrenador</b><input class="tst-q" id="trnQ" type="search" placeholder="Busca: red, cynthia, ace trainer…" autocomplete="off"><button class="info-close" type="button" id="trnClose" aria-label="Cerrar">✕</button></div>
+      <div class="trn-grid" id="trnGrid"></div></div>`;
+    document.body.appendChild(sh);
+    const close = () => { sh.hidden = true; };
+    $('trnClose').onclick = close; sh.addEventListener('pointerdown', e => { if (e.target === sh) close(); });
+    addEventListener('keydown', e => { if (e.key === 'Escape' && !sh.hidden) { e.stopImmediatePropagation(); close(); } }, true);
+    $('trnQ').oninput = () => { clearTimeout(sh._t); sh._t = setTimeout(fill, 120); };
+    // la lista se dibuja por bloques (son muchos) para que se abra al momento
+    const fill = () => {
+      clearTimeout(sh._f);
+      const q = norm($('trnQ').value.trim()).replace(/\s+/g, ''), cur = playerTrainer(), G = $('trnGrid');
+      const keys = Object.keys(TRAINER_SPR).filter(k => !q || k.replace(/-/g, '').includes(q)).sort((a, b) => (b === cur) - (a === cur));   // el tuyo, el primero
+      const item = k => `<button type="button" class="trn-it${k === cur ? ' on' : ''}" data-k="${k}" title="${k}"><img src="${TRAINER_SPR[k]}" alt="" loading="lazy"><small>${k}</small></button>`;
+      G.innerHTML = keys.slice(0, 120).map(item).join('') || '<p class="tst-none">Ningún sprite coincide con la búsqueda.</p>';
+      let i = 120; const more = () => { G.insertAdjacentHTML('beforeend', keys.slice(i, i + 200).map(item).join('')); i += 200; if (i < keys.length) sh._f = setTimeout(more, 30); };
+      if (i < keys.length) sh._f = setTimeout(more, 30);
+    };
+    $('trnGrid').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return;
+      store.set('ruleta-trainer-spr', b.dataset.k); syncTrainerSpr(); chord([659, 880, 1175]); close(); });
+    sh._fill = fill;
+  }
+  sh.hidden = false; $('trnQ').value = ''; sh._fill();
+  const on = $('trnGrid').querySelector('.on'); if (on) on.scrollIntoView({ block: 'center' });
+};
+
 // ---- Animaciones ----
 function syncMotion() { $('optMotion').textContent = reduceMotion ? 'OFF' : 'ON'; $('optMotion').setAttribute('aria-pressed', !reduceMotion); document.documentElement.classList.toggle('nomotion', reduceMotion); }
 $('optMotion').onclick = () => {

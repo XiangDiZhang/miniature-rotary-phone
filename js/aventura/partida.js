@@ -74,6 +74,7 @@ function evoOptions(m) {
 // ---- Historial de partidas: equipo (con motes), puntos y si ganaste o perdiste ----
 function saveHistory(won) {
   if (!run || run.histSaved) return; run.histSaved = true;
+  if (run.region === 'test') return saveRun();   // el Modo Test no se apunta en el historial
   const mons = allMine().map(m => ({ n: m.n, form: m.form || 0, shiny: !!m.shiny, nick: m.nick || '' }));
   const e = { t: Date.now(), region: run.region, name: REG().name, won: !!won, points: run.points, rank: rank(run.points), badges: run.badges.length, lostTo: won ? '' : (run.lostTo || ''), team: mons };
   store.setJSON('ruleta-hist', [e, ...store.getJSON('ruleta-hist', [])].slice(0, 40));
@@ -127,7 +128,7 @@ addEventListener('resize', fitHistory);
 // lo de arriba cambia de alto después (el texto del profesor se va escribiendo, los botones…): se vuelve a medir
 try { const ro = new ResizeObserver(() => fitHistory()); ['chosenText', 'chosenCard', 'advEntry'].forEach(id => $(id) && ro.observe($(id))); } catch (e) {}
 
-// ---- Imagen de una partida: tu entrenador (de momento, una silueta neón; más adelante, su sprite) con su nombre debajo,
+// ---- Imagen de una partida: tu entrenador (tu sprite de entrenador) con su nombre debajo,
 // y a la derecha tus 6 Pokémon con su nombre, más la región, el resultado y los puntos. Se ve en grande y se puede descargar. ----
 async function exportRun(x) {
   const Wd = 1200, Hg = 630, cv = document.createElement('canvas'); cv.width = Wd; cv.height = Hg;
@@ -141,16 +142,16 @@ async function exportRun(x) {
   gr = g.createRadialGradient(900, 120, 10, 900, 120, 600); gr.addColorStop(0, acc + '33'); gr.addColorStop(1, 'transparent'); g.fillStyle = gr; g.fillRect(0, 0, Wd, Hg);
   g.save(); g.globalAlpha = .12; g.fillStyle = C; g.beginPath(); g.moveTo(Wd * .62, 0); g.lineTo(Wd, 0); g.lineTo(Wd, Hg * .3); g.lineTo(Wd * .4, Hg); g.lineTo(0, Hg); g.lineTo(0, Hg * .55); g.closePath(); g.fill(); g.restore();
   g.strokeStyle = C; g.lineWidth = 2; g.shadowColor = C; g.shadowBlur = 18; g.strokeRect(14, 14, Wd - 28, Hg - 28); g.shadowBlur = 0;
-  // entrenador: silueta neón (gorra, cabeza, cuerpo) sobre una peana, y su nombre debajo
+  // entrenador: tu sprite (Opciones · Sprite de entrenador) en grande sobre una peana neón, y su nombre debajo
   const tx = 230, ty = 300;
   g.save(); g.fillStyle = C + '22'; g.beginPath(); g.ellipse(tx, ty + 205, 130, 26, 0, 0, Math.PI * 2); g.fill();
-  g.strokeStyle = C; g.lineWidth = 3; g.shadowColor = C; g.shadowBlur = 22; g.stroke();
-  g.lineWidth = 5; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = '#e7edf8'; g.shadowColor = acc; g.fillStyle = 'rgba(231,237,248,.06)';
-  g.beginPath(); g.arc(tx, ty - 95, 46, 0, Math.PI * 2); g.fill(); g.stroke();                                   // cabeza
-  g.beginPath(); g.moveTo(tx - 52, ty - 112); g.quadraticCurveTo(tx, ty - 175, tx + 52, ty - 112); g.lineTo(tx + 92, ty - 104); g.lineTo(tx + 50, ty - 96); g.closePath(); g.fillStyle = C; g.fill(); g.stroke();   // gorra
-  g.fillStyle = 'rgba(231,237,248,.06)'; g.beginPath(); g.moveTo(tx - 80, ty + 190); g.lineTo(tx - 72, ty + 10); g.quadraticCurveTo(tx, ty - 40, tx + 72, ty + 10); g.lineTo(tx + 80, ty + 190); g.closePath(); g.fill(); g.stroke();   // cuerpo
-  g.beginPath(); g.arc(tx, ty + 70, 22, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(tx - 22, ty + 70); g.lineTo(tx + 22, ty + 70); g.stroke();   // Poké Ball del pecho
-  g.restore();
+  g.strokeStyle = C; g.lineWidth = 3; g.shadowColor = C; g.shadowBlur = 22; g.stroke(); g.restore();
+  const tu = playerTrainerSpr(), tim = tu && await new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = tu; });
+  if (tim) {
+    // 80 × 80 px → 400 × 400, nítido (sin suavizar), con los pies sobre la peana y un halo del color de la región
+    const s = 400; g.save(); g.imageSmoothingEnabled = false; g.shadowColor = C; g.shadowBlur = 26;
+    g.drawImage(tim, tx - s / 2, ty + 215 - s, s, s); g.restore();
+  }
   const name = (typeof trainerName === 'function' ? trainerName() : 'Entrenador');
   g.textAlign = 'center'; g.fillStyle = '#e7edf8'; g.font = F(600, 40); g.shadowColor = C; g.shadowBlur = 14; g.fillText(name, tx, ty + 270); g.shadowBlur = 0;
   g.font = F(500, 15, 'IBM Plex Mono'); g.fillStyle = C; g.fillText('ENTRENADOR', tx, ty + 296);
@@ -187,7 +188,7 @@ async function exportRun(x) {
 // guarda el equipo campeón para poder volver a ver el Hall de la Fama desde Opciones
 function saveHof() {
   const d = { region: run.region, name: REG().name, team: run.team.slice(0, 6).map(m => ({ n: m.n, form: m.form || 0, shiny: !!m.shiny })), points: run.points, rank: rank(run.points), badges: run.badges.length };
-  store.setJSON('ruleta-hof', d);
+  if (run.region !== 'test') store.setJSON('ruleta-hof', d);   // (el Modo Test no se guarda)
   return d;
 }
 function lastHof() { const d = store.getJSON('ruleta-hof'); return d && d.team && d.team.length ? d : null; }

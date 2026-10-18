@@ -358,7 +358,10 @@ function leaderHTML(L) {
   const role = L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? (/^Campeona/.test(L.name) ? 'Campeona' : 'Campeón') : REG().trials ? (/^Gran/.test(L.name) ? 'Kahuna' : 'Capitán') : `Líder · ${L.name}`;
   // con los líderes, el círculo enseña siempre su medalla (más adelante, el sprite del personaje), nunca un Pokémon
   const bsp = badgeSpr(L), N = advNow, ni = null;
-  return { c: TYPE_COLORS[T], html: `<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
+  // su sprite (Líderes, Alto Mando y Campeones): de fondo, de medio cuerpo para arriba, grande y tenue, abajo a la derecha;
+  // y encima, de cuerpo entero
+  const ls = leaderSpr(L.leader), art = ls ? `<div class="lc-art" aria-hidden="true"><img class="lc-big" src="${ls}" alt=""><img class="lc-full" src="${ls}" alt=""></div>` : '';
+  return { c: TYPE_COLORS[T], html: `${art}<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
     <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div>${chip(T)}</div></div>
     <div class="lc-rows">${N && N.mons ? monsRow(N) : `
       <div class="lc-row"><em>Tienen ventaja los</em>${weak.map(chip).join('') || '—'}</div>

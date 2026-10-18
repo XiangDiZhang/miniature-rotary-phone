@@ -97,6 +97,8 @@ const rail = (() => {
     if (e && e.type === 'pointerup' && drag.moved < (e.pointerType === 'touch' ? 12 : 6) && performance.now() - drag.t0 < 1200) {
       const li = document.elementFromPoint(e.clientX, e.clientY)?.closest('.mon');
       drag = null; view.classList.remove('grab');
+      // Modo Test: la Pokédex está en «modo elegir» y el toque añade ese Pokémon a tu equipo de prueba
+      if (li && typeof dexPick === 'function' && dexPick) { dexPick(+li.dataset.n); li.animate && li.animate([{ transform: 'scale(.9)', filter: 'brightness(1.8)' }, { transform: 'none', filter: 'none' }], { duration: 300 }); return; }
       if (li && li.classList.contains('locked')) { beep(220, .06, .03); return; }
       if (li) { infoOrigin = null; infoNav = null; openInfo(+li.dataset.n, li.getBoundingClientRect()); }
       return;

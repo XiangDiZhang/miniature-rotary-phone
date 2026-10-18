@@ -30,6 +30,7 @@
   <script src="js/datos/regiones.js" defer></script>
   <script src="js/datos/eventos.js" defer></script>
   <script src="js/datos/reglas.js" defer></script>
+  <script src="js/datos/entrenadores.js" defer></script>
   <script src="js/nucleo/utilidades.js" defer></script>
   <script src="js/nucleo/ajustes.js" defer></script>
   <script src="js/nucleo/audio.js" defer></script>
@@ -62,6 +63,7 @@
   <script src="assets/sprites/shiny.js" defer></script>
   <script src="assets/sprites/medallas.js" defer></script>
   <script src="assets/sprites/objetos.js" defer></script>
+  <script src="assets/sprites/entrenadores.js" defer></script>
   <script src="js/recursos/sprites.js" defer></script>
   <script src="js/opciones.js" defer></script>
   <script src="js/main.js" defer></script>
@@ -175,6 +177,7 @@
     <p class="label">Opciones</p>
     <div class="opt-list">
       <div class="opt-row"><div class="l"><b>Nombre de entrenador</b><span>Sale en los diálogos, en tus partidas y en las imágenes que exportes</span></div><input class="txt-in trainer-in" id="optTrainer" type="text" maxlength="16" placeholder="Entrenador" autocomplete="off" spellcheck="false" aria-label="Nombre de entrenador"></div>
+      <div class="opt-row"><div class="l"><b>Sprite de entrenador</b><span>Tu personaje: sale en la imagen que exportas del historial</span></div><button class="trainer-pick" id="optTrainerSpr" type="button" aria-label="Elegir tu sprite de entrenador"><img id="optTrainerImg" alt=""><span>CAMBIAR</span></button></div>
       <div class="opt-row"><div class="l"><b>Sonido</b><span>Efectos al moverte, al girar y al ganar</span></div><button class="toggle" id="optSound" type="button" aria-pressed="true">ON</button></div>
       <div class="opt-row"><div class="l"><b>Tema</b><span>Oscuro o claro</span></div><button class="toggle" id="optTheme" type="button" aria-pressed="true">OSCURO</button></div>
       <div class="opt-row"><div class="l"><b>Colores del tema</b><span>Elige el color neón de la interfaz (y un segundo color, si quieres)</span></div><button class="toggle" id="optColors" type="button" aria-expanded="false">PERSONALIZAR</button></div>

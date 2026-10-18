@@ -216,12 +216,6 @@
 .tst-item b { min-width: 14px; text-align: center; font: 600 13px var(--f-mono); }
 .tst-q { width: 100%; padding: 9px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--panel); color: var(--fg); font: 14px var(--f-body, inherit); }
 .tst-q:focus { outline: none; border-color: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 25%, transparent); }
-.tst-list { flex: 1; min-height: 120px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; align-content: start; scrollbar-width: thin; padding-right: 2px; }
-.tst-mon { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 4px; border-radius: 10px; border: 1px solid var(--line); background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 20%, transparent), transparent 70%); color: var(--fg); cursor: pointer; transition: transform .12s, border-color .15s; }
-.tst-mon:hover { transform: translateY(-2px); border-color: var(--c); }
-.tst-mon .tst-spr { width: 48px; height: 48px; }
-.tst-mon small { font: 9px var(--f-mono); color: var(--fg-soft); } .tst-mon span:last-child { font-size: 11px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tst-none { color: var(--fg-soft); font-size: 13px; grid-column: 1 / -1; }
 .tst-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--line); }
 .tst-toast { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); padding: 9px 16px; border-radius: 999px; background: var(--fg); color: var(--bg); font-weight: 600; font-size: 13px; pointer-events: none; animation: fadeIn .2s ease both; }
 @media (max-width: 760px) {
@@ -230,6 +224,25 @@
   .tst-body { display: flex; flex-direction: column; overflow-y: auto; gap: 10px; padding: 10px 12px; }
   .tst-col { flex: none; min-height: auto; }
   .tst-slot { min-height: 100px; } .tst-spr { width: 44px; height: 44px; }
-  .tst-list { max-height: 46vh; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+
   .tst-title b { font-size: 18px; }
 }
+.tst-none { color: var(--fg-soft); font-size: 13px; grid-column: 1 / -1; }
+.tst-dex { align-self: stretch; margin-top: 4px; }
+.tst-fill { margin-left: auto; padding: 4px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, #3fd0c9 50%, var(--line-2)); background: transparent; color: #3fd0c9; font: 9.5px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.tst-fill:hover { background: color-mix(in srgb, #3fd0c9 14%, transparent); }
+button.tst-slot.empty { cursor: pointer; font: 10px var(--f-mono); color: var(--fg-soft); transition: border-color .15s, color .15s; }
+button.tst-slot.empty:hover { border-color: #3fd0c9; color: #3fd0c9; opacity: 1; }
+.tst-body > .tst-col:last-child .tst-bag { grid-template-columns: minmax(0, 1fr); }
+/* Pokédex en «modo elegir» del Modo Test: barra flotando abajo con tu equipo y «Listo» */
+.pick-bar { position: fixed; z-index: 80; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(760px, calc(100vw - 20px)); display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 16px;
+  border-radius: 14px; border: 1px solid color-mix(in srgb, #3fd0c9 55%, var(--line)); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 12px 30px rgba(0,0,0,.45), 0 0 18px rgba(63,208,201,.25); animation: fadeIn .2s ease both; }
+.pk-t { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; flex: 1; }
+.pk-t b { color: #3fd0c9; font: 600 14px var(--f-display); } .pk-t small { font-size: 11.5px; color: var(--fg-soft); }
+.pk-team { display: flex; gap: 4px; }
+.pk-team > * { width: 40px; height: 40px; border-radius: 8px; border: 1px dashed var(--line-2); display: grid; place-items: center; }
+.pk-team button { border: 1px solid color-mix(in srgb, #3fd0c9 45%, var(--line)); background: color-mix(in srgb, #3fd0c9 8%, transparent); cursor: pointer; padding: 0; }
+.pk-team button:hover { border-color: #ff5a6a; }
+.pk-team img { width: 100%; height: 100%; object-fit: contain; } .pk-team img.px { image-rendering: pixelated; }
+
+@media (max-width: 640px) { .pick-bar { flex-wrap: wrap; gap: 6px; padding: 8px; } .pk-team > * { width: 32px; height: 32px; } .pick-bar .btn { padding: 8px 12px; font-size: 10px; } }

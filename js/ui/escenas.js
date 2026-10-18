@@ -23,6 +23,7 @@ $('soundBtn').onclick = () => {
 // ---- Escenas ----
 function show(scene) {
   state.scene = scene;
+  if (scene !== 'dex' && typeof endDexPick === 'function') endDexPick(true);   // sales de la Pokédex: se acaba el «modo elegir» del Modo Test
   ['home', 'dex', 'options', 'menu', 'saves', 'roulette', 'chosen', 'adv'].forEach(s => $('scene-' + s).hidden = s !== scene);
   document.body.classList.toggle('wide-adv', scene === 'adv');
   if (scene !== 'adv' && advWheel) advWheel.stop();

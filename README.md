@@ -20,6 +20,7 @@ index.html              página: cabecera, escenas (menú, Pokédex, opciones, j
 assets/img/             fondos del Hall de la Fama y de la derrota
 assets/sprites/         sprites incluidos (normales.js, shiny.js, medallas.js), generados: no editar a mano
   originales/             los PNG de los que salen (pokemon/, pokemon/shiny/, badges/): solo los que usa el juego
+  originales/entrenadores/ sprites de entrenadores (estilo Showdown, 80 × 80): tu sprite, el del historial y los de líderes, Alto Mando y Campeones
 css/                    estilos por área (el orden de carga importa: cada archivo puede afinar los anteriores)
   base.css                tokens de color y tema claro, maquetación, cabecera, botones y animaciones comunes
   menu.css                tarjetas del menú, ruleta de generaciones, generación elegida e historial
@@ -43,6 +44,7 @@ js/
 pruebas/                capturas y partidas automáticas con Chrome sin ventana
 herramientas/           empaquetar.ps1: copia de un solo archivo para publicar (dist/)
                         generar-sprites.ps1 y medir-sprite.js: vuelven a crear assets/sprites/ desde assets/sprites/originales (o desde una carpeta de PokeAPI)
+                        generar-entrenadores.ps1: vuelve a crear assets/sprites/entrenadores.js desde assets/sprites/originales/entrenadores
 ```
 
 ### Cómo encaja el JavaScript
@@ -68,6 +70,8 @@ Todo pasa por `store` (`js/nucleo/utilidades.js`), que no falla si el navegador 
 - **Sitio especial de un camino**: añádelo a `EVENTS` en `js/datos/eventos.js` con `SP(...)`; el tipo de suceso (`wild`, `legend`, `gift`, `catch`, `villain`, `mix`…) lo resuelve `runSpot` en `js/aventura/sucesos.js`, sin código nuevo. Luego ponlo en el `local` del tramo del camino.
 - **Reglas** (puntos, probabilidades de captura y de evolución, ruletas de aventura, variantes al evolucionar, megas y Gigamax, pociones de premio): `js/datos/reglas.js`.
 - **Modo Caos**: se construye solo a partir de las regiones (`REGIONS.caos` al final de `js/datos/regiones.js`); la selección de cada partida se guarda en `run.chaos`.
+- **Modo Test** (solo en modo desarrollador): el camino del Modo Caos con el equipo y la mochila que eliges (`js/ui/modo-test.js`, los Pokémon se eligen en la Pokédex). No cuenta para la Pokédex, los récords, el historial ni el Hall de la Fama.
+- **Entrenadores**: `LEADER_SPR` de `js/datos/entrenadores.js` dice qué sprite lleva cada líder, Alto Mando y Campeón (por su nombre en el juego).
 
 ## Sprites incluidos
 
