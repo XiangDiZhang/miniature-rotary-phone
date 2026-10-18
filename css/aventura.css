@@ -117,11 +117,11 @@ body.wide-adv .wrap { max-width: 1120px; }
 .lc-art img:nth-child(2):nth-last-child(2) { z-index: 1; }
 /* fondo: de cintura para arriba, grande (cubre buena parte de la tarjeta), abajo a la derecha, con la cabeza casi arriba */
 .lc-big { left: 74%; right: auto; transform: translateX(-50%);   /* centrado en la parte derecha de la tarjeta */
-   top: calc(4px - 100% * .27); height: 220%;   /* (sube lo que mide el hueco vacío encima de la cabeza) */
+   top: calc(4px - 100% * .23); height: 190%;   /* (sube lo que mide el hueco vacío encima de la cabeza) */
   opacity: .2; filter: saturate(.85);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%); }
 /* si el líder son varios personajes, el fondo los enseña a todos: más pequeños y montados */
-.lc-art.many .lc-big { top: calc(4px - 100% * .19); height: 160%; }
+.lc-art.many .lc-big { left: 66%; top: calc(4px - 100% * .14); height: 118%; }   /* (más pequeños, para que quepan todos sin cortarse) */
 /* (los de delante se montan hacia la derecha: la fila se corre a la izquierda para que el grupo quede centrado) */
 .lc-art.n2 .lc-big { transform: translateX(-63%); } .lc-art.n3 .lc-big { transform: translateX(-67.3%); }
 /* delante, de cuerpo entero: de abajo hasta 3/4 del alto de la tarjeta */
@@ -326,8 +326,10 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
   .adv-leadfig:not([hidden]) { display: block; position: absolute; right: 34px; bottom: 10px;   /* abajo a la derecha del escenario */
     height: min(250px, 38%); z-index: 0; pointer-events: none; }
   .adv-stage .side { position: relative; z-index: 1; justify-content: flex-start; }
-  .adv-stage #advBtns { margin-top: auto; }   /* los botones, abajo del todo */
-  .adv-stage #advStep { margin-top: auto; }   /* el título y el texto de la fase, a media altura del hueco que queda (no pegados a la tarjeta) */
+  .adv-stage #advBtns { order: 4; }   /* los botones, abajo del todo */
+  /* el título y el texto de la fase, a un cuarto del hueco que queda (un hueco que crece 1 encima y otro que crece 3 debajo) */
+  .adv-stage .side::before { content: ""; order: 1; flex: 1 1 0; } .adv-stage .adv-say > * { order: 2; }
+  .adv-stage .side::after { content: ""; order: 3; flex: 3 1 0; }
   .leader-card .lc-full { display: none; }
   .adv-stage .adv-text { height: auto; flex: 0 1 auto; min-height: 0; max-height: 9.3em; }   /* el texto ocupa solo lo que mide, arriba (si es muy largo, se desplaza dentro) */
   /* línea de fases en el hueco entre la ruleta y el borde de abajo del recuadro */
@@ -660,3 +662,9 @@ img.stone.px { image-rendering: pixelated; }
 
 /* la peana, centrada bajo los personajes que se ven (en un grupo, los de delante se montan hacia la derecha y la parte izquierda de la fila queda vacía) */
 .adv-leadfig[data-n="2"] .lf-glow { left: 14%; right: -8%; } .adv-leadfig[data-n="3"] .lf-glow { left: 24%; right: -6%; }
+/* tipos de la tarjeta de información: iconos en un círculo de su color (como el filtro de la Pokédex) */
+.lc-ty { --t: #888; --ink: #fff; width: 24px; height: 24px; flex: none; border-radius: 50%; display: inline-grid; place-items: center; vertical-align: middle;
+  background: var(--t); color: var(--ink); border: 1px solid color-mix(in srgb, var(--t) 70%, #fff 30%); box-shadow: 0 0 10px color-mix(in srgb, var(--t) 45%, transparent); }
+.lc-ty svg { width: 14px; height: 14px; }
+.lc-top .lc-ty { width: 26px; height: 26px; } .lc-top .lc-ty svg { width: 16px; height: 16px; }
+.lc-row .lc-ty { margin-right: 1px; }

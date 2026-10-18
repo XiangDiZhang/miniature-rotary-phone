@@ -36,9 +36,12 @@ function pcSlot(w, i) {
   const no = m ? padN(m.n) : '';
   return `<div class="pc-slot${m ? '' : ' empty'}${m && m.shiny ? ' shiny' : ''}${pcSel && pcSel.w === w && pcSel.i === i ? ' sel' : ''}" data-w="${w}" data-i="${i}"${m ? ` title="${dname(m)}" style="--c:${TYPE_COLORS[ty[0]]};--c2:${TYPE_COLORS[ty[1] || ty[0]]}"` : ''}>${m ? `<span class="pc-bg${no.length > 3 ? ' d4' : ''}" aria-hidden="true">${no}</span><span class="pc-no">Nº ${no}</span><span class="pc-ty">${ty.map(typeIcon).join('')}</span>` + monThumb(m) + `<small>${dname(m)}</small>` : ''}</div>`;
 }
+// Pokémon que acabas de soltar arrastrándolo (su sitio nuevo no se anima: ya lo has llevado tú)
+let pcDragged = null;
 function renderPC() {
   normBox();
   const P = $('pcShade'), before = P.hidden ? new Map() : flipCapture(P, '.pc-slot');
+  if (pcDragged) before.delete(pcDragged);   // el que acabas de arrastrar ya está donde lo soltaste: no vuelve a animarse desde su hueco
   $('pcTeam').innerHTML = Array.from({ length: 6 }, (_, i) => pcSlot('team', i)).join('');
   $('pcBox').innerHTML = Array.from({ length: run.box.length }, (_, i) => pcSlot('box', i)).join('');
   P.querySelectorAll('.pc-slot').forEach(el => el._m = pcGet(el.dataset.w, +el.dataset.i) || null);
@@ -118,8 +121,8 @@ function closePC() { $('pcShade').hidden = true; pcSel = null; }
       }
       const fin = () => {
         g.ghost.remove(); g.el.classList.remove('src');
-        const to = g.over && g.over !== g.el ? key(g.over) : null, moved = to && pcMove(g.from, to);
-        pcSel = null; renderPC();
+        pcDragged = A; const to = g.over && g.over !== g.el ? key(g.over) : null, moved = to && pcMove(g.from, to);
+        pcSel = null; renderPC(); pcDragged = null;
         const el = [...$('pcShade').querySelectorAll('.pc-slot')].find(x => x._m && x._m === A);
         if (el) { el.classList.add('landed'); setTimeout(() => el.classList.remove('landed'), 450); }
       };

@@ -141,25 +141,21 @@ $('optTts').onclick = () => {
   if (ttsOn) speak('Locutor activado. ¡Que empiece la aventura!'); else ttsStop();
 };
 syncText();
-// voz del locutor: las del navegador en español (de la más natural a la menos, ★ = natural) y las voces gratis en línea
+// voz del locutor: las del navegador y el sistema en español, de la más natural a la menos (★ = natural)
 function syncVoices() {
   const sel = $('optVoice'); if (!sel) return;
   const vs = ttsVoices(), esc = s => s.replace(/"/g, '&quot;');
-  sel.innerHTML = `<optgroup label="Voces de tu navegador (sin internet)">${vs.length ? vs.map(v => `<option value="sys:${esc(v.name)}">${voiceScore(v) >= 25 ? '★ ' : ''}${v.name} (${v.lang})</option>`).join('') : '<option value="" disabled>No hay voces en español en este navegador</option>'}</optgroup>`
-    + `<optgroup label="Voces en línea (gratis, necesitan internet)">${ONLINE_VOICES.map(([v, nm]) => `<option value="${v}">${nm}</option>`).join('')}</optgroup>`;
-  const c = ttsChoice();
-  sel.value = c && !c.startsWith('sys:') ? c : ttsVoice ? 'sys:' + ttsVoice.name : ONLINE_VOICES[0][0];
+  sel.innerHTML = vs.length ? vs.map(v => `<option value="sys:${esc(v.name)}">${voiceScore(v) >= 25 ? '★ ' : ''}${v.name} (${v.lang})</option>`).join('') : '<option value="" disabled>No hay voces en español en este navegador</option>';
+  sel.value = ttsVoice ? 'sys:' + ttsVoice.name : '';
   voiceInfo();
 }
 function voiceInfo(msg) {
-  const c = $('optVoice').value || '', n = ttsVoices().length;
-  $('optVoiceInfo').textContent = msg || (c.startsWith('g:') ? 'Voz de Google Traductor: necesita internet y el texto se envía a Google.'
-    : c.startsWith('se:') ? 'Voz de Amazon Polly (gratis a través de StreamElements): necesita internet y el texto se envía a ese servicio.'
-    : n ? `${n} ${n > 1 ? 'voces' : 'voz'} en español en tu navegador (★ las más naturales) y ${ONLINE_VOICES.length} voces en línea.` : 'Tu navegador no tiene voces en español: elige una voz en línea, o prueba en Edge o Chrome.');
+  const n = ttsVoices().length;
+  $('optVoiceInfo').textContent = msg || (n ? `${n} ${n > 1 ? 'voces' : 'voz'} en español en tu navegador (★ las más naturales). En Edge hay voces neuronales «Natural» muy realistas, gratis.`
+    : 'Tu navegador no tiene voces en español: prueba en Edge o Chrome.');
 }
-const voiceFail = () => voiceInfo('Esa voz en línea no responde ahora (¿sin internet?). Mientras tanto se usa la de tu navegador.');
-$('optVoice').onchange = e => { store.set('ruleta-voice', e.target.value); pickVoice(); voiceInfo(); beep(760); speak(`¡Hola, ${trainerName()}! Así sonará el locutor.`, true, voiceFail); };
-$('optVoiceTest').onclick = () => { beep(880); speak('¡Un Pikachu salvaje! ¡Lanza la Poké Ball! Solo tienes una oportunidad.', true, voiceFail); };
+$('optVoice').onchange = e => { store.set('ruleta-voice', e.target.value); pickVoice(); voiceInfo(); beep(760); speak(`¡Hola, ${trainerName()}! Así sonará el locutor.`, true); };
+$('optVoiceTest').onclick = () => { beep(880); speak('¡Un Pikachu salvaje! ¡Lanza la Poké Ball! Solo tienes una oportunidad.', true); };
 syncVoices();
 
 // ---- Ver las cinemáticas: con tu último equipo campeón, o el de tu partida de Johto, o uno de ejemplo ----

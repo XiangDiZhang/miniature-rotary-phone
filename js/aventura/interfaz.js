@@ -350,7 +350,8 @@ function nowFrom(title) {
 
 // ---- Tarjeta del líder: nombre, tipo, debilidades y resistencias (el hueco redondo será su sprite) ----
 const TYPES = Object.keys(CHART);
-const chip = t => `<span class="lchip" style="--tc:${TYPE_COLORS[t] || '#888'}">${t}</span>`;
+// tipo: su icono en un círculo de su color, como los del filtro de la Pokédex (el nombre, al pasar el ratón y para los lectores de pantalla)
+const chip = t => `<span class="lc-ty" style="${typeVars(t)}" title="${t}" role="img" aria-label="${t}">${typeSvg(t)}</span>`;
 function leaderHTML(L) {
   const T = L.typeName, done = (L.badge && run.badges.includes(L.badge)) || run.stepDone;
   const weak = TYPES.filter(t => eff(t, [T]) > 1);       // tipos que le hacen mucho daño

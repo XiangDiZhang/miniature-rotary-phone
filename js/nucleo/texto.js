@@ -17,21 +17,11 @@ function typeText(el, text, done, early) {
     if (i >= text.length) { clearInterval(typers[el.id]); done && done(); }
   }, ms);
 }
-// locutor (Opciones): lee en voz alta el texto de la aventura con la voz del sistema
-
-// Voces (todas gratis, sin cuentas ni claves):
-//  · las del navegador y el sistema: se elige sola la más natural en español (las neuronales de Edge «Natural» / «Online»,
-//    la de Google en Chrome, las mejoradas de Apple…);
-//  · voces en línea: la de Google Traductor (España, México, EE. UU.) y las de Amazon Polly a través de StreamElements
-//    (Conchita, Lucía, Enrique, Mia, Lupe, Penélope, Miguel). Necesitan internet y el texto se envía a ese servicio;
-//    si no responden, el locutor sigue con la voz del navegador.
-// En Opciones se elige una (se guarda como «sys:nombre», «g:idioma» o «se:voz»; las partidas antiguas guardaban solo el nombre).
-const ONLINE_VOICES = [
-  ['g:es', 'Google Traductor · España'], ['g:es-MX', 'Google Traductor · México'], ['g:es-US', 'Google Traductor · EE. UU.'],
-  ['se:Conchita', 'Polly · Conchita (España)'], ['se:Lucia', 'Polly · Lucía (España)'], ['se:Enrique', 'Polly · Enrique (España)'],
-  ['se:Mia', 'Polly · Mia (México)'], ['se:Lupe', 'Polly · Lupe (EE. UU.)'], ['se:Penelope', 'Polly · Penélope (EE. UU.)'], ['se:Miguel', 'Polly · Miguel (EE. UU.)'],
-];
-const ttsChoice = () => { const s = store.get('ruleta-voice') || ''; return /^(sys|g|se):/.test(s) ? s : s ? 'sys:' + s : ''; };
+// locutor (Opciones): lee en voz alta el texto de la aventura con la voz del navegador o del sistema
+// Se elige sola la más natural en español (las neuronales de Edge «Natural» / «Online», la de Google en Chrome, las mejoradas de Apple…);
+// en Opciones se puede elegir otra (se guarda como «sys:nombre»). Las voces en línea que hubo (Google Traductor, Polly por StreamElements)
+// dejaron de funcionar sin clave: una elección guardada de esas vuelve a la voz del navegador.
+const ttsChoice = () => { const s = store.get('ruleta-voice') || ''; return s.startsWith('sys:') ? s : /^(g|se):/.test(s) ? '' : s ? 'sys:' + s : ''; };
 let ttsVoice = null;
 // cuánto «suena a persona» una voz (más es mejor); las de España van delante de las de América
 function voiceScore(v) {
@@ -48,7 +38,7 @@ function pickVoice() {
   if (typeof syncVoices === 'function') syncVoices();
 }
 try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
-// frases cortas: algunos navegadores cortan las locuciones largas, y Google Traductor solo admite ~200 letras
+// frases cortas: algunos navegadores cortan las locuciones largas
 function ttsParts(t, max = 190) {
   const out = [];
   (String(t).replace(/[★✦▲▼→←·✧]/g, ' ').match(/[^.!?…]+[.!?…]*\s*/g) || [String(t)]).forEach(p => {
@@ -58,40 +48,17 @@ function ttsParts(t, max = 190) {
   });
   return out;
 }
-// voces en línea: un audio por frase, una detrás de otra
-let ttsAudio = null, ttsSeq = 0;
-function ttsStop() { ttsSeq++; try { speechSynthesis.cancel(); } catch (e) {} if (ttsAudio) { try { ttsAudio.pause(); } catch (e) {} ttsAudio = null; } }
-const onlineUrl = (c, p) => c.startsWith('g:') ? `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${encodeURIComponent(c.slice(2))}&q=${encodeURIComponent(p)}`
-  : `https://api.streamelements.com/kappa/v2/speech?voice=${encodeURIComponent(c.slice(3))}&text=${encodeURIComponent(p)}`;
-function speakSystem(parts) {
-  if (!('speechSynthesis' in window)) return;
-  parts.forEach(p => {
-    const u = new SpeechSynthesisUtterance(p);
-    u.lang = (ttsVoice && ttsVoice.lang) || 'es-ES'; if (ttsVoice) u.voice = ttsVoice;
-    u.rate = [0.9, 1.05, 1.25, 1.35][textSpeed]; u.pitch = 1.02;
-    speechSynthesis.speak(u);
-  });
-}
-// onFail: si la voz en línea no responde (sin internet, servicio caído…) se sigue con la del navegador y se avisa
-function speakOnline(c, parts, onFail) {
-  const seq = ttsSeq;
-  const next = i => {
-    if (seq !== ttsSeq || i >= parts.length) return;
-    const a = new Audio(onlineUrl(c, parts[i])); ttsAudio = a;
-    a.playbackRate = [0.95, 1.05, 1.2, 1.3][textSpeed];
-    a.onended = () => next(i + 1);
-    const fail = () => { if (seq !== ttsSeq) return; ttsAudio = null; speakSystem(parts.slice(i)); onFail && onFail(); };
-    a.onerror = fail;
-    const pr = a.play(); if (pr && pr.catch) pr.catch(e => { if (e && e.name === 'NotAllowedError') return; fail(); });
-  };
-  next(0);
-}
-function speak(t, force, onFail) {
+function ttsStop() { try { speechSynthesis.cancel(); } catch (e) {} }
+function speak(t, force) {
   if (!ttsOn && !force) return;
   try {
     ttsStop();
-    const c = ttsChoice(), parts = ttsParts(t);
-    if (c.startsWith('g:') || c.startsWith('se:')) speakOnline(c, parts, onFail);
-    else speakSystem(parts);
+    if (!('speechSynthesis' in window)) return;
+    ttsParts(t).forEach(p => {
+      const u = new SpeechSynthesisUtterance(p);
+      u.lang = (ttsVoice && ttsVoice.lang) || 'es-ES'; if (ttsVoice) u.voice = ttsVoice;
+      u.rate = [0.9, 1.05, 1.25, 1.35][textSpeed]; u.pitch = 1.02;
+      speechSynthesis.speak(u);
+    });
   } catch (e) {}
 }
