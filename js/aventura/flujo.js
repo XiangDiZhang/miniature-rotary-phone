@@ -117,7 +117,7 @@ function phaseEvolve() {
   const who = () => {
     if (!cands.length) return potionInstead('¡Tocaba evolución, pero ningún Pokémon de tu equipo puede evolucionar! En su lugar recibes');
     if (cands.length === 1) return evolve(cands[0]);
-    spinUI('Evolución · ¿Quién?', '¡Alguien va a evolucionar! La ruleta elige quién.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m));
+    spinUI('Evolución · ¿Quién?', '¡Alguien va a evolucionar! La ruleta elige quién.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m), evoNow('¿Quién evoluciona?', cands));
   };
   if (ch >= 1) { run.evoFails = 0; return advSay('¡Tu equipo ha combatido tanto que esta vez la evolución es segura!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Continuar', fn: who }])); }
   spinUI('Evolución · ¿Habrá suerte?', 'Si cae en dorado, alguien de tu equipo evolucionará (o, si nadie puede, recibes una poción).',
@@ -125,8 +125,10 @@ function phaseEvolve() {
       if (r.ok) { run.evoFails = 0; return advSay(cands.length ? '¡Algo está pasando! Uno de tus Pokémon empieza a brillar…' : '¡Ha caído en Evolución!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Ver premio', fn: who }])); }
       run.evoFails = fails + 1; log('🔸 Esta vez nadie evoluciona.');
       advSay('Esta vez no ha pasado nada… La próxima victoria tendrá más posibilidades.', goOn);
-    });
+    }, evoNow(cands.length ? '¿Habrá evolución?' : '¿Habrá evolución? (nadie puede)', cands));
 }
+// la tarjeta de información en las ruletas de evolución: qué está pasando y, a la derecha, los Pokémon que pueden evolucionar
+const evoNow = (txt, mons) => ({ txt, icon: 'evo', mons: mons.slice(0, 6) });
 // el Pokémon se sube al centro de la ruleta (desde su quesito o su ficha) para las ruletas de «¿en qué evoluciona?»
 function toCenter(m) {
   if (advWheel.centerM === m) { advWheel.keepM = m; return null; }
@@ -170,12 +172,13 @@ function applyEvo(m, o) {
 }
 // evolución completa: uno solo, o dos a la vez si llevas el Repartir Exp. (la ruleta elige al segundo)
 function evolve(m, msg) {
+  advNow = { txt: `¡${mname(m)} va a evolucionar!`, icon: 'evo', n: mid(m), shiny: m.shiny, mons: [m] }; renderCard();   // la tarjeta dice quién ha salido
   resolveEvo(m, o => {
     const others = run.bag.share ? run.team.filter(x => x !== m && canEvolve(x)) : [];
     if (!others.length) return evoPlay([{ m, o }], msg);
     const two = p => resolveEvo(p, o2 => evoPlay([{ m, o }, { m: p, o: o2 }], msg));
     advSay(`¡El Repartir Exp. brilla! Otro Pokémon de tu equipo va a evolucionar a la vez que ${mname(m)}.`, () => advButtons([{ label: 'Repartir Exp. →', fn: () => others.length === 1 ? two(others[0]) :
-      spinUI('Repartir Exp. · ¿Quién más?', `Otro Pokémon de tu equipo aprovecha la experiencia y evoluciona a la vez que ${mname(m)}.`, evoSegs(others), 'REPARTIR', r => two(r.m)) }]));
+      spinUI('Repartir Exp. · ¿Quién más?', `Otro Pokémon de tu equipo aprovecha la experiencia y evoluciona a la vez que ${mname(m)}.`, evoSegs(others), 'REPARTIR', r => two(r.m), evoNow('Repartir Exp.: ¿quién más evoluciona?', others)) }]));
   });
 }
 function evoPlay(list, msg) {

@@ -24,6 +24,11 @@ function itemSfx() {
   if (!soundOn) return;
   [[784, 0, .1], [988, .09, .1], [1175, .18, .1], [1568, .3, .42]].forEach(([f, t, d]) => setTimeout(() => { beep(f, d, .05, 'triangle'); beep(f / 2, d, .025, 'square'); }, t * 1000));
 }
+// Pokémon nuevo en el equipo o la caja: tintineo de captura (ta-da-da-DAAA, más alegre que el de los objetos)
+function monSfx() {
+  if (!soundOn) return;
+  [[659, 0, .09], [784, .08, .09], [1047, .16, .09], [988, .26, .08], [1319, .34, .45]].forEach(([f, t, d]) => setTimeout(() => { beep(f, d, .05, 'square'); beep(f * 2, d, .015, 'triangle'); }, t * 1000));
+}
 // ✦ sonido shiny: tres destellos agudos, un barrido que sube brillando y una campanita final
 function shinySfx() {
   if (!soundOn) return;

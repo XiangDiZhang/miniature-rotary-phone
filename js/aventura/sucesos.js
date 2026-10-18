@@ -126,7 +126,7 @@ function evolveSure(msg) {
   const cands = run.team.filter(canEvolve);
   if (!cands.length) return potionInstead(`${msg} Pero nadie de tu equipo puede evolucionar, así que recibes`);
   advSay(`${msg} ¡Alguien va a evolucionar!`, () => advButtons([{ label: '¿Quién evoluciona?', fn: () => cands.length === 1 ? evolve(cands[0]) :
-    spinUI('Evolución · ¿Quién?', 'La ruleta elige quién evoluciona.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m)) }]));
+    spinUI('Evolución · ¿Quién?', 'La ruleta elige quién evoluciona.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m), evoNow('¿Quién evoluciona?', cands)) }]));
 }
 // Intercambio obligatorio: la ruleta elige a quién das y lo que recibes puede ser cualquier Pokémon de la Pokédex (como los huevos)
 function doTrade() {

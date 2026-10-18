@@ -151,6 +151,17 @@ function renderAdv() {
   }
   const pcb = pcButtonHTML(); if ($('pcOpen')._h !== pcb) { $('pcOpen')._h = pcb; $('pcOpen').innerHTML = pcb; $('pcOpen').setAttribute('aria-label', `Caja PC: ${boxList().length} Pokémon`); }
   if (!$('pcShade').hidden && !document.body.classList.contains('pc-dragging')) renderPC();
+  // Pokémon nuevo (capturado, regalado, del huevo, de un intercambio…): como con los objetos, suena un tintineo y su ficha
+  // salta con «¡NUEVO!»; si ha ido a la caja, salta el botón de la Caja PC. (El shiny y los legendarios ya tienen su propio sonido.)
+  const mine = allMine(), prevM = renderAdv.monRun === run ? renderAdv.mons : null;
+  renderAdv.monRun = run; renderAdv.mons = new Set(mine);
+  const fresh = prevM ? mine.filter(m => !prevM.has(m)) : [];
+  if (fresh.length) {
+    if (!fresh.some(m => m.shiny || isLegend(m.n))) monSfx();
+    const pop = el => { if (!el) return; el.classList.remove('got'); void el.offsetWidth; el.classList.add('got'); setTimeout(() => el.classList.remove('got'), 2300); };
+    fresh.forEach(m => run.team.includes(m) ? pop([...TM.querySelectorAll('.tmw')].find(x => x._m === m)) : pop($('pcOpen')));
+    const tab = $('advTabs') && $('advTabs').querySelector('[data-tab="0"]'); if (tab && tab.offsetParent) pop(tab);
+  }
   // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
   const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);
@@ -219,7 +230,9 @@ function logHTML(t) {
   const deco = it || (L.spr && itemImg(L.spr)) || (L.svg && LOG_SVG[L.svg]) || '';
   const r = n && ((sh && SPR.shiny.get(n)) || SPR.normal.get(n));
   const main = r ? `<img class="lgm${r.px ? ' px' : ''}" src="${r.u}" alt="">` : deco || `<em>${em || '•'}</em>`;
-  return `<li class="lg${L.dim ? ' dim' : ''}${sh ? ' sh' : ''}" style="--c:${L.c || 'var(--cyan)'}"><span class="lg-ic">${main}${r && deco ? `<i class="lg-b">${deco}</i>` : ''}</span><span class="lg-tx">${tx}</span></li>`;
+  // con Pokémon: su icono se puede pulsar para ver su ficha (se abre agrandándose desde ahí)
+  const open = r ? ` lg-open" data-n="${n}" data-sh="${sh ? 1 : 0}" role="button" tabindex="0" title="Ver la ficha de ${pname(n)}` : '';
+  return `<li class="lg${L.dim ? ' dim' : ''}${sh ? ' sh' : ''}" style="--c:${L.c || 'var(--cyan)'}"><span class="lg-ic${open}">${main}${r && deco ? `<i class="lg-b">${deco}</i>` : ''}</span><span class="lg-tx">${tx}</span></li>`;
 }
 
 // ---- Qué está pasando ahora (la tarjeta de información lo enseña arriba): se pone con cada ruleta y se borra al cambiar de parada ----
@@ -259,11 +272,17 @@ function leaderHTML(L) {
   const bsp = badgeSpr(L), N = advNow, ni = null;
   return { c: TYPE_COLORS[T], html: `<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
     <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div>${chip(T)}</div></div>
-    <div class="lc-rows">
+    <div class="lc-rows">${N && N.mons ? monsRow(N) : `
       <div class="lc-row"><em>Tienen ventaja los</em>${weak.map(chip).join('') || '—'}</div>
       <div class="lc-row"><em>Tienen desventaja los</em>${danger.map(chip).join('') || '—'}</div>
-      <div class="lc-row lc-team">${teamMarks(L.rivalStarter ? [...L.team, evoAt(rivalStarter(), 2)] : L.team, T)}</div>
+      <div class="lc-row lc-team">${teamMarks(L.rivalStarter ? [...L.team, evoAt(rivalStarter(), 2)] : L.team, T)}</div>`}
     </div>` };
+}
+// en las ruletas de evolución: los Pokémon que pueden evolucionar (o el que va a evolucionar), con su sprite y su nombre
+function monsRow(N) {
+  if (!N.mons.length) return '<div class="lc-row lc-mons"><em>Nadie de tu equipo puede evolucionar</em></div>';
+  return `<div class="lc-row lc-mons"><em>${N.mons.length > 1 ? 'Pueden evolucionar' : 'Evoluciona'}</em>${N.mons.map(m => { const r = monSprite(m);
+    return `<span class="lc-mon-chip${m.shiny ? ' shiny' : ''}" style="--tc:${TYPE_COLORS[mtypes(m)[0]] || '#8592ab'}">${r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : ''}${dname(m)}</span>`; }).join('')}</div>`;
 }
 // tus Pokémon contra el TIPO del líder (el de su gimnasio, con la tabla de tipos completa):
 //   ▼ si el tipo del líder le pega fuerte: eff(T, sus tipos) > 1 (▼▼ si es ×4)
@@ -295,7 +314,8 @@ function renderCard() {
     html = `<div class="lc-spr${ni ? ' lc-mon' : ''}${N && N.icon && !nowImg(N) ? ' lc-ico' : ''}">${ni || phaseLook(L).icon}</div>
       <div class="lc-top">${N ? `${nowLine(N, `${kind} · ${L.name}`)}<b class="lc-doing">${N.txt}</b>` : `<small>${kind}${L.to ? ' · hacia ' + L.to : ''}</small><b>${L.name}</b>`}</div>
       <div class="lc-rows">
-        ${L.local ? `<div class="lc-row"><em>Sitios</em>${places || '—'}</div>` : ''}
+        ${N && N.mons ? monsRow(N) : ''}
+        ${L.local && !(N && N.mons) ? `<div class="lc-row"><em>Sitios</em>${places || '—'}</div>` : ''}
         ${nextGym ? `<div class="lc-row"><em>Próximo</em><span class="lc-txt">${nextGym.role === 'elite' ? 'Alto Mando · ' : nextGym.role === 'champ' ? 'Campeón · ' : ''}${nextGym.leader}</span>${chip(nextGym.typeName)}</div>` : ''}
         <div class="lc-row"><em>Medallas</em><span class="lc-txt">${run.badges.length} / 8</span></div>
       </div>`;
@@ -304,3 +324,14 @@ function renderCard() {
   if (el._h !== html) { el._h = html; el.innerHTML = html; }   // (renderAdv la llama mucho: solo se redibuja si cambia)
   if ($('leadTab')) $('leadTab').textContent = L.kind === 'gym' ? (L.role === 'elite' ? 'Alto Mando' : L.role === 'champ' ? 'Campeón' : REG().trials ? 'Prueba' : 'Líder') : L.kind === 'leg' ? 'Ruta' : L.kind === 'prep' ? 'Meseta' : 'Zona';
 }
+
+// ---- Diario: pulsar el Pokémon de una entrada abre su ficha (agrandándose desde su icono, y vuelve a él al cerrarla) ----
+(() => {
+  const openLog = el => {
+    const n = +el.dataset.n; if (!n || infoOpen) return;
+    beep(820, .05, .03); infoNav = null; infoHome = null; infoOrigin = el;
+    withShiny(el.dataset.sh === '1', () => openInfo(n, el.getBoundingClientRect(), 0, null, true));
+  };
+  $('advLog').addEventListener('click', e => { const el = e.target.closest('.lg-open'); if (el) openLog(el); });
+  $('advLog').addEventListener('keydown', e => { const el = e.target.closest('.lg-open'); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openLog(el); } });
+})();
