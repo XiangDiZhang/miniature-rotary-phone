@@ -9,7 +9,7 @@ function advButtons(list) {
   if (advWheel) advWheel.draw();     // el botón del centro de la ruleta cambia (GIRAR / SEGUIR)
 }
 function spinUI(title, sub, segs, center, onLand) {
-  curBattle = null;
+  curBattle = null; $('advPotion').hidden = true;   // la etiqueta de la poción solo se ve en su combate
   $('advStep').textContent = title; $('advRpm').textContent = '';
   advWheel.set(segs, center); advWheel.enabled = true;
   advWheel.onLand = r => { advWheel.enabled = false; onLand(r); renderAdv(); saveRun(); };
@@ -30,10 +30,12 @@ function teamTile(m, i) {
 // megapiedra y Banda Dinamax equipadas: esquina inferior izquierda de la ficha; en combate brillan y se pueden pulsar
 const GEM_SVG = '<svg viewBox="0 0 24 24"><path d="M7 3h10l4 6-9 12L3 9z" class="gem"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12" class="ln"/></svg>';
 const DMAX_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" class="gem"/><path d="M12 6l2 4.5 4.5.5-3.5 3 1 4.5L12 16l-4 2.5 1-4.5-3.5-3 4.5-.5z" class="ln"/></svg>';
+// icono de la megapiedra de cada mega (Charizardita X, Lucarita Z…); si faltara, una gema dibujada
+const stoneHTML = id => { const r = stoneIcon(id); return r ? `<img class="stone${MEGA_STONES[id][0].startsWith('gen9/') ? '' : ' px'}" src="${r.u}" alt="">` : GEM_SVG; };
 function toolsHTML(m, i) {
   const live = canTransform(), out = [];
-  if (m.stone && formRec(m.stone)) { const nm = mname({ n: m.n, form: m.stone });
-    out.push(`<button class="tm-tool mega${m.tf && m.tf.kind === 'mega' ? ' on' : live ? ' live' : ''}" type="button" data-tool="mega" data-i="${i}" title="Megapiedra (${nm})${live ? ': pulsa para megaevolucionar en este giro' : ': úsala en combate'}" aria-label="Megapiedra de ${name4(m)}">${GEM_SVG}</button>`); }
+  if (m.stone && formRec(m.stone)) { const nm = stoneName(m.stone);
+    out.push(`<button class="tm-tool mega${m.tf && m.tf.kind === 'mega' ? ' on' : live ? ' live' : ''}" type="button" data-tool="mega" data-i="${i}" title="${nm}${live ? ': pulsa para megaevolucionar en este giro' : ': úsala en combate'}" aria-label="${nm} de ${name4(m)}">${stoneHTML(m.stone)}</button>`); }
   if (m.dmax && gmaxForms(m).length) out.push(`<button class="tm-tool dmax${m.tf && m.tf.kind === 'gmax' ? ' on' : live ? ' live' : ''}" type="button" data-tool="gmax" data-i="${i}" title="Banda Dinamax${live ? ': pulsa para gigamaxizarlo en este giro' : ': úsala en combate'}" aria-label="Banda Dinamax de ${name4(m)}">${DMAX_SVG}</button>`);
   return out.length ? `<span class="tm-tools">${out.join('')}</span>` : '';
 }
@@ -142,7 +144,7 @@ function renderAdv() {
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
   const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);
   const bag = (items.map(([k, v]) => `<span class="bag-slot" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${BAG_ICON[k] || BAG_ICON.potion}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
-    + stones.map(m => { const nm = mname({ n: m.n, form: m.stone }); return `<span class="bag-slot gem" style="--c:${TYPE_COLORS[formRec(m.stone)[1][2][0]]}" title="Megapiedra de ${nm}, equipada en ${mname(m)}. En combate, púlsala en su ficha para megaevolucionar durante ese giro."><span class="bag-ico">${GEM_SVG}</span><span class="bag-nm">Megapiedra · ${nm.replace(/^Mega-/, '')}</span></span>`; }).join('')
+    + stones.map(m => { const nm = mname({ n: m.n, form: m.stone }), st = stoneName(m.stone); return `<span class="bag-slot gem" style="--c:${TYPE_COLORS[formRec(m.stone)[1][2][0]]}" title="${st} (${nm}), equipada en ${mname(m)}. En combate, púlsala en su ficha para megaevolucionar durante ese giro."><span class="bag-ico">${stoneHTML(m.stone)}</span><span class="bag-nm">${st}</span></span>`; }).join('')
     + (bands.length ? `<span class="bag-slot gem" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${DMAX_SVG}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
     + (run.ball ? `<span class="bag-slot buff" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${BAG_ICON.ball}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
     || '<span class="bag-empty">Mochila vacía</span>')

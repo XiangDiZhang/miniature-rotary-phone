@@ -125,9 +125,16 @@ function transformMon(m, kind) {
     advToast(kind === 'mega' ? `💎 ¡${shown}!` : `🔴 ¡${shown}!`); saveRun();
   }, () => battleNow());   // los quesitos del combate se recalculan con su nueva forma
 }
+// etiqueta de la poción en uso (como la de Multitarea): «+2 giros de revancha · Superpoción»; n = giros que quedan
+function renderPotion(k, n, pop) {
+  const el = $('advPotion'); if (!el) return;
+  el.hidden = !(k && n > 0); if (el.hidden) return;
+  el.innerHTML = `<b>+${n}</b> giro${n > 1 ? 's' : ''} de revancha · ${ITEMS[k].name}`;
+  if (pop && el.animate && !reduceMotion) el.animate([{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .6 }, { transform: 'none' }], { duration: 450, easing: 'ease-out' });
+}
 function battle(title, who, foe, base, onWin, extra = '', onLose = null, types = null) {
-  let again = false, retries = 0, disguise = false, note = '';
-  const end = () => { battleFormsOff(); };
+  let again = false, retries = 0, disguise = false, note = '', pot = null;
+  const end = () => { pot = null; renderPotion(null); battleFormsOff(); };
   const show = () => {
     battleFormsOn();
     const B = battleSegs(foe, base, types), tfm = run.team.find(m => m.tf);
@@ -137,20 +144,24 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
     spinUI(title, (tfm ? `¡${mname(tfm)} está ${tfm.tf.kind === 'mega' ? 'megaevolucionado' : 'gigamaxizado'} durante este giro! ` : '') + sub
       + (tools && !tfm ? ' Pulsa la megapiedra o la Banda Dinamax de un Pokémon para transformarlo en este giro.' : ''), B.segs, 'COMBATE', r => {
       transformOff();      // la transformación solo dura este giro
+      if (pot) renderPotion(pot, retries);   // este giro de revancha ya se ha gastado
       if (r.ok) { end(); return onWin(); }
       if (onLose) { end(); return onLose(); }
       if (retries > 0) { retries--; again = true; note = '¡Revancha! La poción aún aguanta.'; return advSay(`${who} te ha ganado… pero tu poción aún aguanta.`, () => advButtons([{ label: 'Volver a girar', fn: show }])); }
       // si te quedan pociones, se usa una sola, sin preguntar (primero la más flojita, para guardar las mejores)
       const k = ['potion', 'super', 'hyper'].find(k => (run.bag[k] || 0) > 0);
       if (k) {
-        run.bag[k]--; retries = ITEMS[k].retries - 1; again = true; note = `¡Revancha con ${ITEMS[k].name}!`;
+        run.bag[k]--; retries = ITEMS[k].retries - 1; again = true; note = `¡Revancha con ${ITEMS[k].name}!`; pot = k;
+        renderPotion(pot, ITEMS[k].retries, true);
         log(`🧪 Pierdes contra ${who}… y usas ${ITEMS[k].name}: ¡revancha!`); advToast(`🧪 ${ITEMS[k].name}`); renderAdv(); saveRun();
         return advSay(`${who} te ha ganado… pero usas ${ITEMS[k].name} automáticamente${ITEMS[k].retries > 1 ? ` (${ITEMS[k].retries} giros)` : ''}. ¡Revancha con la misma ruleta!`, () => advButtons([{ label: 'Volver a girar', fn: show }]));
       }
+      pot = null; renderPotion(null);
       if (!disguise && run.team.some(m => m.n === 778)) { disguise = true; again = true; note = '¡El Disfraz de Mimikyu te da otra oportunidad!'; log('👻 ¡El Disfraz de Mimikyu aguanta el golpe!'); return advSay('¡El Disfraz de Mimikyu se rompe, pero aguanta el golpe! Una oportunidad más.', () => advButtons([{ label: 'Volver a girar', fn: show }])); }
       end(); gameOver(who);
     });
     curBattle = show;
+    if (pot && again) renderPotion(pot, retries + 1);   // spinUI la oculta: vuelve a salir mientras dure la poción
     renderAdv();          // la megapiedra y la banda se encienden mientras se puede usar
   };
   show();

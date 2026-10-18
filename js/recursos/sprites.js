@@ -1,7 +1,7 @@
 // Sprites y medallas: vienen incluidos con el juego (assets/sprites/*.js, generados con herramientas/generar-sprites.ps1)
 // SPR.normal / SPR.shiny: nº de especie o id de forma -> { u: imagen (data URL), px: pixel art, fb/fw/fx: suelo, ancho y centro, pc: colores }
 // SPR.badge: nº de medalla -> { u }
-const SPR = { normal: new Map(), shiny: new Map(), badge: new Map() };
+const SPR = { normal: new Map(), shiny: new Map(), badge: new Map(), item: new Map() };   // item: iconos de las megapiedras (por nombre de archivo)
 // Rendimiento: las imágenes van dentro del código como data URL (textos de miles de caracteres). Pegadas una y otra vez en el HTML
 // (equipo, línea de fases, medallas, Pokédex…) el navegador tiene que leerlas y descodificarlas cada vez. Si el navegador lo permite,
 // cada imagen se convierte, la primera vez que se usa, en un enlace blob: corto que reutiliza la imagen ya descodificada.
@@ -22,6 +22,7 @@ class SprRec {
     SPR[kind].set(+id, new SprRec(u, !!px, fb, fw, fx, c1 ? [c1, c2] : null));
   }
   if (typeof SPRITES_BADGE !== 'undefined') for (const id in SPRITES_BADGE) SPR.badge.set(+id, new SprRec(SPRITES_BADGE[id]));
+  if (typeof SPRITES_ITEM !== 'undefined') for (const k in SPRITES_ITEM) SPR.item.set(k, new SprRec(SPRITES_ITEM[k]));
   // ¿se pueden usar enlaces blob: aquí? (en algunos sitios incrustados no): se prueba con una imagen y, si carga, se usan a partir de entonces
   try { const t = SPR.normal.get(25); if (t && window.URL && URL.createObjectURL) { const im = new Image(); im.onload = () => { blobOK = true; }; im.src = toBlobURL(t.d); } } catch (e) {}
 }

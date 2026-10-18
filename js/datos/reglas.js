@@ -56,6 +56,39 @@ function transformsOf(m, cls) {
   return (FORMS[m.n] || []).filter(f => f[8] === cls && (only[f[0]] !== undefined ? only[f[0]] === form : plain)).map(f => f[0]);
 }
 const megaForms = m => transformsOf(m, 'mega');
+// Megapiedra de cada megaevolución: id de la mega -> [icono (items/ de PokeAPI), nombre]. Los iconos van en assets/sprites/objetos.js
+// (herramientas/generar-sprites.ps1 lee esta tabla). Kyogre y Groudon usan sus orbes; Rayquaza, el Meteorito.
+const MEGA_STONES = {
+  10033: ['venusaurite', 'Venusaurita'], 10034: ['charizardite-x', 'Charizardita X'], 10035: ['charizardite-y', 'Charizardita Y'], 10036: ['blastoisinite', 'Blastoisinita'],
+  10037: ['alakazite', 'Alakazamita'], 10038: ['gengarite', 'Gengarita'], 10039: ['kangaskhanite', 'Kangaskhanita'], 10040: ['pinsirite', 'Pinsirita'],
+  10041: ['gyaradosite', 'Gyaradosita'], 10042: ['aerodactylite', 'Aerodactylita'], 10043: ['mewtwonite-x', 'Mewtwonita X'], 10044: ['mewtwonite-y', 'Mewtwonita Y'],
+  10045: ['ampharosite', 'Ampharosita'], 10046: ['scizorite', 'Scizorita'], 10047: ['heracronite', 'Heracrossita'], 10048: ['houndoominite', 'Houndoomita'],
+  10049: ['tyranitarite', 'Tyranitarita'], 10050: ['blazikenite', 'Blazikenita'], 10051: ['gardevoirite', 'Gardevoirita'], 10052: ['mawilite', 'Mawilita'],
+  10053: ['aggronite', 'Aggronita'], 10054: ['medichamite', 'Medichamita'], 10055: ['manectite', 'Manectricita'], 10056: ['banettite', 'Banettita'],
+  10057: ['absolite', 'Absolita'], 10058: ['garchompite', 'Garchompita'], 10059: ['lucarionite', 'Lucarita'], 10060: ['abomasite', 'Abomasnowita'],
+  10062: ['latiasite', 'Latiasita'], 10063: ['latiosite', 'Latiosita'], 10064: ['swampertite', 'Swampertita'], 10065: ['sceptilite', 'Sceptilita'],
+  10066: ['sablenite', 'Sableynita'], 10067: ['altarianite', 'Altarianita'], 10068: ['galladite', 'Galladita'], 10069: ['audinite', 'Audinita'],
+  10070: ['sharpedonite', 'Sharpedonita'], 10071: ['slowbronite', 'Slowbronita'], 10072: ['steelixite', 'Steelixita'], 10073: ['pidgeotite', 'Pidgeotita'],
+  10074: ['glalitite', 'Glalita'], 10075: ['diancite', 'Diancita'], 10076: ['metagrossite', 'Metagrossita'], 10077: ['blue-orb', 'Prisma Azul'],
+  10078: ['red-orb', 'Prisma Rojo'], 10079: ['meteorite', 'Meteorito'], 10087: ['cameruptite', 'Cameruptita'], 10088: ['lopunnite', 'Lopunnita'],
+  10089: ['salamencite', 'Salamencita'], 10090: ['beedrillite', 'Beedrillita'],
+  // Leyendas Pokémon Z-A y su ampliación
+  10278: ['gen9/clefablite', 'Clefablita'], 10279: ['gen9/victreebelite', 'Victreebelita'], 10280: ['gen9/starminite', 'Starminita'], 10281: ['gen9/dragoninite', 'Dragoninita'],
+  10282: ['gen9/meganiumite', 'Meganiumita'], 10283: ['gen9/feraligite', 'Feraligatrita'], 10284: ['gen9/skarmorite', 'Skarmorita'], 10285: ['gen9/froslassite', 'Froslassita'],
+  10286: ['gen9/emboarite', 'Emboarita'], 10287: ['gen9/excadrite', 'Excadrillita'], 10288: ['gen9/scolipite', 'Scolipedita'], 10289: ['gen9/scraftinite', 'Scraftynita'],
+  10290: ['gen9/eelektrossite', 'Eelektrossita'], 10291: ['gen9/chandelurite', 'Chandelurita'], 10292: ['gen9/chesnaughtite', 'Chesnaughtita'], 10293: ['gen9/delphoxite', 'Delphoxita'],
+  10294: ['gen9/greninjite', 'Greninjita'], 10295: ['gen9/pyroarite', 'Pyroarita'], 10296: ['gen9/floettite', 'Floettita'], 10297: ['gen9/malamarite', 'Malamarita'],
+  10298: ['gen9/barbaracite', 'Barbaracleita'], 10299: ['gen9/dragalgite', 'Dragalgita'], 10300: ['gen9/hawluchanite', 'Hawluchanita'], 10301: ['gen9/zygardite', 'Zygardita'],
+  10302: ['gen9/drampanite', 'Drampanita'], 10303: ['gen9/falinksite', 'Falinksita'], 10304: ['gen9/raichunite-x', 'Raichunita X'], 10305: ['gen9/raichunite-y', 'Raichunita Y'],
+  10306: ['gen9/chimechite', 'Chimechita'], 10307: ['gen9/absolite-z', 'Absolita Z'], 10308: ['gen9/staraptite', 'Staraptorita'], 10309: ['gen9/garchompite-z', 'Garchompita Z'],
+  10310: ['gen9/lucarionite-z', 'Lucarita Z'], 10311: ['gen9/heatranite', 'Heatranita'], 10312: ['gen9/darkranite', 'Darkrainita'], 10313: ['gen9/golurkite', 'Golurkita'],
+  10314: ['gen9/meowsticite', 'Meowsticita'], 10326: ['gen9/meowsticite', 'Meowsticita'], 10315: ['gen9/crabominite', 'Crabominablita'], 10316: ['gen9/golisopite', 'Golisopodita'],
+  10317: ['gen9/magearnite', 'Magearnita'], 10318: ['gen9/magearnite', 'Magearnita'], 10319: ['gen9/zeraorite', 'Zeraorita'], 10320: ['gen9/scovillainite', 'Scovillainita'],
+  10321: ['gen9/glimmoranite', 'Glimmoranita'], 10322: ['gen9/tatsugirinite', 'Tatsugirinita'], 10323: ['gen9/tatsugirinite', 'Tatsugirinita'], 10324: ['gen9/tatsugirinite', 'Tatsugirinita'],
+  10325: ['gen9/baxcalibrite', 'Baxcalibrita'],
+};
+const stoneName = id => (MEGA_STONES[id] || [0, 'Megapiedra'])[1];
+const stoneIcon = id => { const s = MEGA_STONES[id]; return s && SPR.item && SPR.item.get(s[0]); };
 const gmaxForms = m => transformsOf(m, 'gmax');
 
 // ---- Pociones de premio: mejoran con las medallas (0-2: Poción · 3-5: Superpoción · 6+: Hiperpoción) ----

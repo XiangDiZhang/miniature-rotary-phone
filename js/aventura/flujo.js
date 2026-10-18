@@ -204,8 +204,8 @@ function gymRewards(next) {
   const opts = run.team.filter(m => !m.stone).flatMap(m => megaForms(m).map(f => ({ m, f })));
   if (opts.length) steps.push(go => {
     const give = ({ m, f }) => {
-      m.stone = f; const nm = mname({ n: m.n, form: f }); log(`💎 ${mname(m)} recibe la megapiedra de ${nm}.`); advToast(`💎 ¡Megapiedra para ${mname(m)}!`); renderAdv(); saveRun();
-      advSay(`¡El líder te da una megapiedra! ${mname(m)} la lleva equipada: en combate, pulsa la piedra de su ficha para que megaevolucione en ${nm} durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
+      m.stone = f; const nm = mname({ n: m.n, form: f }), st = stoneName(f); log(`💎 ${mname(m)} recibe la ${st}.`); advToast(`💎 ¡${st} para ${mname(m)}!`); renderAdv(); saveRun();
+      advSay(`¡El líder te da la ${st}! ${mname(m)} la lleva equipada: en combate, pulsa la piedra de su ficha para que megaevolucione en ${nm} durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
     };
     if (opts.length === 1) return give(opts[0]);
     advSay('¡El líder te ofrece una megapiedra! ¿Para quién será?', () => advButtons([{ label: 'Girar la ruleta', fn: () =>

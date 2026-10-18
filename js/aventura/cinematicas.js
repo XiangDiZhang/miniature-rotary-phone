@@ -170,7 +170,7 @@ function transformAnim(m, kind, A, B, onSwap, onEnd) {
   else for (let i = 0; i < 9; i++) fx += `<i style="--x:${(Math.random() * 100).toFixed(0)}%;--y:${(Math.random() * 100).toFixed(0)}%;--s:${(.7 + Math.random() * .9).toFixed(2)};--dl:${(Math.random() * .8).toFixed(2)}s"></i>`;
   pop.innerHTML = `<div class="tf-bg"></div><div class="tf-fx">${fx}</div>${mega ? '<div class="tf-orb"></div><div class="tf-sym"></div>' : '<div class="tf-bolt"></div>'}
     <div class="stage2">${picHTML(A, m.shiny, 'a')}${picHTML(B, m.shiny, 'b hide')}</div>
-    <p class="cap"><small>${mega ? 'Megaevolución' : 'Gigamax'}</small>${mega ? `¡La megapiedra de ${A.name} reacciona!` : `¡${A.name} absorbe la energía Dinamax!`}</p><span class="skip">Toca para saltar</span>`;
+    <p class="cap"><small>${mega ? 'Megaevolución' : 'Gigamax'}</small>${mega ? `¡La ${stoneName(m.stone)} de ${A.name} reacciona!` : `¡${A.name} absorbe la energía Dinamax!`}</p><span class="skip">Toca para saltar</span>`;
   shade.appendChild(pop); document.body.appendChild(shade);
   const pr = pop.getBoundingClientRect();
   if (start) pop.animate([{ transform: `translate(${start.left + start.width / 2 - (pr.left + pr.width / 2)}px, ${start.top + start.height / 2 - (pr.top + pr.height / 2)}px) scale(${start.width / pr.width})`, opacity: .4 }, { transform: 'none', opacity: 1 }], { duration: 480, easing: 'cubic-bezier(.2,.9,.25,1.1)' });

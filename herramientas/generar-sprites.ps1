@@ -32,6 +32,9 @@ $formas = [IO.File]::ReadAllText("$raiz\js\datos\formas.js", $utf8)
 $regiones = [IO.File]::ReadAllText("$raiz\js\datos\regiones.js", $utf8)
 $ids = @(1..1025) + ([regex]::Matches($formas, '\[(\d{5}),"') | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object -Unique)
 $medallas = [regex]::Matches($regiones, 'badgeId: (\d+)') | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object -Unique
+$reglas = [IO.File]::ReadAllText("$raiz\js\datos\reglas.js", $utf8)
+# iconos de las megapiedras (MEGA_STONES de reglas.js): nombre del archivo en items\ de PokeAPI (las de Z-A, en items\gen9\)
+$piedras = [regex]::Matches($reglas, "\d{5}: \['([a-z0-9/-]+)',") | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
 # variantes sin número en PokeAPI (VARIANTS de formas.js): id propio -> nombre de su archivo
 $archivo = @{}
 foreach ($v in [regex]::Matches($formas, '\[(\d{5}),"[^"]*",\d+,"(\d+-[a-z0-9-]+)"\]')) { $archivo[[int]$v.Groups[1].Value] = $v.Groups[2].Value }
@@ -42,6 +45,7 @@ foreach ($id in $ids) {
   $lista += , @('shiny', $id, "$Origen\pokemon\shiny\$f.png", "pokemon\shiny\$f.png")
 }
 foreach ($id in $medallas) { $lista += , @('badge', $id, "$Origen\badges\$id.png", "badges\$id.png") }
+foreach ($p in $piedras) { $f = $p.Replace('/', '\'); $lista += , @('item', $p, "$Origen\items\$f.png", "items\$f.png") }
 $faltan = $lista | Where-Object { -not (Test-Path $_[2]) }
 foreach ($f in $faltan) { Write-Warning "falta $($f[0]) $($f[1]): $($f[2])" }
 $lista = $lista | Where-Object { Test-Path $_[2] }
@@ -50,7 +54,7 @@ if ($Origen -ne (Resolve-Path -LiteralPath $originales -ErrorAction SilentlyCont
   foreach ($e in $lista) { $d = Join-Path $originales $e[3]; New-Item -ItemType Directory -Force (Split-Path $d) | Out-Null; Copy-Item -LiteralPath $e[2] $d -Force }
   Write-Host "Copiadas $($lista.Count) imágenes a $originales"
 }
-Write-Host "Imágenes: $($lista.Count) ($($ids.Count) especies y formas × normal/shiny + $($medallas.Count) medallas)"
+Write-Host "Imágenes: $($lista.Count) ($($ids.Count) especies y formas × normal/shiny + $($medallas.Count) medallas + $($piedras.Count) megapiedras)"
 
 # ---- 2. Imágenes en base64 (las medallas, reducidas) ----
 function Get-Png64([string] $ruta, [int] $max) {
@@ -69,7 +73,7 @@ function Get-Png64([string] $ruta, [int] $max) {
   } finally { $img.Dispose() }
 }
 $datos = @{}
-foreach ($e in $lista) { $datos["$($e[0]):$($e[1])"] = 'data:image/png;base64,' + (Get-Png64 $e[2] $(if ($e[0] -eq 'badge') { $MedallaMax } else { 0 })) }
+foreach ($e in $lista) { $datos["$($e[0]):$($e[1])"] = 'data:image/png;base64,' + (Get-Png64 $e[2] $(if ($e[0] -eq 'badge') { $MedallaMax } elseif ($e[0] -eq 'item') { 64 } else { 0 })) }
 
 # ---- 3. Medir en Chrome (suelo, sombra y colores shiny) con herramientas/medir-sprite.js ----
 $navegador = @("$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
@@ -89,7 +93,7 @@ const imgs = RAW.map(([key, u]) => { const im = new Image(); im.src = u; documen
 addEventListener('load', () => {
   const out = {}, r4 = v => Math.round(v * 1e4) / 1e4;
   for (const [key, im] of imgs) {
-    if (key.startsWith('badge:')) { out[key] = []; continue; }
+    if (key.startsWith('badge:') || key.startsWith('item:')) { out[key] = []; continue; }
     const w = im.naturalWidth, h = im.naturalHeight, m = feetGap(im, w, h);
     out[key] = [Math.max(w, h) <= 160 ? 1 : 0, r4(m.fb), r4(m.fw), r4(m.fx), m.pc ? m.pc[0] : 0, m.pc ? m.pc[1] : 0];
   }
@@ -111,11 +115,12 @@ function Write-Paquete([string] $tipo, [string] $archivo, [string] $constante, [
   $sb = New-Object Text.StringBuilder
   [void]$sb.Append("// Sprites incluidos con el juego · $explica`n// Generado por herramientas/generar-sprites.ps1: no editar a mano.`n")
   if ($tipo -eq 'badge') { [void]$sb.Append("// nº de medalla -> imagen`nconst $constante = {`n") }
+  elseif ($tipo -eq 'item') { [void]$sb.Append("// icono (nombre del archivo de items de PokeAPI) -> imagen`nconst $constante = {`n") }
   else { [void]$sb.Append("// id -> [imagen, pixel art (1/0), hueco bajo los pies, ancho, centro (fracciones del cuadro), color principal, color secundario]`nconst $constante = {`n") }
   $n = 0
-  foreach ($k in ($datos.Keys | Where-Object { $_.StartsWith("${tipo}:") } | Sort-Object { [int]($_.Split(':')[1]) })) {
+  foreach ($k in ($datos.Keys | Where-Object { $_.StartsWith("${tipo}:") } | Sort-Object { if ($tipo -eq 'item') { $_ } else { [int]($_.Split(':')[1]) } })) {
     $id = $k.Split(':')[1]; $u = $datos[$k]
-    if ($tipo -eq 'badge') { [void]$sb.Append("`"$id`":`"$u`",`n") }
+    if ($tipo -eq 'badge' -or $tipo -eq 'item') { [void]$sb.Append("`"$id`":`"$u`",`n") }
     else {
       $v = $medidas.$k
       $c1 = if ($v[4]) { "`"$($v[4])`"" } else { '0' }; $c2 = if ($v[5]) { "`"$($v[5])`"" } else { '0' }
@@ -131,3 +136,4 @@ function Write-Paquete([string] $tipo, [string] $archivo, [string] $constante, [
 Write-Paquete 'normal' 'normales.js' 'SPRITES_NORMAL' 'Pokémon (normales)'
 Write-Paquete 'shiny' 'shiny.js' 'SPRITES_SHINY' 'Pokémon (shiny)'
 Write-Paquete 'badge' 'medallas.js' 'SPRITES_BADGE' 'medallas de gimnasio'
+Write-Paquete 'item' 'objetos.js' 'SPRITES_ITEM' 'iconos de las megapiedras'
