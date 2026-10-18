@@ -23,6 +23,15 @@ function buildMenu() {
     grid.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 740, 1046]); pick(g); } });
   }
+  // Randomlocke: el camino del Modo Caos con iniciales y Pokémon salvajes totalmente al azar
+  {
+    const g = RANDOM_GEN, b = document.createElement('button');
+    b.type = 'button'; b.className = 'card randomlocke'; b.style.setProperty('--c', g.color);
+    b.innerHTML = cardHTML(g, false).replace(`GEN ${g.roman}`, 'RANDOMLOCKE');
+    b.setAttribute('aria-label', 'Randomlocke: iniciales y Pokémon salvajes totalmente aleatorios');
+    grid.appendChild(b);
+    items.push({ el: b, act: () => { chord([523, 784, 988]); pick(g); } });
+  }
   // Modo Test (solo en modo desarrollador): el camino del Modo Caos, pero eliges tú el equipo y los objetos
   {
     const g = TEST_GEN, b = document.createElement('button');
@@ -63,7 +72,7 @@ function pick(g) {
   state.chosen = g.id;
   $('chosenCard').style.setProperty('--c', g.color);
   $('chosenGhost').textContent = g.roman;
-  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : g === TEST_GEN ? 'MODO TEST' : 'GENERACIÓN ' + g.roman;
+  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : g === TEST_GEN ? 'MODO TEST' : g === RANDOM_GEN ? 'RANDOMLOCKE' : 'GENERACIÓN ' + g.roman;
   $('chosenRegion').textContent = g.region;
   $('chosenRange').textContent = `Nº ${pad(g.from)}–${pad(g.to)}`;
   $('chosenCount').textContent = g.to - g.from + 1;
@@ -71,6 +80,7 @@ function pick(g) {
   $('chosenGames').textContent = g.games;
   show('chosen');
   typeText($('chosenText'), g === CHAOS_GEN ? 'Modo Caos: 8 gimnasios de cualquier región, un Alto Mando y un Campeón al azar. Cada partida es distinta. ¿Te atreves?'
+    : g === RANDOM_GEN ? 'Randomlocke: el camino del Modo Caos, pero todo al azar. Tus tres iniciales y cada Pokémon salvaje pueden ser cualquiera de los 1025. ¡Suerte!'
     : g === TEST_GEN ? 'Modo Test: el camino del Modo Caos, pero tú eliges los Pokémon de tu equipo y los objetos de tu mochila. No cuenta para la Pokédex ni para los récords.'
     : `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);
   const key = g.region.toLowerCase();

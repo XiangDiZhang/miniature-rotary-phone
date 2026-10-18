@@ -580,7 +580,7 @@ function chaosPath(plan) {
   chaosCache = { plan, path };
   return path;
 }
-const chaosRun = () => run && (run.region === 'caos' || run.region === 'test') && run.chaos && run.chaos.gyms ? run.chaos : null;
+const chaosRun = () => run && (run.region === 'caos' || run.region === 'test' || run.region === 'random') && run.chaos && run.chaos.gyms ? run.chaos : null;
 REGIONS.caos = {
   name: 'Caos', prof: 'un profesor muy despistado', range: [1, 1025], rankScale: 4, potions: 1, league: 'la Liga del Caos', chaos: true,
   legends: [...new Set(KEYS9.flatMap(k => REGIONS[k].legends))],
@@ -600,3 +600,18 @@ const TEST_GEN = { id: 11, roman: 'T', region: 'Test', from: 1, to: 1025, year: 
 REGIONS.test = Object.defineProperties({}, Object.getOwnPropertyDescriptors(REGIONS.caos));
 Object.assign(REGIONS.test, { name: 'Test', prof: 'el laboratorio de pruebas', league: 'la Liga de Pruebas', test: true,
   end: () => '¡Has superado el Modo Test! Has completado la aventura con' });
+
+// ===================== RANDOMLOCKE =====================
+// El camino del Modo Caos, pero todo al azar: los 3 iniciales son 3 Pokémon cualesquiera de la Pokédex (sin legendarios ni singulares)
+// y cada ruleta de Pokémon salvajes saca Pokémon de toda la Pokédex en vez de los de la zona (wildWheel de capturas.js).
+const RANDOM_GEN = { id: 12, roman: 'R', region: 'Randomlocke', from: 1, to: 1025, year: '', games: 'Iniciales y Pokémon salvajes totalmente aleatorios', color: '#ff7a3d' };
+REGIONS.random = Object.defineProperties({}, Object.getOwnPropertyDescriptors(REGIONS.caos));
+Object.defineProperty(REGIONS.random, 'starters', { get() { const c = chaosRun(); return c && c.rl ? c.rl : [1, 4, 7]; } });
+Object.assign(REGIONS.random, { name: 'Randomlocke', prof: 'un profesor que lo deja todo al azar', league: 'la Liga Aleatoria', randomlocke: true,
+  end: () => '¡Has superado el Randomlocke! Has completado la aventura con' });
+// 3 iniciales al azar (para el plan de la partida)
+function randomStarters() {
+  const ok = [], seen = new Set();
+  while (ok.length < 3) { const n = 1 + Math.floor(Math.random() * 1025); if (seen.has(n) || BY_NUM.get(n)[4] || BY_NUM.get(n)[5]) continue; seen.add(n); ok.push(n); }
+  return ok;
+}
