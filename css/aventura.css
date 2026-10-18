@@ -317,7 +317,8 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
   .adv-stage .side { min-height: 0; overflow: hidden; gap: 10px; }
   /* el líder de cuerpo entero, abajo a la derecha del escenario (entre la caja de información y el diario), sobre una peana de luz;
      en la tarjeta queda solo el busto grande de fondo */
-  .adv-leadfig:not([hidden]) { display: block; position: absolute; right: 26px; bottom: 8px; height: min(250px, 38%); z-index: 0; pointer-events: none; }
+  .adv-leadfig:not([hidden]) { display: block; position: absolute; left: 76%; transform: translateX(-50%); bottom: 8px;   /* centrado en el hueco de la columna de la derecha */
+    height: min(250px, 38%); z-index: 0; pointer-events: none; }
   .adv-stage .side { position: relative; z-index: 1; justify-content: flex-start; }
   .adv-stage #advBtns { margin-top: auto; }   /* los botones, abajo del todo */
   .leader-card .lc-full { display: none; }
@@ -516,10 +517,10 @@ img.stone.px { image-rendering: pixelated; }
   .adv-stage #advBtns { min-height: 38px; gap: 6px; }
   .adv-stage #advBtns .btn { padding: 10px 16px; font-size: 11px; }
   .extra-chip { margin: 0; font-size: 10px; padding: 2px 9px; }
-  /* pestañas flotando a la derecha (Líder / Ruta, Mochila y Diario): botones redondos con icono, uno encima de otro,
-     arriba a la derecha (en la esquina que deja libre la ruleta); no ocupan sitio, así que no descentran nada */
+  /* pestañas flotando a la izquierda (Líder / Ruta, Mochila y Diario): botones redondos con icono, uno encima de otro,
+     arriba a la izquierda (en la esquina que deja libre la ruleta); no ocupan sitio, así que no descentran nada */
   body.wide-adv { height: var(--app-h, 100dvh); padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px)); }
-  body.wide-adv .m-rail { position: fixed; z-index: 70; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 84px); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  body.wide-adv .m-rail { position: fixed; z-index: 70; left: 8px; top: calc(env(safe-area-inset-top, 0px) + 84px); display: flex; flex-direction: column; align-items: center; gap: 6px; }
   body.wide-adv .m-rail .lead-tab, .adv-tabs button { flex: none; position: relative; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; border-radius: 50%; transform: none; rotate: none; writing-mode: horizontal-tb;
     border: 1px solid color-mix(in srgb, var(--cyan) 45%, var(--line-2)); background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 10px color-mix(in srgb, var(--cyan) 20%, transparent); color: var(--fg); }
@@ -528,12 +529,15 @@ img.stone.px { image-rendering: pixelated; }
   .m-rail .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .m-rail .tab-ico, .m-rail .tab-ico svg { width: 21px; height: 21px; display: block; }
   .m-rail .tab-ico svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--cyan) 40%, transparent)); }
-  /* los paneles (mochila, diario y líder) salen desde la derecha, junto a los botones */
-  .adv-grid { left: 10px; right: 54px; top: 50%; bottom: auto; height: min(440px, 64vh); transform: translate(24px, -50%) scale(.97); }
+  /* los paneles (líder / ruta, mochila y diario) salen centrados en la pantalla */
+  .adv-grid { left: 10px; right: 10px; top: 50%; bottom: auto; height: min(440px, 64vh); transform: translate(0, -50%) scale(.94); }
   .adv-grid.open { transform: translate(0, -50%); }
-  .adv-grid > .adv-card { box-shadow: -10px 0 30px rgba(0,0,0,.45); }
-  .leader-card { left: auto; right: 0; border-radius: 12px 0 0 12px; border-left: 1px solid color-mix(in srgb, var(--c) 55%, transparent); border-right: 0; transform: translate(104%, -50%); box-shadow: -8px 0 30px rgba(0,0,0,.45); }
-  body.lead-open .leader-card { transform: translate(-54px, -50%); border-radius: 12px; border-right: 1px solid color-mix(in srgb, var(--c) 55%, transparent); }
+  .adv-grid > .adv-card { box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+  .leader-card { left: 50%; right: auto; width: min(360px, calc(100vw - 20px)); border-radius: 12px; border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+    transform: translate(-50%, -50%) scale(.92); opacity: 0; visibility: hidden; box-shadow: 0 14px 40px rgba(0,0,0,.5);
+    transition: transform .3s cubic-bezier(.2,.85,.25,1), opacity .2s, visibility 0s .3s; }
+  .leader-card, .adv-grid { z-index: 72; } body.lead-open .lead-shade { z-index: 71; }   /* por encima de los botones flotantes */
+  body.lead-open .leader-card { transform: translate(-50%, -50%); opacity: 1; visibility: visible; transition: transform .3s cubic-bezier(.2,.85,.25,1), opacity .2s; }
   /* la ruleta arriba (sin hueco encima): lo que sobra queda debajo, y el botón de girar siempre se ve */
   .adv-stage .adv-wbox { justify-content: flex-start; padding-top: 4px; }
   /* el texto de la fase, en su propio cuadro (como la mochila): título, avisos y el texto */
@@ -625,10 +629,11 @@ img.stone.px { image-rendering: pixelated; }
 /* ---- Decoración de la aventura ----
    escenario: un halo detrás de la ruleta, una rejilla tenue que se apaga hacia los bordes y una luz abajo a la derecha (donde está el líder) */
 .adv-stage { background-image:
-    radial-gradient(42% 60% at 26% 46%, rgba(var(--glow-rgb), .11), transparent 70%),
-    radial-gradient(34% 50% at 92% 100%, rgba(var(--warm-rgb), .07), transparent 70%),
-    radial-gradient(circle at 26% 46%, transparent 0 30%, rgba(var(--glow-rgb), .05) 30.2% 30.6%, transparent 31% 41%, rgba(var(--glow-rgb), .04) 41.2% 41.6%, transparent 42%),
-    linear-gradient(rgba(var(--glow-rgb), .035) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--glow-rgb), .035) 1px, transparent 1px);
+    /* detrás de la ruleta, la decoración se apaga (un velo del color del fondo encima de la rejilla y de las Poké Balls de la página) */
+    radial-gradient(34% 52% at 26% 46%, color-mix(in srgb, var(--bg) 78%, transparent) 45%, transparent 100%),
+    radial-gradient(42% 60% at 26% 46%, rgba(var(--glow-rgb), .05), transparent 70%),
+    radial-gradient(34% 50% at 76% 100%, rgba(var(--warm-rgb), .07), transparent 70%),
+    linear-gradient(rgba(var(--glow-rgb), .03) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--glow-rgb), .03) 1px, transparent 1px);
   background-size: auto, auto, auto, 36px 36px, 36px 36px; }
 /* tarjetas de equipo, mochila y diario: brillo arriba y una franja diagonal de color, como las fichas */
 .adv-card { position: relative; isolation: isolate; background-image:
@@ -636,3 +641,10 @@ img.stone.px { image-rendering: pixelated; }
     radial-gradient(circle, rgba(var(--glow-rgb), .07) 1px, transparent 1.5px); background-size: auto, 18px 18px; }
 .adv-card > .card-head::after { content: ""; position: absolute; z-index: -1; right: 0; top: 0; width: 46%; height: 100%; pointer-events: none; border-radius: inherit;
   background: linear-gradient(225deg, rgba(var(--glow-rgb), .07), transparent 55%); }
+/* en el móvil en vertical la ruleta está arriba en el centro: el velo va ahí */
+@media (max-width: 760px) and (orientation: portrait) {
+  .adv-stage { background-image:
+      radial-gradient(62% 32% at 50% 27%, color-mix(in srgb, var(--bg) 80%, transparent) 50%, transparent 100%),
+      linear-gradient(rgba(var(--glow-rgb), .03) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--glow-rgb), .03) 1px, transparent 1px);
+    background-size: auto, 32px 32px, 32px 32px; }
+}
