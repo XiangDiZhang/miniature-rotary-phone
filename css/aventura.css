@@ -88,9 +88,13 @@ body.wide-adv .wrap { max-width: 1120px; }
 .leader-card > :not(.lc-art) { position: relative; z-index: 1; }
 .lc-art { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
 .lc-art img { position: absolute; image-rendering: pixelated; }
-.lc-big { right: -34px; bottom: -150px; width: 300px; height: 300px; opacity: .13; filter: saturate(.8);
+/* fondo: la tarjeta enseña los 2/3 de arriba del sprite (de la cabeza a las rodillas), que llegan casi arriba del todo */
+.lc-big { right: -24px; top: calc(4px - (100% - 4px) * .24); height: calc((100% - 4px) * 1.5);   /* (sube lo que mide el hueco vacío encima de la cabeza) */
+   width: auto; aspect-ratio: 1; opacity: .14; filter: saturate(.8);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); mask-image: linear-gradient(90deg, transparent, #000 45%); }
-.lc-full { right: 8px; bottom: 2px; width: 104px; height: 104px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); animation: lcIn .45s cubic-bezier(.2,.9,.3,1.3) both; }
+/* delante, de cuerpo entero: de abajo hasta 3/4 del alto de la tarjeta */
+.lc-full { right: 10px; bottom: 0; height: 87%;   /* la imagen trae hueco encima de la cabeza: así la cabeza llega a 3/4 */
+   width: auto; aspect-ratio: 1; filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); animation: lcIn .45s cubic-bezier(.2,.9,.3,1.3) both; }
 @keyframes lcIn { from { opacity: 0; transform: translateX(16px); } }
 .lchip { --tc: #888; font-size: 10.5px; font-weight: 600; line-height: 1.6; padding: 0 8px; border-radius: 999px; color: #10131c; background: var(--tc); }
 /* tu equipo contra el tipo del líder: ▲ ventaja · ▼ desventaja */

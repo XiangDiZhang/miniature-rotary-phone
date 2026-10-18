@@ -143,40 +143,62 @@ async function exportRun(x) {
   gr = g.createRadialGradient(900, 120, 10, 900, 120, 600); gr.addColorStop(0, acc + '33'); gr.addColorStop(1, 'transparent'); g.fillStyle = gr; g.fillRect(0, 0, Wd, Hg);
   g.save(); g.globalAlpha = .12; g.fillStyle = C; g.beginPath(); g.moveTo(Wd * .62, 0); g.lineTo(Wd, 0); g.lineTo(Wd, Hg * .3); g.lineTo(Wd * .4, Hg); g.lineTo(0, Hg); g.lineTo(0, Hg * .55); g.closePath(); g.fill(); g.restore();
   g.strokeStyle = C; g.lineWidth = 2; g.shadowColor = C; g.shadowBlur = 18; g.strokeRect(14, 14, Wd - 28, Hg - 28); g.shadowBlur = 0;
-  // entrenador: tu sprite (Opciones · Sprite de entrenador) en grande sobre una peana neón, y su nombre debajo
-  const tx = 230, ty = 300;
-  g.save(); g.fillStyle = C + '22'; g.beginPath(); g.ellipse(tx, ty + 205, 130, 26, 0, 0, Math.PI * 2); g.fill();
+  // entrenador: tu sprite (Opciones · Sprite de entrenador) bien grande sobre una peana neón, y su nombre debajo
+  const tx = 238;
+  g.save(); g.fillStyle = C + '22'; g.beginPath(); g.ellipse(tx, 522, 150, 28, 0, 0, Math.PI * 2); g.fill();
   g.strokeStyle = C; g.lineWidth = 3; g.shadowColor = C; g.shadowBlur = 22; g.stroke(); g.restore();
   const tu = playerTrainerSpr(), tim = tu && await new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = tu; });
   if (tim) {
-    // 80 × 80 px → 400 × 400, nítido (sin suavizar), con los pies sobre la peana y un halo del color de la región
-    const s = 400; g.save(); g.imageSmoothingEnabled = false; g.shadowColor = C; g.shadowBlur = 26;
-    g.drawImage(tim, tx - s / 2, ty + 215 - s, s, s); g.restore();
+    // 80 × 80 px → 520 × 520, nítido (sin suavizar), con los pies sobre la peana y un halo del color de la región
+    const s = 520; g.save(); g.imageSmoothingEnabled = false; g.shadowColor = C; g.shadowBlur = 26;
+    g.drawImage(tim, tx - s / 2, 538 - s, s, s); g.restore();
   }
   const name = (typeof trainerName === 'function' ? trainerName() : 'Entrenador');
-  g.textAlign = 'center'; g.fillStyle = '#e7edf8'; g.font = F(600, 40); g.shadowColor = C; g.shadowBlur = 14; g.fillText(name, tx, ty + 270); g.shadowBlur = 0;
-  g.font = F(500, 15, 'IBM Plex Mono'); g.fillStyle = C; g.fillText('ENTRENADOR', tx, ty + 296);
+  g.textAlign = 'center'; g.fillStyle = '#e7edf8'; g.font = F(600, 38); g.shadowColor = C; g.shadowBlur = 14; g.fillText(name, tx, 580); g.shadowBlur = 0;
+  g.font = F(500, 14, 'IBM Plex Mono'); g.fillStyle = C; g.fillText('ENTRENADOR', tx, 603);
   // cabecera de la derecha
   const rx = 480; g.textAlign = 'left';
   g.font = F(500, 16, 'IBM Plex Mono'); g.fillStyle = acc; g.fillText(`RULETA POKÉMON · ${(x.name || '').toUpperCase()}`, rx, 72);
   g.font = F(600, 44); g.fillStyle = x.won ? '#7ee0a1' : '#ff8a7a'; g.fillText(x.won ? '¡Campeón!' : 'Derrota' + (x.lostTo ? ' · ' + x.lostTo : ''), rx, 120);
   g.font = F(500, 18, 'IBM Plex Mono'); g.fillStyle = '#a9b4c8'; g.fillText(`${x.points} PTS · RANGO ${x.rank} · ${x.badges} MEDALLAS · ${histWhen(x.t).toUpperCase()}`, rx, 154);
-  // los 6 Pokémon: 3 × 2 casillas con el color de su tipo, su sprite y su nombre
-  const team = x.team.slice(0, 6), load = m => new Promise(res => { const r = monSprite(m); if (!r) return res(null); const im = new Image(); im.onload = () => res({ im, px: !!r.px }); im.onerror = () => res(null); im.src = r.u; });
+  // los 6 Pokémon: 3 × 2 fichas como las miniaturas de la Pokédex (número y generación arriba, número grande de fondo,
+  // franja diagonal con sus colores, sprite, nombre e iconos de tipo)
+  const team = x.team.slice(0, 6), loadImg = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+  const load = m => { const r = monSprite(m); return r ? loadImg(r.u).then(im => im && { im, px: !!r.px }) : Promise.resolve(null); };
+  // icono de tipo: su dibujo (TYPE_ICONS) en blanco o negro según el color, dentro de un círculo del color del tipo
+  const tyIcons = {};
+  await Promise.all([...new Set(team.flatMap(m => mtypes(m)))].map(async t => {
+    const c = TYPE_COLORS[t] || '#8592ab', ink = lum(c) > 0.55 ? '#0b0f1a' : '#ffffff', d = (TYPE_ICONS[t] || '').replace(/currentColor/g, ink);
+    tyIcons[t] = await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="${ink}">${d}</svg>`));
+  }));
   const imgs = await Promise.all(team.map(load)), cw = 220, ch = 200, gx = 14, gy = 16, y0 = 182;
   for (let i = 0; i < 6; i++) {
     const cx = rx + (i % 3) * (cw + gx), cy = y0 + Math.floor(i / 3) * (ch + gy), m = team[i];
-    g.save(); g.beginPath(); g.roundRect ? g.roundRect(cx, cy, cw, ch, 10) : g.rect(cx, cy, cw, ch); g.clip();
+    g.save(); g.beginPath(); g.roundRect ? g.roundRect(cx, cy, cw, ch, 6) : g.rect(cx, cy, cw, ch); g.clip();
     g.fillStyle = 'rgba(255,255,255,.035)'; g.fillRect(cx, cy, cw, ch);
-    if (m) { const ty2 = mtypes(m), c1 = TYPE_COLORS[ty2[0]] || '#8592ab', c2 = TYPE_COLORS[ty2[1]] || c1, lg = g.createLinearGradient(cx + cw, cy, cx, cy + ch);
-      lg.addColorStop(0, 'rgba(255,255,255,.5)'); lg.addColorStop(.3, c1); lg.addColorStop(.75, c2); lg.addColorStop(1, 'transparent');
-      g.globalAlpha = .2; g.fillStyle = lg; g.beginPath(); g.moveTo(cx + cw * .68, cy); g.lineTo(cx + cw, cy); g.lineTo(cx + cw, cy + ch * .24); g.lineTo(cx + cw * .4, cy + ch); g.lineTo(cx, cy + ch); g.lineTo(cx, cy + ch * .5); g.closePath(); g.fill(); g.globalAlpha = 1;
-      g.fillStyle = c1; g.shadowColor = c1; g.shadowBlur = 10; g.fillRect(cx, cy, 40, 3); g.shadowBlur = 0;
-      const im = imgs[i]; if (im) { g.imageSmoothingEnabled = !im.px; const s = 150; g.drawImage(im.im, cx + (cw - s) / 2, cy + 8, s, s); }
-      g.textAlign = 'center'; g.font = F(600, 19); g.fillStyle = m.shiny ? '#ffd84a' : '#e7edf8'; g.fillText(dname(m), cx + cw / 2, cy + ch - 16); }
+    if (m) { const ty2 = mtypes(m), c1 = TYPE_COLORS[ty2[0]] || '#8592ab', c2 = TYPE_COLORS[ty2[1]] || c1, no = padN(m.n), gen = (BY_NUM.get(m.n) || [])[2];
+      // franja diagonal (de arriba a la derecha hacia abajo a la izquierda) con sus colores
+      const lg = g.createLinearGradient(cx + cw, cy, cx, cy + ch);
+      lg.addColorStop(0, 'rgba(255,255,255,.6)'); lg.addColorStop(.26, c1); lg.addColorStop(.7, c2); lg.addColorStop(.96, 'transparent');
+      g.globalAlpha = .18; g.fillStyle = lg; g.beginPath(); g.moveTo(cx + cw * .68, cy); g.lineTo(cx + cw, cy); g.lineTo(cx + cw, cy + ch * .24); g.lineTo(cx + cw * .4, cy + ch); g.lineTo(cx, cy + ch); g.lineTo(cx, cy + ch * .5); g.closePath(); g.fill(); g.globalAlpha = 1;
+      // número grande de fondo, solo el contorno
+      g.font = F(300, no.length > 3 ? 62 : 76); g.textAlign = 'right'; g.lineWidth = 1.2; g.strokeStyle = c1 + '77'; g.strokeText(no, cx + cw + 4, cy + 116);
+      // rayita de color arriba a la izquierda
+      g.fillStyle = c1; g.shadowColor = c1; g.shadowBlur = 10; g.fillRect(cx, cy, 34, 3); g.shadowBlur = 0;
+      // arriba: «Nº 006» y «GEN I»
+      g.font = F(500, 13, 'IBM Plex Mono'); g.textAlign = 'left'; g.fillStyle = c1; g.fillText(`Nº ${no}`, cx + 12, cy + 24);
+      g.textAlign = 'right'; g.fillStyle = '#8b97ad'; g.fillText(gen ? `GEN ${ROMAN[gen]}` : '', cx + cw - 12, cy + 24);
+      // sprite, con su sombra en el suelo
+      g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(cx + cw / 2, cy + 132, 46, 9, 0, 0, Math.PI * 2); g.fill();
+      const im = imgs[i]; if (im) { g.imageSmoothingEnabled = !im.px; const s = 124; g.drawImage(im.im, cx + (cw - s) / 2, cy + 18, s, s); g.imageSmoothingEnabled = true; }
+      // abajo: nombre e iconos de tipo
+      g.textAlign = 'left'; g.font = F(600, 18); g.fillStyle = m.shiny ? '#ffd84a' : '#e7edf8'; g.fillText(dname(m), cx + 12, cy + ch - 38, cw - 24);
+      ty2.forEach((t, k) => { const ix = cx + 23 + k * 28, iy = cy + ch - 19;
+        g.fillStyle = TYPE_COLORS[t] || '#8592ab'; g.beginPath(); g.arc(ix, iy, 11, 0, Math.PI * 2); g.fill();
+        if (tyIcons[t]) g.drawImage(tyIcons[t], ix - 7, iy - 7, 14, 14); }); }
     else { g.strokeStyle = 'rgba(255,255,255,.12)'; g.setLineDash([6, 6]); g.strokeRect(cx + 1, cy + 1, cw - 2, ch - 2); g.setLineDash([]); }
     g.restore();
-    g.strokeStyle = m ? (TYPE_COLORS[mtypes(m)[0]] || '#8592ab') + '88' : 'transparent'; g.lineWidth = 1.5; g.beginPath(); g.roundRect ? g.roundRect(cx, cy, cw, ch, 10) : g.rect(cx, cy, cw, ch); g.stroke();
+    g.strokeStyle = m ? (TYPE_COLORS[mtypes(m)[0]] || '#8592ab') + '66' : 'transparent'; g.lineWidth = 1.2; g.beginPath(); g.roundRect ? g.roundRect(cx, cy, cw, ch, 6) : g.rect(cx, cy, cw, ch); g.stroke();
   }
   const url = cv.toDataURL('image/png'), file = `ruleta-pokemon-${x.region}-${new Date(x.t).toISOString().slice(0, 10)}.png`;
   // vista previa con «Descargar» (en algunos sitios el navegador no deja descargar sin más: así siempre se puede guardar la imagen)
