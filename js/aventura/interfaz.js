@@ -25,10 +25,15 @@ function dexPop(n, shiny, wait) {
   setTimeout(() => {
     if (!run) return;
     let box = document.querySelector('.dex-pops'); if (!box) { box = document.createElement('div'); box.className = 'dex-pops'; document.body.appendChild(box); }
+    // una Pokédex roja: lente azul y luces arriba, el Pokémon en la pantalla con su nombre y tipos, y los botones abajo
     const r = (shiny && SPR.shiny.get(n)) || SPR.normal.get(n), el = document.createElement('div'); el.className = 'dex-pop';
-    el.innerHTML = `<span class="dp-spr">${r ? `<img src="${r.u}" alt="">` : ''}</span><span class="dp-tx"><small>📘 Nuevo registro</small><b><i>Nº ${String(n).padStart(3, '0')}</i>${pname(n)}${shiny ? ' ★' : ''}</b></span>`;
+    const ty = BY_NUM.get(n)[3].map(t => `<em style="--t:${TYPE_COLORS[t]}">${t.slice(0, 5)}</em>`).join('');
+    el.innerHTML = `<div class="dx-top"><i class="dx-lens"></i><i class="dx-led r"></i><i class="dx-led y"></i><i class="dx-led g"></i></div>`
+      + `<div class="dx-bezel"><div class="dx-dots"><i></i><i></i></div><div class="dx-screen"><div class="dx-plate"><b>${pname(n)}${shiny ? ' ★' : ''}</b>${ty}</div>`
+      + `${r ? `<img src="${r.u}" alt="">` : ''}<small>Nº ${String(n).padStart(3, '0')}</small></div><div class="dx-under"><i></i><i class="dx-grill"></i></div></div>`
+      + `<div class="dx-ctrl"><div class="dx-row"><i class="dx-round"></i><i class="dx-pill r"></i><i class="dx-pill b"></i></div><span class="dx-green">Nuevo registro</span><i class="dx-pad"></i></div>`;
     box.appendChild(el); beep(1319, .07, .03, 'triangle'); setTimeout(() => beep(1760, .12, .03, 'triangle'), 90);
-    setTimeout(() => el.remove(), 3400);
+    setTimeout(() => el.remove(), 3700);
   }, wait || 0);
 }
 function advToast(t) { const el = document.createElement('div'); el.className = 'adv-toast'; el.textContent = t; $('advToasts').appendChild(el); setTimeout(() => el.remove(), 3200); }

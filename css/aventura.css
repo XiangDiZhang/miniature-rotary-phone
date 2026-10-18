@@ -412,20 +412,41 @@ img.stone.px { image-rendering: pixelated; }
 @keyframes newTag { 0% { opacity: 0; transform: translateY(6px) scale(.6); } 15% { opacity: 1; transform: scale(1.1); } 25%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }
 .pc-open.got { animation: pcGot 1.1s ease-out; --c: var(--cyan); }
 @keyframes pcGot { 30% { transform: scale(1.1); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 35%, transparent), 0 0 20px var(--c); } }
-/* Nuevo registro en la Pokédex (una especie que no tenías): aviso pequeño en una esquina, sin tapar el juego ni recibir toques */
-.dex-pops { position: fixed; top: 74px; right: 16px; z-index: 94; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: none; }
-.dex-pop { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 10px; max-width: min(300px, calc(100vw - 32px));
-  background: color-mix(in srgb, var(--bg) 88%, #e3350d); border: 1px solid color-mix(in srgb, #e3350d 60%, transparent); box-shadow: 0 8px 26px rgba(0,0,0,.4), 0 0 16px rgba(227,53,13,.25);
-  animation: dexIn .45s cubic-bezier(.2,.9,.3,1.3) both, dexOut .45s ease 2.9s forwards; }
-.dex-pop .dp-spr { width: 46px; height: 46px; flex: none; border-radius: 8px; display: grid; place-items: center; background: color-mix(in srgb, #e3350d 14%, transparent); }
-.dex-pop .dp-spr img { width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; animation: tmHop .7s cubic-bezier(.2,.9,.3,1.4) .15s both; }
-.dex-pop .dp-tx { display: grid; gap: 1px; min-width: 0; }
-.dex-pop small { font: 600 9px var(--f-mono); letter-spacing: .16em; color: #ff6b4a; text-transform: uppercase; }
-.dex-pop b { font-size: 14px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dex-pop b i { font-style: normal; font-weight: 400; color: var(--fg-soft); margin-right: 6px; font-family: var(--f-mono); font-size: 12px; }
-@keyframes dexIn { from { opacity: 0; transform: translateX(30px) scale(.9); } }
-@keyframes dexOut { to { opacity: 0; transform: translateX(20px); } }
-@media (max-width: 760px), (orientation: landscape) and (max-height: 520px) { .dex-pops { top: 8px; right: 8px; } .dex-pop { padding: 4px 10px 4px 4px; } .dex-pop .dp-spr, .dex-pop .dp-spr img { width: 36px; height: 36px; } .dex-pop b { font-size: 12.5px; } }
+/* Nuevo registro en la Pokédex (una especie que no tenías): una Pokédex roja pequeña con el Pokémon en su pantalla,
+   en una esquina; no tapa el juego ni recibe toques y se va sola */
+.dex-pops { position: fixed; top: 74px; right: 16px; z-index: 94; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+.dex-pop { --rd: #e3192f; --rd2: #a80d1f; position: relative; width: 150px; padding: 8px 12px 10px 8px; border-radius: 12px 14px 14px 12px; color: #1b1f2a;
+  background: linear-gradient(160deg, #ff4152, var(--rd) 45%, #c4122a); border: 2px solid #5e0712;
+  box-shadow: inset -9px 0 0 var(--rd2), inset -11px 0 0 #ff5a68, inset 0 2px 0 rgba(255,255,255,.35), 0 12px 30px rgba(0,0,0,.45), 0 0 18px rgba(227,25,47,.35);
+  animation: dexIn .5s cubic-bezier(.2,.9,.3,1.3) both, dexOut .45s ease 3.1s forwards; }
+.dx-top { display: flex; align-items: center; gap: 4px; height: 28px; margin-bottom: 4px; }
+.dx-lens { width: 26px; height: 26px; border-radius: 50%; margin-right: 4px; background: radial-gradient(circle at 35% 32%, #b8f1ff 0 12%, #29b6f6 32%, #0277bd 75%); border: 3px solid #f4f6fb; box-shadow: 0 0 0 2px #5e0712, 0 0 10px rgba(41,182,246,.7); animation: dxBlink 1s ease-in-out 3; }
+.dx-led { width: 7px; height: 7px; border-radius: 50%; border: 1px solid #5e0712; align-self: flex-start; margin-top: 3px; }
+.dx-led.r { background: #ff3b3b; } .dx-led.y { background: #ffd23f; } .dx-led.g { background: #3ddc6a; }
+.dx-bezel { padding: 6px 7px 5px; border-radius: 6px 6px 6px 16px; background: #e4e6ea; border: 2px solid #5e0712; }
+.dx-dots { display: flex; justify-content: center; gap: 6px; margin: -2px 0 3px; } .dx-dots i { width: 4px; height: 4px; border-radius: 50%; background: #e3192f; }
+.dx-screen { position: relative; height: 104px; border-radius: 4px; border: 2px solid #59606e; background: linear-gradient(180deg, #b9d0cf, #a4bfbe); overflow: hidden; display: grid; place-items: end center; }
+.dx-plate { position: absolute; top: 4px; left: 4px; right: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; z-index: 1; }
+.dx-plate b { flex: 1 0 100%; min-width: 0; padding: 1px 5px; border-radius: 4px; background: #f4f6fb; border: 1px solid #59606e; font: 700 9.5px var(--f-mono); color: #1b1f2a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dx-plate em { font: 700 7.5px var(--f-mono); font-style: normal; padding: 1px 3px; border-radius: 3px; color: #1b1f2a; background: var(--t); border: 1px solid rgba(0,0,0,.35); text-transform: uppercase; }
+.dx-screen img { width: 84px; height: 84px; object-fit: contain; image-rendering: pixelated; margin-bottom: -2px; animation: tmHop .7s cubic-bezier(.2,.9,.3,1.4) .2s both; }
+.dx-screen small { position: absolute; left: 5px; bottom: 3px; font: 600 7.5px var(--f-mono); color: #4b5563; letter-spacing: .06em; }
+.dx-under { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+.dx-under i:first-child { width: 10px; height: 10px; border-radius: 50%; background: #e3192f; border: 1px solid #5e0712; }
+.dx-grill { width: 34px; height: 9px; background: repeating-linear-gradient(180deg, #2b2f3a 0 1.5px, transparent 1.5px 3.2px); }
+.dx-ctrl { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "a p" "g p"; align-items: center; gap: 5px 6px; margin-top: 7px; }
+.dx-row { grid-area: a; display: flex; align-items: center; gap: 4px; }
+.dx-row .dx-round { width: 14px; height: 14px; border-radius: 50%; background: #2b2f3a; border: 1px solid #000; }
+.dx-row .dx-pill { width: 18px; height: 5px; border-radius: 3px; border: 1px solid #5e0712; } .dx-pill.r { background: #ff4a5a; } .dx-pill.b { background: #2f8fff; }
+.dx-green { grid-area: g; padding: 3px 4px; border-radius: 3px; background: #2ecc8f; border: 1.5px solid #0e4d35; font: 700 7.5px/1.15 var(--f-mono); letter-spacing: .08em; color: #0b3324; text-align: center; text-transform: uppercase; animation: dxGlow 1s ease-in-out 3; }
+.dx-pad { grid-area: p; position: relative; width: 30px; height: 30px; }
+.dx-pad::before, .dx-pad::after { content: ""; position: absolute; background: #2b2f3a; border: 1px solid #000; border-radius: 2px; }
+.dx-pad::before { left: 10px; top: 0; width: 10px; height: 30px; } .dx-pad::after { top: 10px; left: 0; width: 30px; height: 10px; }
+@keyframes dxBlink { 50% { filter: brightness(1.5); box-shadow: 0 0 0 2px #5e0712, 0 0 18px #6fdcff; } }
+@keyframes dxGlow { 50% { background: #6ff0bd; } }
+@keyframes dexIn { from { opacity: 0; transform: translateX(40px) rotate(6deg) scale(.85); } }
+@keyframes dexOut { to { opacity: 0; transform: translateX(30px) scale(.9); } }
+@media (max-width: 760px), (orientation: landscape) and (max-height: 520px) { .dex-pops { top: 8px; right: 8px; } .dex-pop { zoom: .8; } }
 @keyframes tabGot { 30% { transform: scale(1.12); color: #ffd84a; box-shadow: 0 0 18px rgba(255,216,74,.6); } }
 
 /* ==== Móvil en vertical: la aventura es una pantalla fija (no se desplaza). La ruleta ocupa el hueco que sobra;
