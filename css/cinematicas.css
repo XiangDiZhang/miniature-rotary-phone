@@ -177,9 +177,14 @@
 .tf-gmax .tf-bolt { position: absolute; inset: 0; opacity: 0; background: linear-gradient(115deg, transparent 46%, #ffd0dc 48%, #ff2d55 49%, transparent 51%), linear-gradient(65deg, transparent 60%, #ffd0dc 61.5%, transparent 63%); }
 .tf-gmax.go .tf-bolt { animation: bolt 1.9s steps(1) forwards; }
 @keyframes bolt { 0%, 30%, 34%, 70%, 74%, 100% { opacity: 0; } 31%, 71% { opacity: 1; } }
+/* Dinamax / Gigamax: el Pokémon se vuelve rojo (silueta roja brillante) mientras crece; al cambiar, sale el sprite Gigamax grande desde el rojo */
 .tf-gmax.go .stage2 .a { animation: gmaxGrow 1.8s cubic-bezier(.5,0,.8,.6) forwards; }
-@keyframes gmaxGrow { 0% { transform: none; filter: none; } 100% { transform: scale(1.45) translateY(-4%); filter: brightness(.4) sepia(1) saturate(6) hue-rotate(-30deg) drop-shadow(0 0 24px #ff2d55); } }
-.tf-gmax.done .stage2 .b { filter: drop-shadow(0 0 18px rgba(255,45,85,.8)); }
+@keyframes gmaxGrow { 0% { transform: none; filter: none; }
+  35% { transform: scale(1.12); filter: brightness(0) invert(24%) sepia(96%) saturate(6500%) hue-rotate(345deg) brightness(1.05) drop-shadow(0 0 14px #ff2d55); }
+  100% { transform: scale(1.6) translateY(-4%); filter: brightness(0) invert(24%) sepia(96%) saturate(6500%) hue-rotate(345deg) brightness(1.25) drop-shadow(0 0 30px #ff2d55); } }
+.tf-gmax.done .stage2 .b { animation: gmaxOut 1s cubic-bezier(.2,.9,.3,1.2) both !important; }
+@keyframes gmaxOut { 0% { transform: scale(1.6) translateY(-4%); filter: brightness(0) invert(24%) sepia(96%) saturate(6500%) hue-rotate(345deg) brightness(1.25) drop-shadow(0 0 30px #ff2d55); }
+  100% { transform: scale(1.15); filter: drop-shadow(0 0 18px rgba(255,45,85,.8)); } }
 .tf-pop .cap.win b { color: #fff; }
 
 /* ---- Intercambio: el tuyo entra en su Poké Ball y se va volando (arriba a la izquierda); llega otra (desde arriba a la derecha), se abre y sale el nuevo ---- */

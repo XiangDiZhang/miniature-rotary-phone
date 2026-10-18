@@ -450,6 +450,7 @@ function renderCard() {
     const pf = $('advPlayerFig');
     if (pf) { const pu = ls.length ? playerTrainerSpr() : null, ph = pu ? `<span class="lf-glow"></span><span class="lf-row n1"><img src="${pu}" alt=""></span>` : '';
       pf.hidden = !pu; if (pf._h !== ph) { pf._h = ph; pf.innerHTML = ph; groundSprites(pf.querySelector('.lf-row'), pf.querySelector('.lf-glow')); }
+      matchFigHeights();
       const pr = pf.querySelector('.lf-row'); if (pr) pr.dataset.tip = `${trainerName()}: tú. Entrenador de ${REG().name}, en busca de las medallas y la Liga.`; }
   }
   // pestaña del móvil: un botón redondo con icono (medalla en los combates de gimnasio y liga, mapa en el resto); el nombre, para los lectores de pantalla
@@ -481,6 +482,20 @@ function headTop(big) {
   const imgs = [...big.querySelectorAll('img')];
   const go = () => { if (!imgs.every(im => im.complete && im.naturalWidth)) return; big.style.setProperty('--ht', Math.min(...imgs.map(im => feetOf(im).ft)).toFixed(4)); };
   imgs.forEach(im => { if (!(im.complete && im.naturalWidth)) im.addEventListener('load', go, { once: true }); });
+  go();
+}
+// tu entrenador, con la misma altura visible que el rival: cada sprite ocupa una parte distinta de su imagen (hueco encima de la
+// cabeza y bajo los pies), así que se mide la figura de los dos y se escala la tuya para que mida lo mismo que la suya
+function matchFigHeights() {
+  const fo = $('advLeadFig'), pf = $('advPlayerFig'); if (!fo || !pf || fo.hidden || pf.hidden) return;
+  const oi = [...fo.querySelectorAll('.lf-row img')], pi = pf.querySelector('.lf-row img'); if (!oi.length || !pi) return;
+  const go = () => {
+    if (![...oi, pi].every(im => im.complete && im.naturalWidth)) return;
+    const vis = im => { const f = feetOf(im); return Math.max(.2, 1 - f.ft - f.fb); };
+    const k = Math.max(...oi.map(vis)) / vis(pi);
+    pf.style.setProperty('--fig-k', Math.max(.6, Math.min(1.6, k)).toFixed(3));
+  };
+  [...oi, pi].forEach(im => { if (!(im.complete && im.naturalWidth)) im.addEventListener('load', go, { once: true }); });
   go();
 }
 function groundSprites(row, glow) {

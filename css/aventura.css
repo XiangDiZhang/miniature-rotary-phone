@@ -324,13 +324,13 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
   /* el líder de cuerpo entero, abajo a la derecha del escenario (entre la caja de información y el diario), sobre una peana de luz;
      en la tarjeta queda solo el busto grande de fondo */
   .adv-leadfig:not([hidden]) { display: block; position: absolute; right: 72px; bottom: 12px;   /* abajo a la derecha del escenario, separado del borde (con su peana) */
-    height: var(--fig-h, min(240px, 36%));   /* (la misma altura que tu entrenador) */ z-index: 0; pointer-events: none; }
+    height: var(--fig-h, min(250px, 38%));   /* (la misma altura que tu entrenador) */ z-index: 0; pointer-events: none; }
   /* (con margen alrededor para que el brillo de los botones no se corte en el borde de la columna) */
   .adv-stage .side { position: relative; z-index: 1; justify-content: flex-start; padding: 0 22px 22px; margin: 0 -22px -22px; }
   .adv-stage #advBtns { order: 4; }   /* los botones, abajo del todo */
   .adv-stage .side .leader-card { margin-top: 24px; }   /* la tarjeta de la fase, un poco separada de arriba; el texto, el doble de separado de la tarjeta */
   /* el título y el texto de la fase, casi arriba del todo (un hueco pequeño encima; lo que sobra, debajo) */
-  .adv-stage .side::before { content: ""; order: 1; flex: 0 0 48px; } .adv-stage .adv-say > * { order: 2; }
+  .adv-stage .side::before { content: ""; order: 1; flex: 0 0 6px; } .adv-stage .adv-say > * { order: 2; }
   .adv-stage .side::after { content: ""; order: 3; flex: 1 1 0; }
   .leader-card .lc-full { display: none; }
   .adv-stage .adv-text { height: auto; flex: 0 1 auto; min-height: 0; max-height: 9.3em; }   /* el texto ocupa solo lo que mide, arriba (si es muy largo, se desplaza dentro) */
@@ -689,7 +689,7 @@ img.stone.px { image-rendering: pixelated; }
 /* ---- Tu entrenador en los combates (ordenador ancho): a la izquierda del rival, mirándolo (dado la vuelta), sobre su peana ---- */
 .adv-playerfig { display: none; width: max-content; }
 @media (min-width: 1280px) and (min-height: 560px) {
-  .adv-playerfig:not([hidden]) { display: block; position: absolute; left: calc(50% + 170px); bottom: 12px; height: var(--fig-h, min(240px, 36%)); z-index: 0; pointer-events: none; scale: -1 1; --c: var(--cyan); }
+  .adv-playerfig:not([hidden]) { display: block; position: absolute; left: calc(50% + 170px); bottom: 12px; height: calc(var(--fig-h, min(250px, 38%)) * var(--fig-k, 1)); z-index: 0; pointer-events: none; scale: -1 1; --c: var(--cyan); }
 }
 /* pasar el ratón por un entrenador del escenario: su historia (caja de ayuda) */
 .adv-leadfig .lf-row, .adv-playerfig .lf-row { pointer-events: auto; cursor: help; }
