@@ -116,6 +116,49 @@ function evoAudio() {
   };
 }
 
+// ---- Captura de un legendario: himno solemne (composición propia) en Re menor que se abre a Re mayor, con trompas, timbales y platillo ----
+function legendMusic() {
+  const K = royalKit(); if (!K) return;
+  const { N, T, horn, timp, roll, bell, cymbal, line } = K;
+  const t = T() + .1;
+  horn(N('D3'), t, 5.5, .02); horn(N('A3'), t, 5.5, .015);
+  roll(t, .6, .05); timp(N('D2'), t + .6, .3);
+  // llamada grave y solemne: DA – da-DAAA (menor)
+  line(t + .6, [['D4', 0, .55], ['F4', .6, .2], ['A4', .85, .7], ['G4', 1.6, .25], ['F4', 1.9, .25], ['E4', 2.2, .5]], .05);
+  [['D3', .6, 1.4], ['Bb2', 2, .8]].forEach(([n, at, d]) => horn(N(n), t + at, d, .03));
+  [1.45, 2.2].forEach(at => timp(N('A1'), t + at, .22));
+  // y se abre a mayor: la gloria de haberlo atrapado
+  const c = t + 2.9;
+  roll(c - .5, .5, .05); cymbal(c, 2.6, .07); timp(N('D2'), c, .34);
+  line(c, [['A4', 0, .18], ['D5', .2, .18], ['F#5', .4, .18], ['A5', .6, 1.6]], .056);
+  [['D3', 0, 2.2], ['A3', 0, 2.2]].forEach(([n, at, d]) => horn(N(n), c + at, d, .03));
+  ['D6', 'A6', 'D7'].forEach((n, i) => bell(N(n), c + .6 + i * .14, 1.8, .02));
+}
+// ---- Captura de un mítico: música misteriosa y mágica (propia): arpegios de campanitas en escala de tonos enteros, un coro suave y un brillo final ----
+function mythMusic() {
+  if (!soundOn) return;
+  let ctx; try { ctx = actx(); } catch (e) { return; }
+  const out = ctx.createGain(); out.gain.value = .9; out.connect(ctx.destination);
+  const d1 = ctx.createDelay(), fb = ctx.createGain(), wet = ctx.createGain(); d1.delayTime.value = .28; fb.gain.value = .38; wet.gain.value = .35; out.connect(d1); d1.connect(fb).connect(d1); d1.connect(wet).connect(ctx.destination);
+  const f = (s, o) => 261.63 * Math.pow(2, s / 12 + o);
+  const bell = (fr, t, d = 1.4, v = .03) => [1, 2.01, 3.98].forEach((h, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = fr * h;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v / (i + 1.5), t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d / (i + 1)); o.connect(g).connect(out); o.start(t); o.stop(t + d + .05); });
+  // «coro»: tres voces suaves con vibrato lento
+  const pad = (fr, t, d, v = .012) => [0, 7, -5].forEach(dt => { const o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+    o.type = 'triangle'; o.frequency.value = fr; o.detune.value = dt; lp.type = 'lowpass'; lp.frequency.value = 1800; lfo.frequency.value = 4.5; lg.gain.value = fr * .006; lfo.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .6); g.gain.setValueAtTime(v, t + d - .7); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(lp).connect(g).connect(out); o.start(t); o.stop(t + d + .05); lfo.start(t); lfo.stop(t + d + .05); });
+  const t = ctx.currentTime + .08;
+  // arpegio de tonos enteros que sube y baja (misterio)
+  [0, 2, 4, 6, 8, 10, 12, 14, 16, 14, 12, 10].forEach((s, i) => bell(f(s, 1), t + i * .13, 1.2, .028));
+  pad(f(0, -1), t, 2.4); pad(f(6, -1), t + .2, 2.2, .009);
+  // resolución luminosa en Mi mayor con destellos agudos
+  const c = t + 1.75;
+  pad(f(4, -1), c, 2.6, .013); pad(f(11, -1), c, 2.6, .01); pad(f(8, 0), c + .1, 2.4, .009);
+  [4, 8, 11, 16, 20, 23, 28].forEach((s, i) => bell(f(s, 1), c + i * .09, 1.8, .026));
+  [2637, 3136, 3951, 4699].forEach((fr, i) => bell(fr, c + .9 + i * .12, .6, .012));
+}
+
 // ---- Derrota: lluvia, tus Pokémon caen debilitados uno a uno y suena un lamento ----
 function loseMusic() {
   const K = royalKit(); if (!K) return;

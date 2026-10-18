@@ -1,7 +1,7 @@
 // Reglas de la partida: puntos, probabilidades, ruletas de aventura y formas de combate
 // Puntos de la partida: solo son la puntuación (no se gastan en nada)
 const PTS = { capture: 50, shiny: 500, legend: 1000, win: 100, rival: 150, rocket: 150, evolve: 80, badge: 300, elite: 400, champ: 1500 };
-const EVO_CHANCES = [1 / 3, 1 / 2, 1];               // ruleta tras cada victoria: si falla, la siguiente es más fácil… hasta que es segura
+const EVO_CHANCES = [1 / 4, 1 / 3, 1 / 2, 1];        // ruleta tras cada victoria: si falla, la siguiente es más fácil… hasta que es segura
 // ---- Captura según la rareza (ratio de captura oficial) y lo que has avanzado ----
 // Ruleta de 12 quesitos. Base por rareza; cada medalla suma un poco, con un tope para que nunca sea regalado.
 const CAP_N = 12;

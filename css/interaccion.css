@@ -22,3 +22,22 @@
 /* respuesta táctil al pulsar */
 .card:active:not(:disabled), .cta:active { transform: scale(.98); border-color: color-mix(in srgb, var(--c, var(--cyan)) 60%, transparent); }
 .btn:active, .chip:active, .tbtn:active, .evo-card:active, .ab:active, .seg button:active { transform: scale(.95); }
+
+/* ---- Caja de ayuda al pasar el ratón (js/ui/ayuda.js): con el estilo de las fichas de los Pokémon ---- */
+.tipbox { --c: var(--cyan); position: fixed; z-index: 200; left: 0; top: 0; max-width: min(300px, calc(100vw - 16px)); display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 10px; pointer-events: none;
+  overflow: hidden; isolation: isolate; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); background: linear-gradient(var(--panel), var(--panel)), var(--bg); color: var(--fg); font-size: 12.5px; line-height: 1.4;
+  box-shadow: 0 12px 34px rgba(0,0,0,.45), 0 0 18px color-mix(in srgb, var(--c) 22%, transparent); opacity: 0; transform: translateY(4px) scale(.97); transition: opacity .14s, transform .18s cubic-bezier(.2,.9,.3,1.2); }
+.tipbox.in { opacity: 1; transform: none; }
+.tipbox.below { transform-origin: top; }
+/* barrita de color arriba a la izquierda y franja diagonal, como en la Pokédex */
+.tipbox::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 34px; background: var(--c); box-shadow: 0 0 10px var(--c); }
+.tipbox::after { content: ""; position: absolute; z-index: -1; inset: 0; clip-path: polygon(68% 0, 100% 0, 100% 24%, 40% 100%, 0 100%, 0 50%);
+  background: linear-gradient(225deg, rgba(255,255,255,.6), var(--c) 26%, var(--c) 70%, transparent 96%); opacity: .16; }
+:root[data-app="light"] .tipbox { box-shadow: 0 10px 28px rgba(30,40,60,.25); }
+:root[data-app="light"] .tipbox::after { opacity: .22; }
+.tip-ico { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--c) 30%, transparent), transparent 72%); }
+.tip-ico img { width: 34px; height: 34px; object-fit: contain; } .tip-ico img.px { image-rendering: pixelated; }
+.tip-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tip-tx b { font-size: 13.5px; font-weight: 600; color: color-mix(in srgb, var(--c) 45%, var(--fg)); }
+.tip-tx span { color: var(--fg-soft); }
+.tipbox:not(:has(b)) .tip-tx span { color: var(--fg); }

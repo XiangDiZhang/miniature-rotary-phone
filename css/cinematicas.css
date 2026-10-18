@@ -182,3 +182,36 @@
 @keyframes gmaxGrow { 0% { transform: none; filter: none; } 100% { transform: scale(1.45) translateY(-4%); filter: brightness(.4) sepia(1) saturate(6) hue-rotate(-30deg) drop-shadow(0 0 24px #ff2d55); } }
 .tf-gmax.done .stage2 .b { filter: drop-shadow(0 0 18px rgba(255,45,85,.8)); }
 .tf-pop .cap.win b { color: #fff; }
+
+/* ---- Intercambio: el tuyo entra en su Poké Ball y se va volando (arriba a la izquierda); llega otra (desde arriba a la derecha), se abre y sale el nuevo ---- */
+.tr-pop { background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--c) 30%, #0b0f1a), #0b0f1a 60%), radial-gradient(circle at 75% 70%, color-mix(in srgb, var(--c2) 30%, transparent), transparent 60%); }
+.tr-pop .rays { opacity: .35; }
+.tr-pop .stage2 > * { transition: transform .5s cubic-bezier(.5,0,.6,1), opacity .4s, filter .4s; }
+.tr-pop .tr-in > * { opacity: 0; transform: scale(.2); }
+.tr-ball { position: absolute; left: 50%; top: 45%; width: 64px; height: 64px; margin: -32px 0 0 -32px; display: grid; place-items: center; z-index: 3; pointer-events: none; }
+.tr-ball img { width: 100%; height: 100%; image-rendering: pixelated; filter: drop-shadow(0 0 10px rgba(255,255,255,.5)); }
+.tr-ball-css { width: 80%; height: 80%; border-radius: 50%; background: linear-gradient(#ff5a46 0 46%, #10131c 46% 54%, #f4f6fb 54%); box-shadow: inset 0 0 0 3px #10131c; }
+.tr-ball.out { transform: scale(0); opacity: 0; }
+.tr-ball.in { transform: translate(260px, -320px) rotate(360deg) scale(.7); opacity: 0; }
+.tr-flash { position: absolute; left: 50%; top: 45%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #fff; opacity: 0; z-index: 4; pointer-events: none; }
+.tr-link { position: absolute; left: 10%; right: 10%; bottom: 22%; height: 2px; display: flex; justify-content: space-between; opacity: .5; }
+.tr-link i { width: 6px; height: 6px; margin-top: -2px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); animation: trDot 1.2s ease-in-out infinite; }
+.tr-link i:nth-child(2) { animation-delay: .2s; } .tr-link i:nth-child(3) { animation-delay: .4s; }
+@keyframes trDot { 50% { transform: scale(1.8); opacity: .3; } }
+/* 1) el tuyo se encoge en un destello rojo y aparece su Poké Ball */
+.tr-pop.s1 .tr-out > * { transform: scale(.05); filter: brightness(0) sepia(1) saturate(8) hue-rotate(-30deg); opacity: 0; }
+.tr-pop.s1 .tr-ball.out { animation: trBallIn .45s cubic-bezier(.2,.9,.3,1.3) .25s forwards; }
+@keyframes trBallIn { to { transform: scale(1); opacity: 1; } }
+/* 2) la Poké Ball sale volando arriba a la izquierda, girando */
+.tr-pop.s2 .tr-ball.out { animation: trBallAway .9s cubic-bezier(.5,0,.8,.4) forwards; }
+@keyframes trBallAway { 0% { transform: scale(1); opacity: 1; } 25% { transform: translate(10px, 14px) scale(1.05); } 100% { transform: translate(-300px, -340px) rotate(-720deg) scale(.5); opacity: 0; } }
+/* 3) llega la otra Poké Ball desde arriba a la derecha y rebota */
+.tr-pop.s3 .tr-ball.in { animation: trBallArrive .9s cubic-bezier(.3,.7,.4,1) forwards; }
+@keyframes trBallArrive { 0% { transform: translate(260px, -320px) rotate(360deg) scale(.7); opacity: 0; } 15% { opacity: 1; } 70% { transform: translate(0, 0) rotate(0) scale(1); } 82% { transform: translateY(-16px); } 100% { transform: none; opacity: 1; } }
+/* 4) se abre: destello blanco y sale el nuevo */
+.tr-pop.s4 .tr-ball.in { animation: none; transform: scale(1.4); opacity: 0; transition: transform .25s, opacity .25s; }
+.tr-pop.s4 .tr-ball.out { animation: none; opacity: 0; }
+.tr-pop.s4 .tr-flash { animation: trFlash .7s ease-out forwards; }
+@keyframes trFlash { 0% { opacity: .95; transform: scale(.3); } 100% { opacity: 0; transform: scale(14); } }
+.tr-pop.s4 .tr-in > * { opacity: 1; transform: none; animation: newIn 1.1s cubic-bezier(.2,.9,.3,1.3) .1s both; }
+.tr-pop.s4 .tr-out > * { opacity: 0; }

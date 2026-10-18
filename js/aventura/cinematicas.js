@@ -191,6 +191,51 @@ function evoAnim(items, onSwap, onEnd) {
   timer = setTimeout(start, 700);
 }
 
+// ---- Intercambio: tu Pokémon sale del centro de la ruleta, se despide, entra en su Poké Ball y se va volando;
+// llega otra Poké Ball, se abre con un destello y aparece el nuevo. give = el que das (sale de la ruleta si está en ella),
+// get = { n, shiny } el que recibes. Toca para saltar. ----
+function tradeAnim(give, get, done) {
+  const W = advWheel, clearCenter = () => { onWheel.delete(give); if (W && W.centerM === give) { W.centerM = null; W.centerImg = null; W.centerName = null; W.draw(); } };
+  if (reduceMotion || document.hidden || window.__noCine) { clearCenter(); renderAdv(); return done && done(); }
+  const start = monRect(give); clearCenter();
+  const A = { id: mid(give), n: give.n, ty: mtypes(give), name: mname(give) }, B = { id: get.n, n: get.n, ty: ptypes(get.n), name: pname(get.n) };
+  const ball = SPR.item && SPR.item.get('poke-ball'), ballImg = ball ? `<img class="px" src="${ball.u}" alt="">` : '<i class="tr-ball-css"></i>';
+  const shade = document.createElement('div'); shade.className = 'evo-shade tr-shade';
+  const pop = document.createElement('div'); pop.className = 'evo-pop tr-pop'; pop.style.setProperty('--c', TYPE_COLORS[A.ty[0]] || '#5ad1c8'); pop.style.setProperty('--c2', TYPE_COLORS[B.ty[0]] || '#ffd84a');
+  pop.innerHTML = `<div class="rays"></div><div class="tr-link"><i></i><i></i><i></i></div>
+    <div class="stage2 tr-out">${picHTML(A, give.shiny, 'a')}</div><div class="tr-ball out">${ballImg}</div>
+    <div class="tr-ball in">${ballImg}</div><div class="tr-flash"></div><div class="stage2 tr-in">${picHTML(B, get.shiny, 'b')}</div><div class="stars-out"></div>
+    <p class="cap"><small>Intercambio</small>¡Adiós, ${A.name}! ¡Cuídate mucho!</p><span class="skip">Toca para saltar</span>`;
+  shade.appendChild(pop); document.body.appendChild(shade);
+  const pr = pop.getBoundingClientRect();
+  if (start) pop.animate([{ transform: `translate(${start.left + start.width / 2 - (pr.left + pr.width / 2)}px, ${start.top + start.height / 2 - (pr.top + pr.height / 2)}px) scale(${start.width / pr.width})`, opacity: .4 }, { transform: 'none', opacity: 1 }], { duration: 480, easing: 'cubic-bezier(.2,.9,.25,1.1)' });
+  const cap = pop.querySelector('.cap'), T = [];
+  const at = (ms, f) => T.push(setTimeout(f, ms));
+  chord([523, 659, 784]);
+  // 1) se despide y entra en la Poké Ball, que sale volando hacia arriba a la izquierda
+  at(900, () => { pop.classList.add('s1'); beep(880, .1, .04); beep(440, .18, .03, 'square'); });
+  at(1500, () => { pop.classList.add('s2'); [660, 520, 400].forEach((f, i) => setTimeout(() => beep(f, .08, .03), i * 90)); cap.innerHTML = `<small>Intercambio</small>${A.name} se va a su nuevo hogar…`; });
+  // 2) llega otra Poké Ball desde arriba a la derecha, rebota y se abre
+  at(2500, () => { pop.classList.add('s3'); [400, 520, 660].forEach((f, i) => setTimeout(() => beep(f, .08, .03), i * 90)); cap.innerHTML = '<small>Intercambio</small>¡Llega una Poké Ball!'; });
+  at(3400, () => reveal());
+  let stage = 0;
+  const reveal = () => {
+    if (stage) return; stage = 1; T.forEach(clearTimeout); pop.classList.add('s1', 's2', 's3', 's4');
+    pop.style.setProperty('--c', TYPE_COLORS[B.ty[0]] || '#ffd84a');   // la ventana toma el color del que llega
+    chord([784, 988, 1318, 1568]); if (get.shiny) shinySfx();
+    let st = ''; for (let i = 0; i < 20; i++) { const an = i / 20 * Math.PI * 2, d = 110 + Math.random() * 80; st += `<i style="--x:${Math.cos(an) * d}px;--y:${Math.sin(an) * d}px;--fs:${12 + Math.random() * 14}px;--dl:${Math.random() * .2}s">✦</i>`; }
+    pop.querySelector('.stars-out').innerHTML = st;
+    cap.innerHTML = `<small>¡Intercambio completado!</small>¡Ha llegado <b>${B.name}${get.shiny ? ' ★' : ''}</b>!`; cap.classList.add('win');
+    T.push(setTimeout(close, 2000));
+  };
+  const close = () => {
+    if (stage > 1) return; stage = 2; T.forEach(clearTimeout);
+    shade.classList.add('out'); pop.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.96)' }], { duration: 340, easing: 'ease-in', fill: 'forwards' });
+    setTimeout(() => { shade.remove(); renderAdv(); done && done(); }, 380);
+  };
+  shade.addEventListener('click', () => stage === 0 ? reveal() : close());
+}
+
 // ---- Megaevolución y Gigamax: cada una con su animación propia (más corta que la de evolución) ----
 // Mega: la megapiedra reacciona, una esfera arcoíris envuelve al Pokémon, se resquebraja y aparece con el símbolo Mega.
 // Gigamax: nubes rojas, el Pokémon crece hasta llenar la ventana y aparece su forma Gigamax entre relámpagos.

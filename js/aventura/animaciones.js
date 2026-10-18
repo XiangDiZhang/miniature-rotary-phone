@@ -12,13 +12,18 @@ function shinyBurst(x, y) {
 
 // Pokémon tuyos que ahora mismo están «subidos» a la ruleta (en su ficha del equipo no se ven)
 const onWheel = new Set();
+// los que vuelven volando a su ficha: su ficha sigue vacía hasta que aterrizan (si no, se verían dos veces)
+const flyingHome = new Set();
+const offTile = m => onWheel.has(m) || flyingHome.has(m);
 // los Pokémon que están en la ruleta vuelven volando a su ficha (desde su quesito o desde el centro)
 function wheelRelease(keep) {
   let any = false;
   const W = advWheel, cr = W && W.cv.getBoundingClientRect(), k = cr && cr.width / W.size;
-  [...onWheel].forEach((m, j) => { if (m === keep) return; onWheel.delete(m); any = true;
+  [...onWheel].forEach((m, j) => { if (m === keep) return; onWheel.delete(m); flyingHome.add(m); any = true;
     const t = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m);
-    const done = () => { if (t) { t.classList.remove('on-wheel'); t.classList.add('landed'); setTimeout(() => t.classList.remove('landed'), 450); } };
+    // al aterrizar se busca su ficha otra vez (el equipo puede haberse vuelto a dibujar mientras volaba)
+    const done = () => { flyingHome.delete(m); const t2 = [...$('advTeam').querySelectorAll('.tmw')].find(x => x._m === m);
+      if (t2) { t2.classList.remove('on-wheel'); t2.classList.add('landed'); setTimeout(() => t2.classList.remove('landed'), 450); } };
     if (!t || reduceMotion || !cr || !cr.width || !W.cv.offsetParent) return done();
     const seg = W.segs.find(x => x.m === m && x._sp && !x.hideImg), atC = W.centerM === m;
     if (!seg && !atC) return done();

@@ -35,9 +35,8 @@ const goOn = () => advButtons([{ label: 'Continuar →', fn: finish }]);
 function phaseStarter() {
   const R = REG(), L = loc();
   spinUI(`${L.name} · Tu primer Pokémon`, `${R.prof[0].toUpperCase() + R.prof.slice(1)} te ofrece ${['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis'][R.starters.length] || R.starters.length} Pokémon. La ruleta elegirá tu compañero.`,
-    R.starters.map(n => wseg(n, 1, true /* PRUEBA: de momento todos los iniciales son shiny */)), 'INICIAL', r => {
+    R.starters.map(n => wseg(n)), 'INICIAL', r => {   // shiny como cualquier otro: 1 %
       run.starter = r.n;
-      // PRUEBA: de momento el inicial siempre es shiny (luego volverá a ser el 1 %)
       const sh = !!r.shiny;
       addMon(r.n, sh); log(`🎉 Tu inicial es ${sh ? '✦ ' : ''}${pname(r.n)}. Recibes ${run.bag.potion} Poción${run.bag.potion > 1 ? 'es' : ''}.`);
       if (sh) { addPoints(PTS.shiny, `¡${pname(r.n)} shiny!`); advToast(`✦ ¡${pname(r.n)} SHINY! ✦`); shinySfx(); renderAdv(); const t = $('advTeam').querySelector('.tmw'); const rr = t && t.getBoundingClientRect(); shinyBurst(); if (rr) setTimeout(() => shinyBurst(rr.left + rr.width / 2, rr.top + rr.height / 2), 350); }
@@ -103,8 +102,8 @@ function finish() {
   run.stepDone = true; advNext();
 }
 
-// ---- Evolución tras ganar: 1/3, luego 1/2… y a la tercera es segura ----
-// Tras ganar un combate SIEMPRE sale la ruleta de evolución (1/3, 1/2… y a la tercera, segura).
+// ---- Evolución tras ganar: 1/4, luego 1/3, luego 1/2… y a la cuarta es segura ----
+// Tras ganar un combate SIEMPRE sale la ruleta de evolución (1/4, 1/3, 1/2… y a la cuarta, segura); contra los entrenadores del camino, la evolución es segura.
 // Si cae en "¡Evolución!" pero nadie de tu equipo puede evolucionar, en su lugar recibes una poción (mejor cuantas más medallas tengas).
 // quesitos de «¿quién evoluciona?»: tus Pokémon (el elegido no se sube al centro: entra directo en la cinemática desde su quesito)
 const evoSegs = list => list.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m, noCenter: 1 }));

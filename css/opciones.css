@@ -9,3 +9,25 @@
 /* voz del locutor: lista de voces y botón para probarla */
 .voice-pick { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
 .voice-pick .sel { max-width: min(320px, 60vw); }
+/* animaciones de prueba: solo en modo desarrollador */
+.opt-dev { margin: 18px 0 0; padding: 8px 4px; font: 500 10px var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--johto); border-bottom: 1px dashed color-mix(in srgb, var(--johto) 50%, transparent); }
+
+/* ---- Colores del tema: combinaciones con brillo neón (como el borde de la ruleta) y dos selectores de color ---- */
+.color-panel { padding: 14px 4px 18px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; animation: fadeIn .25s ease both; }
+.cp-tag { margin: 0; font: 500 10px var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--fg-soft); }
+.cp-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.cp-sw { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px 8px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel); color: var(--fg-soft); font: 500 10px var(--f-mono); letter-spacing: .1em; cursor: pointer; transition: transform .15s, border-color .2s; }
+.cp-sw i { width: 42px; height: 42px; border-radius: 50%; background: conic-gradient(var(--p1) 0 50%, var(--p2) 50% 100%); -webkit-mask: radial-gradient(circle, transparent 0 13px, #000 14px); mask: radial-gradient(circle, transparent 0 13px, #000 14px);
+  filter: drop-shadow(0 0 6px var(--p1)) drop-shadow(0 0 10px var(--p2)); animation: spin 8s linear infinite; }
+.cp-sw:hover { transform: translateY(-2px); border-color: var(--p1); }
+.cp-sw.on { border-color: var(--p1); color: var(--fg); box-shadow: 0 0 0 1px var(--p1), 0 0 18px color-mix(in srgb, var(--p1) 45%, transparent), inset 0 0 14px color-mix(in srgb, var(--p2) 18%, transparent); }
+.cp-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.cp-col { display: inline-flex; align-items: center; gap: 8px; font: 500 11px var(--f-mono); letter-spacing: .12em; color: var(--fg-soft); text-transform: uppercase; }
+.cp-col input { width: 44px; height: 32px; padding: 0; border: 1px solid var(--line-2); border-radius: 8px; background: transparent; cursor: pointer; }
+.cp-col.off { opacity: .35; pointer-events: none; }
+/* vista previa: un aro como la ruleta, con los dos colores y su brillo */
+.cp-preview { --p1: var(--cyan); --p2: var(--johto); display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--p1) 50%, var(--line)); background: linear-gradient(90deg, color-mix(in srgb, var(--p1) 12%, transparent), color-mix(in srgb, var(--p2) 8%, transparent) 70%, transparent); }
+.cp-preview i { width: 46px; height: 46px; border-radius: 50%; background: conic-gradient(var(--p1), var(--p2), var(--p1)); -webkit-mask: radial-gradient(circle, transparent 0 17px, #000 18px); mask: radial-gradient(circle, transparent 0 17px, #000 18px);
+  filter: drop-shadow(0 0 8px var(--p1)) drop-shadow(0 0 14px var(--p2)); animation: spin 5s linear infinite; }
+.cp-preview span { font: 500 11px var(--f-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--p1); text-shadow: 0 0 10px var(--p1); }
+.cp-preview b { margin-left: auto; width: 90px; height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--p1), var(--p2)); box-shadow: 0 0 12px var(--p1), 0 0 18px var(--p2); }

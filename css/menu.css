@@ -73,6 +73,48 @@
 .hist-mon em { font-style: normal; }
 .hist-mon.shiny { border-color: #ffd84a; } .hist-mon.shiny em { color: #ffd84a; }
 
+/* ---- Selección de región: tarjetas más pequeñas (el Modo Caos va el primero) ---- */
+#grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+#grid .card { min-height: 124px; padding: 12px 14px 12px; gap: 8px; }
+#grid .ghost { font-size: 92px; bottom: -18px; }
+#grid .region { font-size: 24px; }
+#grid .games { font-size: 11.5px; line-height: 1.3; }
+#grid .row-top { font-size: 10px; }
+#grid .dex { gap: 5px; } #grid .dex-meta { font-size: 10px; }
+@media (max-width: 640px) { #grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } #grid .card { min-height: 112px; } #grid .games { display: none; } }
+
+/* ---- Partidas en curso: botón grande (del ancho de la lista) y la pantalla con cada partida ---- */
+.saves-cta { width: 100%; --c: var(--johto); border-color: color-mix(in srgb, var(--johto) 45%, var(--line-2)); background: linear-gradient(90deg, color-mix(in srgb, var(--johto) 12%, transparent), transparent 75%); }
+.saves-cta.active, .saves-cta:hover { border-color: var(--johto); background: linear-gradient(90deg, color-mix(in srgb, var(--johto) 20%, transparent), transparent 85%); }
+.saves-cta .arrow { color: var(--johto); }
+.saves-cta.empty { opacity: .75; }
+.saves-ico { width: 52px; height: 52px; flex: none; display: grid; place-items: center; }
+.saves-ico svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cyan) 50%, transparent)); }
+.saves-peek { display: flex; gap: 6px; margin-left: auto; }
+.saves-peek span { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--c); background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--c) 30%, transparent), transparent 72%); box-shadow: 0 0 10px color-mix(in srgb, var(--c) 40%, transparent); }
+.saves-peek img { width: 46px; height: 46px; object-fit: contain; margin-top: -6px; } .saves-peek img.px, .save-mon img.px { image-rendering: pixelated; }
+.saves-peek + .arrow { margin-left: 14px; }
+.saves-list { display: flex; flex-direction: column; gap: 10px; }
+.save-row { --c: var(--cyan); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 12px 14px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-left: 4px solid var(--c); background: linear-gradient(90deg, color-mix(in srgb, var(--c) 12%, var(--panel)), var(--panel) 70%); }
+.save-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.save-head b { font-family: var(--f-display); font-size: 24px; font-weight: 500; line-height: 1; }
+.save-gen { font: 500 10px var(--f-mono); letter-spacing: .18em; color: var(--c); }
+.save-when { font: 500 10px var(--f-mono); letter-spacing: .12em; color: var(--fg-soft); text-transform: uppercase; }
+.save-team { grid-column: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.save-mon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--c) 10%, transparent); }
+.save-mon img { width: 48px; height: 48px; object-fit: contain; }
+.save-mon.shiny { box-shadow: inset 0 0 0 1px #ffd84a; }
+.save-box { font: 500 10px var(--f-mono); letter-spacing: .1em; color: var(--fg-soft); margin-left: 6px; }
+.save-meta { grid-column: 1; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--fg-soft); }
+.save-btns { grid-column: 2; grid-row: 1 / span 3; display: flex; flex-direction: column; gap: 8px; }
+.save-btns .btn { margin: 0; white-space: nowrap; }
+.save-del.sure { color: #ff8a7a; border-color: #ff5a46; }
+@media (max-width: 640px) {
+  .saves-peek { display: none; }
+  .save-row { grid-template-columns: 1fr; }
+  .save-btns { grid-column: 1; grid-row: auto; flex-direction: row; }
+}
+
 /* Modo Caos: tarjeta del menú con un borde que cambia de color */
 .card.chaos { border-image: linear-gradient(120deg, #ff5a46, #f2c14e, #3fb6a8, #4f86ff, #b46cff, #e0457b) 1; }
 .card.chaos .ghost { background: linear-gradient(120deg, #ff5a46, #f2c14e, #3fb6a8, #4f86ff, #b46cff); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: .35; }

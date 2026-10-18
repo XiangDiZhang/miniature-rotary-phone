@@ -1,5 +1,5 @@
 // Escenas, cabecera (sonido, pantalla completa) y menú principal
-const SCENE_TITLES = { home: 'Menú principal', dex: 'Pokédex', menu: 'Jugar · Selección de región', roulette: 'Jugar · Ruleta', chosen: 'Jugar · Generación elegida', options: 'Opciones', adv: 'Aventura' };
+const SCENE_TITLES = { home: 'Menú principal', dex: 'Pokédex', menu: 'Jugar · Selección de región', saves: 'Jugar · Partidas en curso', roulette: 'Jugar · Ruleta', chosen: 'Jugar · Generación elegida', options: 'Opciones', adv: 'Aventura' };
 
 // Pantalla completa (si el navegador o la app lo permiten)
 $('fsBtn').onclick = async () => {
@@ -18,7 +18,7 @@ $('soundBtn').onclick = () => {
 // ---- Escenas ----
 function show(scene) {
   state.scene = scene;
-  ['home', 'dex', 'options', 'menu', 'roulette', 'chosen', 'adv'].forEach(s => $('scene-' + s).hidden = s !== scene);
+  ['home', 'dex', 'options', 'menu', 'saves', 'roulette', 'chosen', 'adv'].forEach(s => $('scene-' + s).hidden = s !== scene);
   document.body.classList.toggle('wide-adv', scene === 'adv');
   if (scene !== 'adv' && advWheel) advWheel.stop();
   $('homeBtn').hidden = scene === 'home';
@@ -28,7 +28,8 @@ function show(scene) {
   document.body.classList.remove('side-open');
   if (scene === 'dex') scrollTo(0, 0);
   if (scene === 'dex') renderDex();
-  if (scene === 'menu') { typeText($('menuText'), 'Bienvenido, Entrenador. ¿Qué generación quieres jugar? Si no te decides, deja que gire la ruleta.'); markActive(cursor); if (!icoRunning) icoLoop(); }
+  if (scene === 'menu') { typeText($('menuText'), 'Bienvenido, Entrenador. ¿Qué generación quieres jugar? Si no te decides, deja que gire la ruleta.'); markActive(cursor); if (!icoRunning) icoLoop(); renderSavesCard(); }
+  if (scene === 'saves') renderSaves();
   if (scene === 'roulette') { sizeWheel(); resetRoulette(); }
 }
 

@@ -12,15 +12,9 @@ function cardHTML(g, locked) {
 }
 function buildMenu() {
   const grid = $('grid');
-  GENS.forEach(g => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'card'; b.style.setProperty('--c', g.color);
-    b.innerHTML = cardHTML(g, false);
-    b.setAttribute('aria-label', `Generación ${g.roman}, región de ${g.region}`);
-    grid.appendChild(b);
-    items.push({ el: b, act: () => { chord([659, 880, 1175]); pick(g); } });
-  });
-  // Modo Caos: gimnasios, Alto Mando y Campeón al azar de todas las regiones
+  // arriba del todo: las partidas sin terminar (una por región), para seguirlas o borrarlas
+  items.push({ el: $('savesCard'), act: () => { chord([523, 659, 880]); show('saves'); } });
+  // Modo Caos (el primero): gimnasios, Alto Mando y Campeón al azar de todas las regiones
   {
     const g = CHAOS_GEN, b = document.createElement('button');
     b.type = 'button'; b.className = 'card chaos'; b.style.setProperty('--c', g.color);
@@ -29,6 +23,14 @@ function buildMenu() {
     grid.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 740, 1046]); pick(g); } });
   }
+  GENS.forEach(g => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'card'; b.style.setProperty('--c', g.color);
+    b.innerHTML = cardHTML(g, false);
+    b.setAttribute('aria-label', `Generación ${g.roman}, región de ${g.region}`);
+    grid.appendChild(b);
+    items.push({ el: b, act: () => { chord([659, 880, 1175]); pick(g); } });
+  });
   COMING.forEach(c => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'card'; b.disabled = true; b.innerHTML = cardHTML(c, true);

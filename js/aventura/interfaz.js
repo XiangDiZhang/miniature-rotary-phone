@@ -23,7 +23,7 @@ function teamTile(m, i) {
   const [n, , , , leg, myth] = BY_NUM.get(m.n), name = dname(m), ty = mtypes(m), sid = SPR.normal.get(mid(m)) ? mid(m) : n, sp = m.shiny && SPR.shiny.get(sid), pc = sp && sp.pc;
   const c = pc ? pc[0] : TYPE_COLORS[ty[0]] || '#8592ab', c2 = pc ? pc[1] : TYPE_COLORS[ty[1]] || c, no = padN(n);
   const sm = shinyMode; shinyMode = !!m.shiny; const cell = spriteCell(sid, ty); shinyMode = sm;
-  return `<span class="tmw${onWheel.has(m) ? ' on-wheel' : ''}"><button class="mon tmon on${FLYING.has(n) ? ' fly' : ''}${m.shiny ? ' shiny' : ''}" type="button" data-n="${n}" data-i="${i}" style="--c:${c};--c2:${c2};--dur:${(2.6 + (n * 37 % 13) / 10).toFixed(1)}s;--del:-${(n * 53 % 30) / 10}s">` +
+  return `<span class="tmw${offTile(m) ? ' on-wheel' : ''}"><button class="mon tmon on${FLYING.has(n) ? ' fly' : ''}${m.shiny ? ' shiny' : ''}" type="button" data-n="${n}" data-i="${i}" style="--c:${c};--c2:${c2};--dur:${(2.6 + (n * 37 % 13) / 10).toFixed(1)}s;--del:-${(n * 53 % 30) / 10}s">` +
     `<span class="bg${no.length > 3 ? ' d4' : ''}" aria-hidden="true">${no}</span>` +
     `<span class="top"><span class="no">Nº ${no}</span>${m.shiny ? '<small>✦ SHINY</small>' : leg ? '<small>LEG</small>' : myth ? '<small>SING</small>' : ''}</span>` +
     cell + `<span class="nm">${name}</span><span class="ty">${ty.map(typeIcon).join('')}<em class="pw">P${mpower(m)}</em></span></button>` +
@@ -134,7 +134,7 @@ function renderAdv() {
   const slots = [...run.team, ...Array(Math.max(0, 6 - run.team.length)).fill(null)];
   const TM = $('advTeam'), live = canTransform();
   // si el equipo no ha cambiado, no se vuelve a dibujar (así las animaciones de los Pokémon no se reinician)
-  const sig = run.team.map(m => [m.n, m.form || 0, m.shiny ? 1 : 0, onWheel.has(m) ? 1 : 0, m.nick || '', m.stone || 0, m.dmax ? 1 : 0, m.tf ? m.tf.kind : ''].join('.')).join('|') + '#' + SPR.normal.size + '.' + SPR.shiny.size + '.' + (run.bag.share ? 1 : 0) + (live ? 'L' : '');
+  const sig = run.team.map(m => [m.n, m.form || 0, m.shiny ? 1 : 0, offTile(m) ? 1 : 0, m.nick || '', m.stone || 0, m.dmax ? 1 : 0, m.tf ? m.tf.kind : ''].join('.')).join('|') + '#' + SPR.normal.size + '.' + SPR.shiny.size + '.' + (run.bag.share ? 1 : 0) + (live ? 'L' : '');
   const same = TM._sig === sig && [...TM.querySelectorAll('.tmw')].every((el, i) => el._m === run.team[i]);
   if (!same) {
     const before = flipCapture(TM, '.tmw');

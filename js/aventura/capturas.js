@@ -68,8 +68,11 @@ function caught(n, shiny, legend, form) {
   const m = addMon(n, shiny); if (form) m.form = form;
   const inTeam = run.team.includes(m), nm = mname(m);
   addPoints(legend ? PTS.legend : PTS.capture, `${nm} capturado`);
-  if (shiny) { addPoints(PTS.shiny, `¡${nm} shiny!`); advToast(`✦ ¡${nm} SHINY! ✦`); shinySfx(); shinyBurst(); }
-  else advToast(`¡${nm} se une a tu equipo!`);
+  // legendario o singular (mítico): cada uno con su música; si además es shiny, suena después el brillo
+  const [, , , , isLeg, isMyth] = BY_NUM.get(n);
+  if (isMyth) mythMusic(); else if (isLeg) legendMusic();
+  if (shiny) { addPoints(PTS.shiny, `¡${nm} shiny!`); advToast(`✦ ¡${nm} SHINY! ✦`); (isLeg || isMyth) ? setTimeout(shinySfx, 2600) : shinySfx(); shinyBurst(); }
+  else advToast(isMyth ? `✧ ¡${nm}, un Pokémon singular! ✧` : isLeg ? `★ ¡${nm}, un Pokémon legendario! ★` : `¡${nm} se une a tu equipo!`);
   advSay(shiny ? `¡INCREÍBLE! ¡Tu ${nm} es SHINY!${inTeam ? '' : ' (va a la caja)'}` : `Es un ${nm}${form ? '' : ' normal'}. ¡Bienvenido al equipo!${inTeam ? '' : ' (va a la caja)'}`, goOn);
 }
 

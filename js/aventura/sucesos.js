@@ -22,12 +22,12 @@ function doEgg() {
     shinyCheck(n);
   } }]));
 }
-// Entrenadores del camino: si ganas, ruleta de evolución (o Poción si nadie puede evolucionar); si pierdes, la partida sigue
+// Entrenadores del camino: si ganas, uno de tus Pokémon evoluciona seguro, sin ruleta de suerte (o Poción si nadie puede); si pierdes, la partida sigue
 function doTrainer(force) {
   const L = loc(), [ra, rb] = REG().range, list = L.trainers && L.trainers.length ? L.trainers : [{ name: 'Entrenador Guay', team: [rnd(ra, rb - 3)] }], t = force || list[rnd(0, list.length - 1)];
   battle(`${L.name} · ${t.name}`, t.name, t.team, 1, () => {
     addPoints(PTS.win, `victoria contra ${t.name}`);
-    advSay(`¡Has ganado a ${t.name}! ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));
+    evolveSure(`¡Has ganado a ${t.name}! Tu equipo ha ganado experiencia.`);
   }, ' Perder contra un entrenador del camino no acaba la partida.', () => {
     log(`💢 ${t.name} te gana, pero sigues tu camino.`);
     advSay(`${t.name} te ha ganado… Por suerte, solo era un combate del camino: tu aventura sigue.`, goOn);
@@ -131,13 +131,16 @@ function evolveSure(msg) {
 // Intercambio obligatorio: la ruleta elige a quién das y lo que recibes puede ser cualquier Pokémon de la Pokédex (como los huevos)
 function doTrade() {
   const all = [...run.team, ...boxList()];
+  // el Pokémon que das se queda en el centro de la ruleta mientras gira la de «¿Qué recibes?»; al caer, la animación del intercambio
   const give = m => {
-    const pool = randomPick(DEX.map(r => r[0]).filter(n => n !== m.n), DEX.length);
+    const pool = randomPick(DEX.map(r => r[0]).filter(n => n !== m.n), DEX.length), from = toCenter(m);
     spinUI('Intercambio · ¿Qué recibes?', `Das a tu ${mname(m)}. A cambio puede llegarte cualquiera de los ${pool.length} Pokémon de la Pokédex (los legendarios, más difíciles).`, pool.map(n => wseg(n, isLegend(n) ? LEG_SLICE : 1)), 'RECIBES', r => {
+      const gone = mname(m);
       if (run.team.includes(m)) run.team.splice(run.team.indexOf(m), 1); else run.box[run.box.indexOf(m)] = null;
-      log(`🔄 Cambias a ${mname(m)} por ${pname(r.n)}.`);
-      advSay(`¡Intercambio hecho! ${mname(m)} se va y llega ${pname(r.n)}.`, () => advButtons([{ label: 'Recibir', fn: () => caught(r.n, r.shiny, false) }]));
-    });
+      log(`🔄 Cambias a ${gone} por ${pname(r.n)}.`); saveRun();
+      tradeAnim(m, { n: r.n, shiny: r.shiny }, () => advSay(`¡Intercambio hecho! ${gone} se va y llega ${pname(r.n)}${r.shiny ? ' ¡shiny!' : ''}.`, () => advButtons([{ label: 'Recibir', fn: () => caught(r.n, r.shiny, false) }])));
+    }, { txt: `Intercambio: das a ${mname(m)}`, n: mid(m), shiny: m.shiny });
+    flyToCenter(m, from);
   };
   if (all.length === 1) return advSay(`¡Intercambio a ciegas! No se puede rechazar. Solo tienes a ${pname(all[0].n)}, así que va él.`, () => advButtons([{ label: 'Intercambiar', fn: () => give(all[0]) }]));
   advSay('¡Intercambio a ciegas! Un entrenador te obliga a cambiar un Pokémon: la ruleta elige a quién das.', () => advButtons([{ label: '¿A quién das?', fn: () =>

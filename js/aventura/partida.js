@@ -5,7 +5,7 @@ const REG = () => REGIONS[run.region];
 const loc = () => REG().path[run.step];
 const VIL = () => VILLAINS[(run && REG().villain) || 'rocket'];
 function newRun(region = 'kanto') { return { chaos: region === 'caos' ? chaosPlan() : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
-function saveRun() { store.setJSON('ruleta-run-' + run.region, run); }
+function saveRun() { run.t = Date.now(); store.setJSON('ruleta-run-' + run.region, run); }   // t: cuándo se jugó por última vez (Partidas en curso)
 function loadRun(region) {
   const r = store.getJSON('ruleta-run-' + region);
   if (!(r && REGIONS[r.region] && r.v === 5 && (r.region !== 'kanto' || r.kv === 2))) return null;   // partidas de versiones antiguas: no valen

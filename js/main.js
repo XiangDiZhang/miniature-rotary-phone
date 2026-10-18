@@ -9,7 +9,7 @@ document.addEventListener('keydown', e => {
     items[cursor].el.focus();
   }
   if (infoOpen) return;
-  if (e.key === 'Escape') { if (['roulette', 'chosen'].includes(state.scene)) goPlay(); else if (state.scene !== 'home') goMenu(); }
+  if (e.key === 'Escape') { if (['roulette', 'chosen', 'saves'].includes(state.scene)) goPlay(); else if (state.scene !== 'home') goMenu(); }
   if (state.scene === 'home' && ['ArrowDown', 'ArrowUp'].includes(e.key)) {
     e.preventDefault();
     const opts = [...document.querySelectorAll('.home-opt')];

@@ -41,6 +41,8 @@
   <script src="js/ruletas/ruleta-generaciones.js" defer></script>
   <script src="js/ruletas/ruleta.js" defer></script>
   <script src="js/ui/menu.js" defer></script>
+  <script src="js/ui/partidas.js" defer></script>
+  <script src="js/ui/ayuda.js" defer></script>
   <script src="js/pokedex/coleccion.js" defer></script>
   <script src="js/pokedex/lista.js" defer></script>
   <script src="js/pokedex/desplazamiento.js" defer></script>
@@ -173,13 +175,30 @@
     <div class="opt-list">
       <div class="opt-row"><div class="l"><b>Sonido</b><span>Efectos al moverte, al girar y al ganar</span></div><button class="toggle" id="optSound" type="button" aria-pressed="true">ON</button></div>
       <div class="opt-row"><div class="l"><b>Tema</b><span>Oscuro o claro</span></div><button class="toggle" id="optTheme" type="button" aria-pressed="true">OSCURO</button></div>
+      <div class="opt-row"><div class="l"><b>Colores del tema</b><span>Elige el color neón de la interfaz (y un segundo color, si quieres)</span></div><button class="toggle" id="optColors" type="button" aria-expanded="false">PERSONALIZAR</button></div>
+      <div class="color-panel" id="colorPanel" hidden>
+        <p class="cp-tag">Combinaciones</p>
+        <div class="cp-presets" id="cpPresets"></div>
+        <div class="cp-pick">
+          <label class="cp-col"><span>Color 1</span><input type="color" id="cpC1"></label>
+          <label class="cp-col" id="cpC2Wrap"><span>Color 2</span><input type="color" id="cpC2"></label>
+          <button class="toggle" id="cpTwo" type="button" aria-pressed="false">2 COLORES · NO</button>
+          <button class="toggle" id="cpReset" type="button">POR DEFECTO</button>
+        </div>
+        <div class="cp-preview" id="cpPreview" aria-hidden="true"><i></i><span>Vista previa</span><b></b></div>
+      </div>
       <div class="opt-row"><div class="l"><b>Modo</b><span>Usuario: la Pokédex se completa capturando en tus partidas · Desarrollador: todo desbloqueado</span></div><button class="toggle" id="optMode" type="button" aria-pressed="false">USUARIO</button></div>
       <div class="opt-row"><div class="l"><b>Animaciones</b><span>Pokémon con vida, deslizamientos y efectos</span></div><button class="toggle" id="optMotion" type="button" aria-pressed="true">ON</button></div>
       <div class="opt-row"><div class="l"><b>Velocidad del texto</b><span>Lo rápido que se escriben los diálogos: lenta, normal, rápida o al instante</span></div><button class="toggle" id="optTSpeed" type="button">NORMAL</button></div>
       <div class="opt-row"><div class="l"><b>Locutor</b><span>Una voz lee en alto el texto de la aventura (voces de tu navegador y tu sistema, gratis)</span></div><button class="toggle" id="optTts" type="button" aria-pressed="false">OFF</button></div>
       <div class="opt-row"><div class="l"><b>Voz del locutor</b><span id="optVoiceInfo">Se elige sola la más natural en español; puedes cambiarla y probarla</span></div><div class="voice-pick"><select class="sel" id="optVoice" aria-label="Voz del locutor"></select><button class="toggle" id="optVoiceTest" type="button">PROBAR</button></div></div>
-      <div class="opt-row"><div class="l"><b>Hall de la Fama</b><span>Vuelve a ver la cinemática con tu último equipo campeón</span></div><button class="toggle" id="optHof" type="button">VER</button></div>
-      <div class="opt-row"><div class="l"><b>Derrota</b><span>Ver la animación de cuando pierdes (con tu último equipo)</span></div><button class="toggle" id="optLose" type="button">VER</button></div>
+      <p class="opt-dev dev-only" hidden>Solo en modo desarrollador · animaciones de prueba</p>
+      <div class="opt-row dev-only" hidden><div class="l"><b>Hall de la Fama</b><span>Vuelve a ver la cinemática con tu último equipo campeón</span></div><button class="toggle" id="optHof" type="button">VER</button></div>
+      <div class="opt-row dev-only" hidden><div class="l"><b>Derrota</b><span>Ver la animación de cuando pierdes (con tu último equipo)</span></div><button class="toggle" id="optLose" type="button">VER</button></div>
+      <div class="opt-row dev-only" hidden><div class="l"><b>Intercambio</b><span>Tu Pokémon se va en su Poké Ball y llega otro</span></div><button class="toggle" id="optTrade" type="button">VER</button></div>
+      <div class="opt-row dev-only" hidden><div class="l"><b>Evolución</b><span>La cinemática de evolución (Charmeleon → Charizard)</span></div><button class="toggle" id="optEvo" type="button">VER</button></div>
+      <div class="opt-row dev-only" hidden><div class="l"><b>Megaevolución</b><span>Charizard → Mega-Charizard X</span></div><button class="toggle" id="optMega" type="button">VER</button></div>
+      <div class="opt-row dev-only" hidden><div class="l"><b>Dinamax / Gigamax</b><span>Charizard → Charizard Gigamax</span></div><button class="toggle" id="optDmax" type="button">VER</button></div>
     </div>
     <p class="wip">MÁS OPCIONES PRÓXIMAMENTE</p>
   </section>
@@ -187,6 +206,12 @@
   <!-- JUGAR: selección de generación -->
   <section class="scene" id="scene-menu" hidden>
     <div class="frame dialog"><span class="who">PROF.</span><span class="txt" id="menuText"></span></div>
+    <button class="cta saves-cta" id="savesCard" type="button">
+      <span class="saves-ico" id="savesIco" aria-hidden="true"></span>
+      <span class="t"><span class="t1">Partidas en curso</span><span class="t2" id="savesSub">Sigue una partida que dejaste a medias, o bórrala</span></span>
+      <span class="saves-peek" id="savesPeek" aria-hidden="true"></span>
+      <span class="arrow">ENTRAR →</span>
+    </button>
     <p class="label">Generaciones</p>
     <div class="grid" id="grid"></div>
     <button class="cta" id="rouletteCard" type="button">
@@ -195,6 +220,14 @@
       <span class="arrow">GIRAR →</span>
     </button>
     <p class="hint">FLECHAS · MOVER &nbsp;&nbsp; ENTER · ELEGIR &nbsp;&nbsp; ESC · VOLVER</p>
+  </section>
+
+  <!-- JUGAR: partidas sin terminar (una por región): continuar o borrar -->
+  <section class="scene" id="scene-saves" hidden>
+    <div class="frame dialog"><span class="who">PROF.</span><span class="txt" id="savesText"></span></div>
+    <p class="label">Partidas en curso</p>
+    <div class="saves-list" id="savesList"></div>
+    <div class="btns"><button class="btn ghostbtn" id="savesBack" type="button">← Selección de región</button></div>
   </section>
 
   <!-- JUGAR: ruleta de generaciones -->
