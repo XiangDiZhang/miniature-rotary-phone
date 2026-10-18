@@ -35,7 +35,8 @@ $medallas = [regex]::Matches($regiones, 'badgeId: (\d+)') | ForEach-Object { [in
 $reglas = [IO.File]::ReadAllText("$raiz\js\datos\reglas.js", $utf8)
 # iconos de las megapiedras (MEGA_STONES de reglas.js): nombre del archivo en items\ de PokeAPI (las de Z-A, en items\gen9\)
 $piedras = @([regex]::Matches($reglas, "\d{5}: \['([a-z0-9/-]+)',") | ForEach-Object { $_.Groups[1].Value }) +
-  @([regex]::Matches($regiones, "badgeItem: '([a-z0-9/-]+)'") | ForEach-Object { $_.Groups[1].Value }) | Sort-Object -Unique   # + cristales Z de las pruebas de Alola
+  @([regex]::Matches($regiones, "badgeItem: '([a-z0-9/-]+)'") | ForEach-Object { $_.Groups[1].Value }) +   # + cristales Z de las pruebas de Alola
+  @([regex]::Matches([IO.File]::ReadAllText("$raiz\js\datos\eventos.js", $utf8), "spr: '([a-z0-9/-]+)'") | ForEach-Object { $_.Groups[1].Value }) | Sort-Object -Unique   # + objetos de la mochila
 # variantes sin número en PokeAPI (VARIANTS de formas.js): id propio -> nombre de su archivo
 $archivo = @{}
 foreach ($v in [regex]::Matches($formas, '\[(\d{5}),"[^"]*",\d+,"(\d+-[a-z0-9-]+)"\]')) { $archivo[[int]$v.Groups[1].Value] = $v.Groups[2].Value }
@@ -137,4 +138,4 @@ function Write-Paquete([string] $tipo, [string] $archivo, [string] $constante, [
 Write-Paquete 'normal' 'normales.js' 'SPRITES_NORMAL' 'Pokémon (normales)'
 Write-Paquete 'shiny' 'shiny.js' 'SPRITES_SHINY' 'Pokémon (shiny)'
 Write-Paquete 'badge' 'medallas.js' 'SPRITES_BADGE' 'medallas de gimnasio'
-Write-Paquete 'item' 'objetos.js' 'SPRITES_ITEM' 'iconos de las megapiedras'
+Write-Paquete 'item' 'objetos.js' 'SPRITES_ITEM' 'iconos de las megapiedras, cristales Z y objetos de la mochila'

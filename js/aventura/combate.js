@@ -129,7 +129,7 @@ function transformMon(m, kind) {
 function renderPotion(k, n, pop) {
   const el = $('advPotion'); if (!el) return;
   el.hidden = !(k && n > 0); if (el.hidden) return;
-  el.innerHTML = `<b>+${n}</b> giro${n > 1 ? 's' : ''} de revancha · ${ITEMS[k].name}`;
+  el.innerHTML = `<span class="pot-ico">${bagIcon(k)}</span><b>+${n}</b> giro${n > 1 ? 's' : ''} de revancha · ${ITEMS[k].name}`;
   if (pop && el.animate && !reduceMotion) el.animate([{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .6 }, { transform: 'none' }], { duration: 450, easing: 'ease-out' });
 }
 function battle(title, who, foe, base, onWin, extra = '', onLose = null, types = null) {

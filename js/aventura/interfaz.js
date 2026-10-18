@@ -60,6 +60,11 @@ const BAG_ICON = {
   ball: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" class="ln"/><path d="M3.5 12h17" class="ln"/><path d="M3.5 12a8.5 8.5 0 0 1 17 0z" class="liq"/><circle cx="12" cy="12" r="2.6" fill="var(--bg)" class="ln"/></svg>',
 };
 BAG_ICON.super = BAG_ICON.hyper = BAG_ICON.potion;
+// icono de un objeto: su sprite si lo hay (pociones, Repartir Exp., Cuerda huida, Ball de Kurt) o el dibujo
+function bagIcon(k) {
+  const it = k === 'ball' ? BALL_SPR : ITEMS[k], r = it && it.spr && SPR.item && SPR.item.get(it.spr);
+  return r ? `<img class="item" src="${r.u}" alt="">` : BAG_ICON[k] || BAG_ICON.potion;
+}
 // cómo se ve cada fase en la línea: un icono, un nombre corto y qué es
 const PH_ICON = {
   home: '<svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8h-5v-5H9v5H4z"/></svg>',
@@ -143,10 +148,10 @@ function renderAdv() {
   // mochila: cada objeto en su hueco, con su dibujo y cuántos tienes; las megapiedras, con quién las lleva
   const items = Object.entries(run.bag).filter(([k, v]) => v > 0 && ITEMS[k]);
   const stones = allMine().filter(m => m.stone && formRec(m.stone)), bands = allMine().filter(m => m.dmax && gmaxForms(m).length);
-  const bag = (items.map(([k, v]) => `<span class="bag-slot" data-k="${k}" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${BAG_ICON[k] || BAG_ICON.potion}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
+  const bag = (items.map(([k, v]) => `<span class="bag-slot" data-k="${k}" style="--c:${ITEMS[k].color}" title="${ITEMS[k].name}: ${ITEMS[k].desc || ''}"><span class="bag-ico">${bagIcon(k)}</span><span class="bag-nm">${ITEMS[k].name}</span>${v > 1 ? `<b class="bag-n">×${v}</b>` : ''}</span>`).join('')
     + stones.map(m => { const nm = mname({ n: m.n, form: m.stone }), st = stoneName(m.stone); return `<span class="bag-slot gem" data-k="st${m.stone}" style="--c:${TYPE_COLORS[formRec(m.stone)[1][2][0]]}" title="${st} (${nm}), equipada en ${mname(m)}. En combate, púlsala en su ficha para megaevolucionar durante ese giro."><span class="bag-ico">${stoneHTML(m.stone)}</span><span class="bag-nm">${st}</span></span>`; }).join('')
     + (bands.length ? `<span class="bag-slot gem" data-k="dmax" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${DMAX_SVG}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
-    + (run.ball ? `<span class="bag-slot buff" data-k="ball" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${BAG_ICON.ball}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
+    + (run.ball ? `<span class="bag-slot buff" data-k="ball" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${bagIcon('ball')}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
     || '<span class="bag-empty">Mochila vacía</span>')
     + (stolenList().length ? `<span class="bag-note">Robado por el ${VIL().name}: ${stolenList().map(mname).join(', ')}</span>` : '');
   if ($('advBag')._h !== bag) { $('advBag')._h = bag; $('advBag').innerHTML = bag; }

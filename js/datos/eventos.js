@@ -229,10 +229,12 @@ Object.assign(EVENTS, {
 });
 
 const ITEMS = {
-  potion: { name: 'Poción', color: '#b46cff', retries: 1, desc: 'Si pierdes un combate, te deja volver a girar una vez.' },
-  super: { name: 'Superpoción', color: '#8f5bd6', retries: 2, desc: 'Si pierdes un combate, te deja volver a girar hasta dos veces.' },
-  hyper: { name: 'Hiperpoción', color: '#6a3fc0', retries: 3, desc: 'Si pierdes un combate, te deja volver a girar hasta tres veces.' },
-  rope: { name: 'Cuerda huida', color: '#c9a36a', desc: 'Te saca de una cueva si te pierdes y te libra de un robo de los villanos.' },
+  potion: { name: 'Poción', color: '#b46cff', retries: 1, spr: 'potion', desc: 'Si pierdes un combate, te deja volver a girar una vez.' },
+  super: { name: 'Superpoción', color: '#8f5bd6', retries: 2, spr: 'super-potion', desc: 'Si pierdes un combate, te deja volver a girar hasta dos veces.' },
+  hyper: { name: 'Hiperpoción', color: '#6a3fc0', retries: 3, spr: 'hyper-potion', desc: 'Si pierdes un combate, te deja volver a girar hasta tres veces.' },
+  rope: { name: 'Cuerda huida', color: '#c9a36a', spr: 'escape-rope', desc: 'Te saca de una cueva si te pierdes y te libra de un robo de los villanos.' },
   shoes: { name: 'Deportivas', color: '#4aa3df', desc: 'Una tirada más de la ruleta de aventura en cada tramo.' },
-  share: { name: 'Repartir Exp.', color: '#ffd84a', desc: 'Cuando un Pokémon evoluciona, otro de tu equipo evoluciona también.' },
+  share: { name: 'Repartir Exp.', color: '#ffd84a', spr: 'exp-share', desc: 'Cuando un Pokémon evoluciona, otro de tu equipo evoluciona también.' },
 };
+// spr: icono del objeto (nombre del archivo de items de PokeAPI, en assets/sprites/objetos.js); sin icono, se dibuja (BAG_ICON)
+const BALL_SPR = { spr: 'level-ball' };   // Ball de Kurt
