@@ -22,8 +22,9 @@ $html = [regex]::Replace($html, '<link rel="stylesheet" href="(css/[^"?]+)(?:\?v
   "<style>/* $($m.Groups[1].Value) */`n$css</style>"
 })
 # JavaScript: cada <script src> local pasa a script en línea, en el mismo orden (al final del body, ya existe el DOM)
+# (los enlaces pueden llevar ?v=… , el número de versión de herramientasersion.ps1: aquí no cuenta)
 $scripts = New-Object Text.StringBuilder
-$html = [regex]::Replace($html, '\s*<script src="((?:js|assets)/[^"?]+)(?:\?v=[^"]*)?" defer></script>'   # (?v=… es el número de versión de herramientas\version.ps1), {
+$html = [regex]::Replace($html, '\s*<script src="((?:js|assets)/[^"?]+)(?:\?v=[^"]*)?" defer></script>', {
   param($m)
   $js = (& $leer $m.Groups[1].Value) -replace '</script', '<\/script'
   [void]$scripts.Append("<script>/* $($m.Groups[1].Value) */`n$js</script>`n")
