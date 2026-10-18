@@ -91,7 +91,7 @@ body.wide-adv .wrap { max-width: 1120px; }
    una línea de luz arriba y las cuatro esquinas remarcadas */
 .leader-card { background:
     radial-gradient(130% 120% at 0% 0%, color-mix(in srgb, var(--c) 22%, transparent), transparent 55%),
-    repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 7%, transparent) 0 1px, transparent 1px 11px),
+    linear-gradient(115deg, transparent 44%, color-mix(in srgb, var(--c) 10%, transparent) 52%, transparent 60%),   /* un haz de luz diagonal (sin rayas) */
     linear-gradient(180deg, color-mix(in srgb, var(--c) 10%, transparent), color-mix(in srgb, var(--c) 4%, transparent));
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 26px color-mix(in srgb, var(--c) 14%, transparent); }
 .leader-card::before { content: ""; position: absolute; left: 16px; right: 16px; top: 0; height: 2px; z-index: 2; pointer-events: none;
@@ -116,11 +116,14 @@ body.wide-adv .wrap { max-width: 1120px; }
 .lc-art img:nth-last-child(3) { transform: translateX(104%); }
 .lc-art img:nth-child(2):nth-last-child(2) { z-index: 1; }
 /* fondo: de cintura para arriba, grande (cubre buena parte de la tarjeta), abajo a la derecha, con la cabeza casi arriba */
-.lc-big { right: 46px; top: calc(4px - 100% * .27); height: 220%;   /* (sube lo que mide el hueco vacío encima de la cabeza) */
+.lc-big { left: 74%; right: auto; transform: translateX(-50%);   /* centrado en la parte derecha de la tarjeta */
+   top: calc(4px - 100% * .27); height: 220%;   /* (sube lo que mide el hueco vacío encima de la cabeza) */
   opacity: .2; filter: saturate(.85);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%); }
-/* si el líder son varios personajes, el fondo los enseña a todos: más pequeños, pegados a la derecha y montados */
-.lc-art.many .lc-big { right: 0; top: calc(4px - 100% * .19); height: 160%; }
+/* si el líder son varios personajes, el fondo los enseña a todos: más pequeños y montados */
+.lc-art.many .lc-big { top: calc(4px - 100% * .19); height: 160%; }
+/* (los de delante se montan hacia la derecha: la fila se corre a la izquierda para que el grupo quede centrado) */
+.lc-art.n2 .lc-big { transform: translateX(-63%); } .lc-art.n3 .lc-big { transform: translateX(-67.3%); }
 /* delante, de cuerpo entero: de abajo hasta 3/4 del alto de la tarjeta */
 .lc-full { right: 10px; bottom: 0; height: 87%;   /* la imagen trae hueco encima de la cabeza: así la cabeza llega a 3/4 */
   filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); animation: lcIn .45s cubic-bezier(.2,.9,.3,1.3) both; }
@@ -320,10 +323,11 @@ body.tm-dragging, body.tm-dragging * { cursor: grabbing !important; user-select:
   .adv-stage .side { min-height: 0; overflow: hidden; gap: 10px; }
   /* el líder de cuerpo entero, abajo a la derecha del escenario (entre la caja de información y el diario), sobre una peana de luz;
      en la tarjeta queda solo el busto grande de fondo */
-  .adv-leadfig:not([hidden]) { display: block; position: absolute; left: 76%; transform: translateX(-50%); bottom: 8px;   /* centrado en el hueco de la columna de la derecha */
+  .adv-leadfig:not([hidden]) { display: block; position: absolute; right: 34px; bottom: 10px;   /* abajo a la derecha del escenario */
     height: min(250px, 38%); z-index: 0; pointer-events: none; }
   .adv-stage .side { position: relative; z-index: 1; justify-content: flex-start; }
   .adv-stage #advBtns { margin-top: auto; }   /* los botones, abajo del todo */
+  .adv-stage #advStep { margin-top: auto; }   /* el título y el texto de la fase, a media altura del hueco que queda (no pegados a la tarjeta) */
   .leader-card .lc-full { display: none; }
   .adv-stage .adv-text { height: auto; flex: 0 1 auto; min-height: 0; max-height: 9.3em; }   /* el texto ocupa solo lo que mide, arriba (si es muy largo, se desplaza dentro) */
   /* línea de fases en el hueco entre la ruleta y el borde de abajo del recuadro */
@@ -630,26 +634,29 @@ img.stone.px { image-rendering: pixelated; }
 .lf-glow::after { content: ""; position: absolute; inset: 30% 18%; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--c) 70%, transparent); }
 
 /* ---- Decoración de la aventura ----
-   escenario: un halo detrás de la ruleta, una rejilla tenue que se apaga hacia los bordes y una luz abajo a la derecha (donde está el líder) */
+   escenario (sin patrones): la ruleta sobre un fondo tranquilo, un haz de luz diagonal, un arco grande arriba a la derecha y una luz
+   cálida abajo a la derecha (donde está el líder) */
 .adv-stage { background-image:
-    /* detrás de la ruleta, la decoración se apaga (un velo del color del fondo encima de la rejilla y de las Poké Balls de la página) */
+    /* detrás de la ruleta, la decoración se apaga (un velo del color del fondo encima de la decoración de la página) */
     radial-gradient(34% 52% at 26% 46%, color-mix(in srgb, var(--bg) 78%, transparent) 45%, transparent 100%),
     radial-gradient(42% 60% at 26% 46%, rgba(var(--glow-rgb), .05), transparent 70%),
     radial-gradient(34% 50% at 76% 100%, rgba(var(--warm-rgb), .07), transparent 70%),
-    linear-gradient(rgba(var(--glow-rgb), .03) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--glow-rgb), .03) 1px, transparent 1px);
-  background-size: auto, auto, auto, 36px 36px, 36px 36px; }
-/* tarjetas de equipo, mochila y diario: brillo arriba y una franja diagonal de color, como las fichas */
+    linear-gradient(118deg, transparent 52%, rgba(var(--glow-rgb), .035) 58%, transparent 64%),
+    radial-gradient(circle at 100% 0%, transparent 0 230px, rgba(var(--glow-rgb), .07) 231px 232.5px, transparent 234px 270px, rgba(var(--warm-rgb), .05) 271px 272px, transparent 273px);
+  background-size: auto; }
+/* tarjetas de equipo, mochila y diario: brillo arriba, una franja diagonal de color y un arco que asoma abajo a la derecha */
 .adv-card { position: relative; isolation: isolate; background-image:
     linear-gradient(180deg, rgba(var(--glow-rgb), .07), transparent 38%),
-    radial-gradient(circle, rgba(var(--glow-rgb), .07) 1px, transparent 1.5px); background-size: auto, 18px 18px; }
+    radial-gradient(circle at 100% 100%, transparent 0 90px, rgba(var(--glow-rgb), .08) 91px 92.5px, transparent 94px); }
 .adv-card > .card-head::after { content: ""; position: absolute; z-index: -1; right: 0; top: 0; width: 46%; height: 100%; pointer-events: none; border-radius: inherit;
   background: linear-gradient(225deg, rgba(var(--glow-rgb), .07), transparent 55%); }
 /* en el móvil en vertical la ruleta está arriba en el centro: el velo va ahí */
 @media (max-width: 760px) and (orientation: portrait) {
   .adv-stage { background-image:
       radial-gradient(62% 32% at 50% 27%, color-mix(in srgb, var(--bg) 80%, transparent) 50%, transparent 100%),
-      linear-gradient(rgba(var(--glow-rgb), .03) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--glow-rgb), .03) 1px, transparent 1px);
-    background-size: auto, 32px 32px, 32px 32px; }
+      linear-gradient(118deg, transparent 52%, rgba(var(--glow-rgb), .035) 58%, transparent 64%);
+    background-size: auto; }
 }
-/* (varios personajes: los de delante se montan hacia la derecha, así que la fila se corre a la izquierda para quedar centrada) */
-.adv-leadfig[data-n="2"]:not([hidden]) { transform: translateX(-63%); } .adv-leadfig[data-n="3"]:not([hidden]) { transform: translateX(-67.3%); }
+
+/* la peana, centrada bajo los personajes que se ven (en un grupo, los de delante se montan hacia la derecha y la parte izquierda de la fila queda vacía) */
+.adv-leadfig[data-n="2"] .lf-glow { left: 14%; right: -8%; } .adv-leadfig[data-n="3"] .lf-glow { left: 24%; right: -6%; }

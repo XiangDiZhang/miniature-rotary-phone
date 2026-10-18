@@ -75,7 +75,9 @@ function pick(g) {
     : `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);
   const key = g.region.toLowerCase();
   if (REGIONS[key]) {
-    const saved = loadRun(key), cont = saved && saved.team && saved.team.length, best = getBest()[key];
+    // una partida perdida (o ya terminada en el Hall de la Fama) no se puede seguir: se borra y la región empieza de cero
+    let saved = loadRun(key); if (saved && (saved.over || saved.histSaved)) { store.remove('ruleta-run-' + key); saved = null; }
+    const cont = saved && saved.team && saved.team.length, best = getBest()[key];
     $('advEntry').innerHTML = (cont ? `<button class="btn" type="button" id="advCont">Continuar partida</button>` : '') + `<button class="btn${cont ? ' ghostbtn' : ''}" type="button" id="advGo">${cont ? 'Nueva aventura' : 'Empezar aventura →'}</button>` + (best ? `<p class="wip" style="flex-basis:100%;padding:8px">RÉCORD EN ${g.region.toUpperCase()} · ${best} PUNTOS · RANGO ${rank(best, key)}</p>` : '');
     if (cont) $('advCont').onclick = () => { chord([659, 880, 1175]); run = saved; advStart(false, key); };
     histFilter = 'all'; renderHistory(key); requestAnimationFrame(fitHistory);

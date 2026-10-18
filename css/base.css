@@ -73,13 +73,12 @@ body {
   background-image:
     radial-gradient(1200px 600px at 80% -10%, rgba(var(--glow-rgb),.07), transparent 60%),
     radial-gradient(900px 500px at -10% 110%, rgba(var(--warm-rgb),.05), transparent 60%),
-    /* decoración: una Poké Ball enorme (solo el contorno) asomando abajo a la izquierda, otra pequeña arriba a la derecha y una rejilla de puntos */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%237fd6ff' stroke-opacity='.07' stroke-width='3'%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Cpath d='M4 100h66M130 100h66'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Ccircle cx='100' cy='100' r='16'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23ff5a46' stroke-opacity='.06' stroke-width='4'%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Cpath d='M4 100h66M130 100h66'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3C/svg%3E"),
-    radial-gradient(circle, rgba(var(--glow-rgb),.085) 1px, transparent 1.6px);
-  background-size: auto, auto, 640px 640px, 260px 260px, 24px 24px;
-  background-position: 0 0, 0 0, -220px calc(100% + 240px), calc(100% + 70px) -70px, 0 0;
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+    /* decoración (sin patrones): haces de luz, arcos y destellos sueltos, y una Poké Ball enorme (solo el contorno) asomando abajo a la izquierda */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1000' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237fd6ff' stop-opacity='0'/%3E%3Cstop offset='.5' stop-color='%237fd6ff' stop-opacity='.05'/%3E%3Cstop offset='1' stop-color='%237fd6ff' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M980 -40 L1180 -40 L560 1040 L360 1040Z' fill='url(%23b)'/%3E%3Cpath d='M1260 -40 L1320 -40 L700 1040 L640 1040Z' fill='url(%23b)'/%3E%3Ccircle cx='1540' cy='980' r='360' fill='none' stroke='%237fd6ff' stroke-opacity='.06' stroke-width='2'/%3E%3Ccircle cx='1540' cy='980' r='300' fill='none' stroke='%23ff5a46' stroke-opacity='.05' stroke-width='1.5' stroke-dasharray='6 14'/%3E%3Ccircle cx='60' cy='60' r='240' fill='none' stroke='%23ffd84a' stroke-opacity='.05' stroke-width='1.5'/%3E%3Cpath d='M180 231Q180 240 189 240 Q180 240 180 249 Q180 240 171 240 Q180 240 180 231Z' fill='%237fd6ff' fill-opacity='0.35'/%3E%3Cpath d='M420 84Q420 90 426 90 Q420 90 420 96 Q420 90 414 90 Q420 90 420 84Z' fill='%23ffd84a' fill-opacity='0.35'/%3E%3Cpath d='M760 175Q760 180 765 180 Q760 180 760 185 Q760 180 755 180 Q760 180 760 175Z' fill='%237fd6ff' fill-opacity='0.3'/%3E%3Cpath d='M1120 112Q1120 120 1128 120 Q1120 120 1120 128 Q1120 120 1112 120 Q1120 120 1120 112Z' fill='%237fd6ff' fill-opacity='0.3'/%3E%3Cpath d='M1460 293Q1460 300 1467 300 Q1460 300 1460 307 Q1460 300 1453 300 Q1460 300 1460 293Z' fill='%23ffd84a' fill-opacity='0.3'/%3E%3Cpath d='M1360 615Q1360 620 1365 620 Q1360 620 1360 625 Q1360 620 1355 620 Q1360 620 1360 615Z' fill='%237fd6ff' fill-opacity='0.28'/%3E%3Cpath d='M240 694Q240 700 246 700 Q240 700 240 706 Q240 700 234 700 Q240 700 240 694Z' fill='%23ff5a46' fill-opacity='0.25'/%3E%3Cpath d='M620 872Q620 880 628 880 Q620 880 620 888 Q620 880 612 880 Q620 880 620 872Z' fill='%237fd6ff' fill-opacity='0.25'/%3E%3Cpath d='M980 755Q980 760 985 760 Q980 760 980 765 Q980 760 975 760 Q980 760 980 755Z' fill='%23ffd84a' fill-opacity='0.28'/%3E%3Cpath d='M1520 874Q1520 880 1526 880 Q1520 880 1520 886 Q1520 880 1514 880 Q1520 880 1520 874Z' fill='%237fd6ff' fill-opacity='0.25'/%3E%3Cpath d='M80 476Q80 480 84 480 Q80 480 80 484 Q80 480 76 480 Q80 480 80 476Z' fill='%237fd6ff' fill-opacity='0.3'/%3E%3Cpath d='M860 456Q860 460 864 460 Q860 460 860 464 Q860 460 856 460 Q860 460 860 456Z' fill='%237fd6ff' fill-opacity='0.2'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%237fd6ff' stroke-opacity='.07' stroke-width='3'%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Cpath d='M4 100h66M130 100h66'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Ccircle cx='100' cy='100' r='16'/%3E%3C/svg%3E");
+  background-size: auto, auto, cover, 640px 640px;
+  background-position: 0 0, 0 0, center, -220px calc(100% + 240px);
+  background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--fg);
   font-family: var(--f-body);
@@ -182,6 +181,22 @@ h1 b { font-weight: 600; }
   .head-actions .sound { padding: 6px 9px; font-size: 9.5px; letter-spacing: .08em; white-space: nowrap; }
 }
 
-/* ---- Decoración de los paneles (en vez de un color liso): brillo arriba a la izquierda y rayas diagonales muy finas ---- */
-.frame { background-image: radial-gradient(90% 70% at 0% 0%, rgba(var(--glow-rgb), .06), transparent 60%),
-  repeating-linear-gradient(135deg, rgba(var(--glow-rgb), .022) 0 1px, transparent 1px 12px); }
+/* ---- Decoración de los paneles (en vez de un color liso, sin patrones): brillo arriba a la izquierda, un haz de luz diagonal
+   y un arco grande que asoma en la esquina de abajo a la derecha ---- */
+.frame { background-image:
+    radial-gradient(90% 70% at 0% 0%, rgba(var(--glow-rgb), .06), transparent 60%),
+    linear-gradient(115deg, transparent 52%, rgba(var(--glow-rgb), .035) 58%, transparent 64%),
+    radial-gradient(circle at 100% 100%, transparent 0 140px, rgba(var(--glow-rgb), .07) 141px 142.5px, transparent 144px 176px, rgba(var(--warm-rgb), .05) 177px 178px, transparent 179px); }
+
+/* ---- Botones decorados: brillo de cristal arriba, halo del color del tema y un destello que cruza al pasar el ratón ---- */
+.btn { position: relative; overflow: hidden; isolation: isolate;
+  background-image: linear-gradient(180deg, rgba(255,255,255,.28), transparent 55%), linear-gradient(90deg, transparent, rgba(var(--glow-rgb), .18), transparent);
+  box-shadow: 0 0 0 1px rgba(var(--glow-rgb), .18), 0 6px 18px rgba(0,0,0,.3), 0 0 16px rgba(var(--glow-rgb), .18); }
+.btn.ghostbtn { background-image: linear-gradient(180deg, rgba(var(--glow-rgb), .1), transparent 70%); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 12px rgba(var(--glow-rgb), .08); }
+.btn::after { content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: -60%; width: 40%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent); transform: skewX(-20deg); opacity: 0; }
+.btn:not(:disabled):hover::after { animation: btnShine .7s ease-out; }
+.btn:not(:disabled):hover { box-shadow: 0 0 0 1px rgba(var(--glow-rgb), .45), 0 8px 22px rgba(0,0,0,.35), 0 0 24px rgba(var(--glow-rgb), .35); }
+@keyframes btnShine { 0% { left: -60%; opacity: 1; } 100% { left: 130%; opacity: 1; } }
+.sound, .toggle, .mini-btn { background-image: linear-gradient(180deg, rgba(var(--glow-rgb), .08), transparent 70%); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+.sound:hover, .toggle:hover, .mini-btn:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 14px rgba(var(--glow-rgb), .25); }
