@@ -47,7 +47,7 @@ function evoHTML(n, formId) {
       }
       stage = stage.flatMap(kids);
     }
-    return `<div class="evo">${html}</div>`;
+    return `<div class="evo"><div class="evo-in">${html}</div></div>`;
   };
   // línea normal: sin las evoluciones que solo hace una forma regional; debajo de cada una, sus variantes no regionales
   const base = new Map(ids.filter(k => !regOnly(k)).map(k => [k, [[0, (FORMS[k] || []).filter(f => !formTag(f)), false]]]));
