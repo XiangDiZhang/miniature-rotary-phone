@@ -52,7 +52,7 @@ function rivalStarter(R) { R = R || REG(); if (R.rivalOf && R.rivalOf[run.starte
 function phaseRival() {
   const R = REG(), L = loc();
   const foe = [...(L.team || []), evoAt(rivalStarter(R), L.stage || 0)];
-  setFoe(rivalSprs(L.rival));   // el rival, en la tarjeta y en el escenario
+  setFoe(rivalSprs(L.rival), bioOf(L.rival));   // el rival, en la tarjeta y en el escenario
   battle(`Rival · ${L.rival}`, `Tu rival ${L.rival}`, foe, 1, () => {
     addPoints(PTS.rival, `victoria contra ${L.rival}`);
     advSay(`¡Has ganado a ${L.rival}! «Hmpf… la próxima vez no tendrás tanta suerte». ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));

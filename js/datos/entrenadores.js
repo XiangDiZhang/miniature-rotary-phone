@@ -57,5 +57,35 @@ const BOSS_BADGES = 6;
 // a quién te enfrentas del equipo villano ahora: { boss, name (quien te reta), sprs }
 function villainFoe() {
   const key = REG().villain || 'rocket', V = VIL(), B = badges() >= BOSS_BADGES && VILLAIN_BOSS[key];
-  return B ? { boss: true, name: `${B[0]}, el jefe del ${V.name},`, short: B[0], sprs: trainerSprs(B[1]) } : { boss: false, name: V.grunt, short: V.grunt, sprs: villainSprs(key) };
+  return B ? { boss: true, name: `${B[0]}, el jefe del ${V.name},`, short: B[0], sprs: trainerSprs(B[1]), tip: typeof bioOf === 'function' ? bioOf(B[0]) : '' }
+    : { boss: false, name: V.grunt, short: V.grunt, sprs: villainSprs(key), tip: typeof BIO_VILLAIN !== 'undefined' ? BIO_VILLAIN[key] || '' : '' };
+}
+
+// Entrenadores del camino: por su clase (la primera palabra o dos de su nombre) → el sprite de esa clase, una de sus variantes al azar
+// (siempre la misma para el mismo entrenador). Sin clase conocida, uno genérico al azar. Nunca personajes clave.
+const CLASS_SPR = { 'Entrenador Guay': 'acetrainer', 'Entrenadora Guay': 'acetrainerf', 'Pescador': 'fisherman', 'Pescadora': 'fisher', 'Médium': 'medium',
+  'Montañero': 'hiker', 'Montañera': 'hiker', 'Joven': 'youngster', 'Cazabichos': 'bugcatcher', 'Marinero': 'sailor', 'Pokémaníaco': 'pokemaniac',
+  'Esquiadora': 'skierf', 'Esquiador': 'skier', 'Domadragones': 'dragontamer', 'Experta': 'expertf', 'Experto': 'expert', 'Excursionista': 'backpacker',
+  'Dominguera': 'picnicker', 'Campista': 'camper', 'Bañista': 'tuber', 'Ornitólogo': 'birdkeeper', 'Ornitóloga': 'birdkeeper', 'Nadadora': 'swimmerf', 'Nadador': 'swimmer',
+  'Karateka': 'blackbelt', 'Dama Rica': 'lady', 'Científico': 'scientist', 'Científica': 'scientistf', 'Ciclista': 'cyclist', 'Chica': 'lass', 'Bailarina': 'dancer',
+  'Supernecio': 'supernerd', 'Secretaria': 'officeworkerf', 'Sabio': 'sage', 'Repartidor': 'courier', 'Ranchero': 'rancher', 'Punki': 'punkguy',
+  'Preescolar': 'preschooler', 'Patinador': 'rollerskater', 'Ninja': 'ninjaboy', 'Caballero': 'gentleman', 'Belleza': 'beauty', 'Psíquico': 'psychic', 'Psíquica': 'psychicf',
+  'Policía': 'policeman', 'Mochilero': 'backpacker', 'Turista': 'tourist', 'Artista': 'artist', 'Músico': 'musician', 'Guitarrista': 'guitarist', 'Motorista': 'biker',
+  'Criador': 'pokemonbreeder', 'Criadora': 'pokemonbreederf', 'Pokéfan': 'pokefan', 'Colegial': 'schoolboy', 'Colegiala': 'schoolgirl', 'Payaso': 'clown', 'Camarera': 'waitress' };
+// personajes con nombre que salen como entrenadores del camino
+const NAMED_SPR = { 'Gladio': 'gladion', 'N': 'n', 'Bel': 'bianca', 'Arturo': 'arven', 'Xana': 'shauna', 'Trovato': 'trevor' };
+const GENERIC_SPR = ['acetrainer', 'acetrainerf', 'youngster', 'lass', 'hiker', 'fisherman', 'bugcatcher', 'picnicker', 'camper', 'swimmer', 'swimmerf', 'beauty',
+  'blackbelt', 'battlegirl', 'gentleman', 'lady', 'psychic', 'psychicf', 'scientist', 'cyclist', 'cyclistf', 'birdkeeper', 'sailor', 'pokefan', 'pokefanf', 'backpacker', 'backpackerf', 'tourist', 'rancher'];
+const strHash = s => { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+function routeTrainerSprs(name) {
+  if (typeof TRAINER_SPR === 'undefined') return [];
+  const first = String(name).split(' ')[0];
+  if (RIVAL_SPR[first]) return rivalSprs(first);
+  if (NAMED_SPR[first]) return trainerSprs(NAMED_SPR[first]);
+  // reclutas, soldados, comandos e hinchas: un recluta del equipo villano de la región
+  if (/^(Recluta|Soldado|Comando|Hincha|Admin)/.test(name)) { const v = villainSprs(REG().villain || 'rocket'); return v.length ? [v[strHash(name) % v.length]] : []; }
+  const cls = Object.keys(CLASS_SPR).filter(c => name === c || name.startsWith(c + ' ')).sort((a, b) => b.length - a.length)[0];
+  const base = cls ? CLASS_SPR[cls] : GENERIC_SPR[strHash(name) % GENERIC_SPR.length];
+  const vars = Object.keys(TRAINER_SPR).filter(k => k === base || k.startsWith(base + '-'));
+  return vars.length ? [TRAINER_SPR[vars[strHash(name) % vars.length]]] : [];
 }

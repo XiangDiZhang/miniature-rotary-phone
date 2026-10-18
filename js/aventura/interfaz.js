@@ -312,7 +312,8 @@ function logHTML(t) {
 let advNow = null;
 // rival o villano al que te enfrentas ahora (sus sprites salen como los de los líderes): { sprs: [imágenes] }; se borra al pasar de fase
 let advFoe = null;
-const setFoe = sprs => { advFoe = sprs && sprs.length ? { sprs } : null; renderCard(); };
+// tip (opcional): su historia (sale al pasar el ratón por su sprite)
+const setFoe = (sprs, tip) => { advFoe = sprs && sprs.length ? { sprs, tip: tip || '' } : null; renderCard(); };
 // para los momentos sin ruleta (tienda, té, premio, victoria…): la tarjeta dice qué está pasando
 function setNow(txt, extra) { advNow = { txt, ...(extra || {}) }; renderCard(); }
 // cada suceso escribe en el diario lo que ha pasado: eso mismo sale en la tarjeta (con su Pokémon, si lo hay),
@@ -442,6 +443,14 @@ function renderCard() {
     const ls = L.kind === 'gym' ? leaderSprs(L.leader) : advFoe ? advFoe.sprs : [], fh = ls.length ? `<span class="lf-glow"></span><span class="lf-row n${ls.length}">${ls.map(u => `<img src="${u}" alt="">`).join('')}</span>` : '';
     fig.style.setProperty('--c', c); fig.hidden = !ls.length; fig.dataset.n = ls.length;
     if (fig._h !== fh) { fig._h = fh; fig.innerHTML = fh; groundSprites(fig.querySelector('.lf-row'), fig.querySelector('.lf-glow')); }
+    // su historia al pasar el ratón por encima (líderes por su nombre; rivales, villanos y entrenadores del camino, la que traen)
+    const tip = L.kind === 'gym' ? bioOf(L.leader) : advFoe ? advFoe.tip : '', row = fig.querySelector('.lf-row');
+    if (row) { if (tip) row.dataset.tip = tip; else delete row.dataset.tip; }
+    // tu entrenador, a la izquierda, mirando a quien te enfrentas (en el ordenador)
+    const pf = $('advPlayerFig');
+    if (pf) { const pu = ls.length ? playerTrainerSpr() : null, ph = pu ? `<span class="lf-glow"></span><span class="lf-row n1"><img src="${pu}" alt=""></span>` : '';
+      pf.hidden = !pu; if (pf._h !== ph) { pf._h = ph; pf.innerHTML = ph; groundSprites(pf.querySelector('.lf-row'), pf.querySelector('.lf-glow')); }
+      const pr = pf.querySelector('.lf-row'); if (pr) pr.dataset.tip = `${trainerName()}: tú. Entrenador de ${REG().name}, en busca de las medallas y la Liga.`; }
   }
   // pestaña del móvil: un botón redondo con icono (medalla en los combates de gimnasio y liga, mapa en el resto); el nombre, para los lectores de pantalla
   const lt = $('leadTab');

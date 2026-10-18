@@ -25,6 +25,7 @@ function doEgg() {
 // Entrenadores del camino: si ganas, uno de tus Pokémon evoluciona seguro, sin ruleta de suerte (o Poción si nadie puede); si pierdes, la partida sigue
 function doTrainer(force) {
   const L = loc(), [ra, rb] = REG().range, list = L.trainers && L.trainers.length ? L.trainers : [{ name: 'Entrenador Guay', team: [rnd(ra, rb - 3)] }], t = force || list[rnd(0, list.length - 1)];
+  setFoe(routeTrainerSprs(t.name), bioOf(t.name.split(' ')[0]) || `${t.name}: entrenador del camino de ${REG().name}.`);   // su sprite (por su clase), como los líderes
   battle(`${L.name} · ${t.name}`, t.name, t.team, 1, () => {
     addPoints(PTS.win, `victoria contra ${t.name}`);
     evolveSure(`¡Has ganado a ${t.name}! Tu equipo ha ganado experiencia.`);
@@ -171,7 +172,7 @@ function rocketTeam() { const L = loc(), T = VIL().teams || ROCKET_TEAMS; return
 function doRocketWheel(txt) {
   const canSteal = allMine().length >= 1, st = stolenList();
   // los reclutas del equipo villano (o, con muchas medallas, su jefe), en la tarjeta y en el escenario
-  const V = VIL(), F = villainFoe(); setFoe(F.sprs);
+  const V = VIL(), F = villainFoe(); setFoe(F.sprs, F.tip);
   spinUI(V.name, `${txt ? txt + ' ' : ''}${F.boss ? `¡${F.short}, el jefe del ${V.name}, te sale al paso en persona!` : `¡El ${V.name} aparece!`}${st.length ? ` Tienen a tu ${st.map(mname).join(', ')}: ¡es tu oportunidad de recuperarlo!` : ''}`, [
     { label: 'Combate', short: 'COMBATE', color: '#a33ea1', w: st.length ? 4 : 2, k: 'fight' },
     ...(canSteal ? [{ label: 'Te roban', short: 'ROBO', color: '#ff5a46', w: 1, k: 'steal' }] : []),
@@ -183,7 +184,7 @@ function doRocketWheel(txt) {
 }
 function rocketBattle() {
   const L = loc(), V = VIL();
-  const F = villainFoe(); setFoe(F.sprs);
+  const F = villainFoe(); setFoe(F.sprs, F.tip);
   battle(`${L.name} · ${F.boss ? F.short : V.name}`, F.name, rocketTeam(), F.boss ? 2 : 1, () => {
     addPoints(PTS.rocket, `${V.name} derrotado`);
     let extra = '';
@@ -216,7 +217,7 @@ function doRivalSlice() {
   const R = REG(), b = badges(), st = rivalStarter(R);
   const team = R.rivalTeam ? R.rivalTeam(b) : b < 2 ? [] : b < 4 ? [92, 41] : b < 6 ? [93, 41, 81] : b < 8 ? [42, 81, 93, 215] : [42, 82, 94, 65, 215];
   const foe = [...team, evoAt(st, b < 2 ? 0 : b < 6 ? 1 : 2)];
-  setFoe(rivalSprs(R.rivalName));
+  setFoe(rivalSprs(R.rivalName), bioOf(R.rivalName));
   battle(`Rival · ${R.rivalName}`, `Tu rival ${R.rivalName}`, foe, 1, () => {
     addPoints(PTS.rival, `victoria contra ${R.rivalName}`);
     advSay(`¡Has ganado a ${R.rivalName}! «Hmpf… la próxima vez no tendrás tanta suerte». ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));
