@@ -170,7 +170,7 @@ function rocketTeam() { const L = loc(), T = VIL().teams || ROCKET_TEAMS; return
 
 function doRocketWheel(txt) {
   const canSteal = allMine().length >= 1, st = stolenList();
-  const V = VIL();
+  const V = VIL(); setFoe(villainSprs(REG().villain || 'rocket'));   // los reclutas del equipo villano, en la tarjeta y en el escenario
   spinUI(V.name, `${txt ? txt + ' ' : ''}¡El ${V.name} aparece!${st.length ? ` Tienen a tu ${st.map(mname).join(', ')}: ¡es tu oportunidad de recuperarlo!` : ''}`, [
     { label: 'Combate', short: 'COMBATE', color: '#a33ea1', w: st.length ? 4 : 2, k: 'fight' },
     ...(canSteal ? [{ label: 'Te roban', short: 'ROBO', color: '#ff5a46', w: 1, k: 'steal' }] : []),
@@ -182,6 +182,7 @@ function doRocketWheel(txt) {
 }
 function rocketBattle() {
   const L = loc(), V = VIL();
+  setFoe(villainSprs(REG().villain || 'rocket'));
   battle(`${L.name} · ${V.name}`, V.grunt, rocketTeam(), 1, () => {
     addPoints(PTS.rocket, `${V.name} derrotado`);
     let extra = '';
@@ -214,6 +215,7 @@ function doRivalSlice() {
   const R = REG(), b = badges(), st = rivalStarter(R);
   const team = R.rivalTeam ? R.rivalTeam(b) : b < 2 ? [] : b < 4 ? [92, 41] : b < 6 ? [93, 41, 81] : b < 8 ? [42, 81, 93, 215] : [42, 82, 94, 65, 215];
   const foe = [...team, evoAt(st, b < 2 ? 0 : b < 6 ? 1 : 2)];
+  setFoe(rivalSprs(R.rivalName));
   battle(`Rival · ${R.rivalName}`, `Tu rival ${R.rivalName}`, foe, 1, () => {
     addPoints(PTS.rival, `victoria contra ${R.rivalName}`);
     advSay(`¡Has ganado a ${R.rivalName}! «Hmpf… la próxima vez no tendrás tanta suerte». ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));

@@ -181,7 +181,7 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
   show();
 }
 function gameOver(who) {
-  run.over = true; run.lostTo = who; run.record = saveBest(); saveHistory(false); advNow = null;
+  run.over = true; run.lostTo = who; run.record = saveBest(); saveHistory(false); advNow = null; advFoe = null;
   log(`☠️ Derrota contra ${who}. Fin de la partida.`); renderAdv(); saveRun();
   advButtons([]); $('advStep').textContent = 'Fin de la partida'; advWheel.enabled = false;
   if (reduceMotion) return phaseGameOver();

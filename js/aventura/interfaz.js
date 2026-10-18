@@ -306,6 +306,9 @@ function logHTML(t) {
 
 // ---- Qué está pasando ahora (la tarjeta de información lo enseña arriba): se pone con cada ruleta y se borra al cambiar de parada ----
 let advNow = null;
+// rival o villano al que te enfrentas ahora (sus sprites salen como los de los líderes): { sprs: [imágenes] }; se borra al pasar de fase
+let advFoe = null;
+const setFoe = sprs => { advFoe = sprs && sprs.length ? { sprs } : null; renderCard(); };
 // para los momentos sin ruleta (tienda, té, premio, victoria…): la tarjeta dice qué está pasando
 function setNow(txt, extra) { advNow = { txt, ...(extra || {}) }; renderCard(); }
 // cada suceso escribe en el diario lo que ha pasado: eso mismo sale en la tarjeta (con su Pokémon, si lo hay),
@@ -355,6 +358,13 @@ function nowFrom(title) {
 const TYPES = Object.keys(CHART);
 // tipo: su icono en un círculo de su color, como los del filtro de la Pokédex (el nombre, al pasar el ratón y para los lectores de pantalla)
 const chip = t => `<span class="lc-ty" style="${typeVars(t)}" title="${t}" role="img" aria-label="${t}">${typeSvg(t)}</span>`;
+// sprites de un entrenador en la tarjeta de información: de fondo, el busto grande y tenue; delante (en el móvil), de cuerpo entero.
+// ls = sus imágenes (varias si son varios personajes: Vito y Leti, los dos reclutas de un equipo villano…)
+function trainerArt(ls) {
+  if (!ls.length) return '';
+  const imgs = ls.map(u => `<img src="${u}" alt="">`).join('');
+  return `<div class="lc-art n${ls.length}${ls.length > 1 ? ' many' : ''}" aria-hidden="true"><span class="lc-big">${imgs}</span><span class="lc-full">${imgs}</span></div>`;
+}
 function leaderHTML(L) {
   const T = L.typeName, done = (L.badge && run.badges.includes(L.badge)) || run.stepDone;
   const weak = TYPES.filter(t => eff(t, [T]) > 1);       // tipos que le hacen mucho daño
@@ -365,8 +375,7 @@ function leaderHTML(L) {
   // su sprite (Líderes, Alto Mando y Campeones): de fondo, de medio cuerpo para arriba, grande y tenue, abajo a la derecha;
   // y encima, de cuerpo entero
   // (si son varios personajes, como Vito y Leti, salen todos juntos, un poco montados uno sobre otro)
-  const ls = leaderSprs(L.leader), imgs = ls.map(u => `<img src="${u}" alt="">`).join('');
-  const art = ls.length ? `<div class="lc-art n${ls.length}${ls.length > 1 ? ' many' : ''}" aria-hidden="true"><span class="lc-big">${imgs}</span><span class="lc-full">${imgs}</span></div>` : '';
+  const art = trainerArt(leaderSprs(L.leader));
   return { c: TYPE_COLORS[T], html: `${art}<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
     <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div>${chip(T)}</div></div>
     <div class="lc-rows">${N && N.mons ? monsRow(N) : `
@@ -411,7 +420,8 @@ function renderCard() {
     // de fondo, abajo a la derecha, grande y tenue: el Pokémon de lo que está pasando (el que capturas, el que evoluciona…)
     // o, si no hay ninguno, el icono de la fase (camino, ciudad, inicio…)
     const deco = nowImg(N) ? `<span class="lc-bigmon">${nowImg(N)}</span>` : `<span class="lc-bigico">${N && N.icon === 'evo' ? EVO_SVG : phaseLook(L).icon}</span>`;
-    html = `<div class="lc-art lc-deco" aria-hidden="true">${deco}</div><div class="lc-spr${ni ? ' lc-mon' : ''}${N && N.icon && !nowImg(N) ? ' lc-ico' : ''}">${ni || phaseLook(L).icon}</div>
+    // (contra un rival o un villano, sus sprites como los de los líderes; si no, la decoración de la fase)
+    html = `${advFoe ? trainerArt(advFoe.sprs) : `<div class="lc-art lc-deco" aria-hidden="true">${deco}</div>`}<div class="lc-spr${ni ? ' lc-mon' : ''}${N && N.icon && !nowImg(N) ? ' lc-ico' : ''}">${ni || phaseLook(L).icon}</div>
       <div class="lc-top">${N ? `${nowLine(N, `${kind} · ${L.name}`)}<b class="lc-doing">${N.txt}</b>` : `<small>${kind}${L.to ? ' · hacia ' + L.to : ''}</small><b>${L.name}</b>`}</div>
       <div class="lc-rows">
         ${N && N.mons ? monsRow(N) : ''}
@@ -425,7 +435,7 @@ function renderCard() {
   // en el ordenador, el líder (Alto Mando, Campeón…) de cuerpo entero abajo a la derecha del escenario, sobre una peana de luz
   const fig = $('advLeadFig');
   if (fig) {
-    const ls = L.kind === 'gym' ? leaderSprs(L.leader) : [], fh = ls.length ? `<span class="lf-glow"></span><span class="lf-row n${ls.length}">${ls.map(u => `<img src="${u}" alt="">`).join('')}</span>` : '';
+    const ls = L.kind === 'gym' ? leaderSprs(L.leader) : advFoe ? advFoe.sprs : [], fh = ls.length ? `<span class="lf-glow"></span><span class="lf-row n${ls.length}">${ls.map(u => `<img src="${u}" alt="">`).join('')}</span>` : '';
     fig.style.setProperty('--c', c); fig.hidden = !ls.length; fig.dataset.n = ls.length;
     if (fig._h !== fh) { fig._h = fh; fig.innerHTML = fh; groundSprites(fig.querySelector('.lf-row'), fig.querySelector('.lf-glow')); }
   }

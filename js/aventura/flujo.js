@@ -8,7 +8,7 @@ function advStart(fresh, region, prep) {
   renderAdv(); fitAdv(); requestAnimationFrame(fitAdv); advNext();
 }
 function advNext() {
-  advNow = null; $('advExtra').hidden = true; saveRun(); renderAdv();
+  advNow = null; advFoe = null; $('advExtra').hidden = true; saveRun(); renderAdv();
   if (run.over) return phaseGameOver();
   const L = loc();
   if (L.kind === 'start' && !run.team.length) return phaseStarter();
@@ -52,6 +52,7 @@ function rivalStarter(R) { R = R || REG(); if (R.rivalOf && R.rivalOf[run.starte
 function phaseRival() {
   const R = REG(), L = loc();
   const foe = [...(L.team || []), evoAt(rivalStarter(R), L.stage || 0)];
+  setFoe(rivalSprs(L.rival));   // el rival, en la tarjeta y en el escenario
   battle(`Rival · ${L.rival}`, `Tu rival ${L.rival}`, foe, 1, () => {
     addPoints(PTS.rival, `victoria contra ${L.rival}`);
     advSay(`¡Has ganado a ${L.rival}! «Hmpf… la próxima vez no tendrás tanta suerte». ¿Habrá evolución?`, () => advButtons([{ label: 'Ruleta de evolución', fn: phaseEvolve }]));
@@ -249,7 +250,7 @@ function phaseGym() {
 }
 // cine = se ha visto el Hall de la Fama: al cerrarlo se va a la selección de región (los puntos y el rango ya salían en él)
 function phaseEnd(cine) {
-  run.stepDone = true; saveHistory(true); advNow = null;
+  run.stepDone = true; saveHistory(true); advNow = null; advFoe = null;
   if (run.record === undefined) { run.record = saveBest(); saveRun(); }
   if (cine === true) return goPlay();
   $('advStep').textContent = 'Fin de la aventura'; advWheel.enabled = false;

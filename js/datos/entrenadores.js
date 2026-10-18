@@ -41,3 +41,12 @@ const leaderSprs = name => { const v = LEADER_SPR[name]; if (!v || typeof TRAINE
 const TRAINER_DEFAULT = 'red';
 const playerTrainer = () => { const k = store.get('ruleta-trainer-spr'); return typeof TRAINER_SPR !== 'undefined' && TRAINER_SPR[k] ? k : TRAINER_DEFAULT; };
 const playerTrainerSpr = () => (typeof TRAINER_SPR !== 'undefined' && TRAINER_SPR[playerTrainer()]) || null;
+
+// Rivales (por su nombre en el juego) y villanos (por su equipo: dos reclutas, chico y chica): salen como los líderes mientras
+// te enfrentas a ellos (en la tarjeta de información y de cuerpo entero en el escenario)
+const RIVAL_SPR = { 'Azul': 'blue', 'Plata': 'silver', 'Aura': 'may', 'Israel': 'barry', 'Cheren': 'cheren', 'Serena': 'serena', 'Tilo': 'hau', 'Paul': 'hop', 'Mencía': 'nemona-v' };
+const VILLAIN_SPR = { rocket: ['rocketgrunt', 'rocketgruntf'], magma: ['magmagrunt', 'magmagruntf'], galaxia: ['galacticgrunt', 'galacticgruntf'],
+  plasma: ['plasmagrunt', 'plasmagruntf-gen5bw'], flare: ['flaregrunt', 'flaregruntf'], skull: ['skullgrunt', 'skullgruntf'], yell: ['yellgrunt', 'yellgruntf'], star: ['stargrunt-s', 'stargruntf-s'] };
+const trainerSprs = keys => typeof TRAINER_SPR === 'undefined' ? [] : [].concat(keys || []).map(k => TRAINER_SPR[k]).filter(Boolean);
+const rivalSprs = name => trainerSprs(RIVAL_SPR[name]);
+const villainSprs = key => trainerSprs(VILLAIN_SPR[key]);
