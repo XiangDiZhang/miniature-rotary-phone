@@ -82,7 +82,8 @@ function shinyCheck(n, legend = false) { caught(n, Math.random() < SHINY_RATE, l
 function wildWheel(title, sub, pool, center, legend = false) {
   // todas las ruletas de Pokémon salvajes, como en el Randomlocke: en vez de los Pokémon de la zona, otros tantos (entre 8 y 14)
   // al azar de toda la Pokédex de la región (en el Randomlocke, de toda la Pokédex nacional)
-  const [ra, rb] = REG().randomlocke ? [1, 1025] : REG().range, all = []; for (let k = ra; k <= rb; k++) all.push(k);
+  // (sin legendarios ni singulares: solo pueden salir por el quesito «★ ???» de la ruleta de la ruta)
+  const [ra, rb] = REG().randomlocke ? [1, 1025] : REG().range, all = []; for (let k = ra; k <= rb; k++) if (!isLegend(k)) all.push(k);
   pool = allOf(randomPick(all, Math.max(8, Math.min(14, pool.length))));
   const tot = pool.reduce((a, w) => a + w[1], 0);
   spinUI(title, sub, [...pool.map(([n, w]) => wseg(n, w)),
