@@ -487,12 +487,20 @@ function headTop(big) {
 // «VS» en medio de tu entrenador y el rival (solo cuando salen los dos)
 function placeVs() {
   const vs = $('advVs'), fo = $('advLeadFig'), pf = $('advPlayerFig'), st = document.querySelector('.adv-stage'); if (!vs || !st) return;
-  const on = fo && pf && !fo.hidden && !pf.hidden && pf.offsetParent && fo.offsetParent;
-  vs.hidden = !on; if (!on) return;
-  requestAnimationFrame(() => {
-    const s = st.getBoundingClientRect(), a = pf.getBoundingClientRect(), b = fo.getBoundingClientRect();
-    vs.style.left = ((a.right + b.left) / 2 - s.left) + 'px'; vs.style.top = ((a.top + a.bottom) / 2 - s.top) + 'px';
-  });
+  const on = !!(fo && pf && !fo.hidden && !pf.hidden && pf.offsetParent && fo.offsetParent);
+  if (on && vs.hidden) { vs.hidden = false; vs.classList.remove('pop'); void vs.offsetWidth; vs.classList.add('pop'); vsSfx(); }   // aparece: golpe y sonido
+  if (!on) { vs.hidden = true; return; }
+  const put = () => {
+    let s = st.getBoundingClientRect(), b = fo.getBoundingClientRect(); if (!b.width) return;
+    // tu entrenador, a la izquierda del rival con hueco para el VS (sea uno o un grupo)
+    pf.style.left = 'auto'; pf.style.right = (s.right - b.left + Math.max(70, b.height * .45)) + 'px';
+    const a = pf.getBoundingClientRect(); if (!a.width) return;
+    vs.style.left = ((a.right + b.left) / 2 - s.left) + 'px'; vs.style.top = (Math.min(a.top + a.height * .45, b.top + b.height * .45) - s.top) + 'px';
+  };
+  put(); requestAnimationFrame(put);
+  // (se vuelve a colocar cuando los sprites terminan de cargar o cambian de tamaño)
+  if (!placeVs.ro && window.ResizeObserver) { placeVs.ro = new ResizeObserver(() => { if (!$('advVs').hidden) placeVs(); }); placeVs.ro.observe(fo); placeVs.ro.observe(pf); }
+  [...fo.querySelectorAll('img'), ...pf.querySelectorAll('img')].forEach(im => { if (!im.complete) im.addEventListener('load', put, { once: true }); });
 }
 addEventListener('resize', () => { if (typeof state !== 'undefined' && state.scene === 'adv') placeVs(); });
 function groundSprites(row, glow) {

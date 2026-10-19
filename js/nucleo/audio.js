@@ -198,3 +198,9 @@ function hofMusic() {
   for (let i = 0; i < 8; i++) bell(N(['D6', 'A6', 'F#6', 'D7'][i % 4]), c + 1.8 + i * .18, 1.4, .018);
   return c + 1.6 - T();   // segundos hasta el momento de la corona
 }
+// «VS» del combate: un golpe grave y un choque metálico que sube
+function vsSfx() {
+  if (!soundOn) return;
+  beep(110, .18, .07, 'square'); beep(82, .25, .06, 'sawtooth');
+  [[440, .12], [554, .2], [880, .28]].forEach(([f, t]) => setTimeout(() => { beep(f, .08, .04, 'square'); beep(f * 1.5, .06, .02, 'triangle'); }, t * 1000));
+}
