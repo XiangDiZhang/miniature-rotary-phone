@@ -10,35 +10,39 @@ function cardHTML(g, locked) {
       <div class="dex-meta"><span>Nº ${pad(g.from)}–${pad(g.to)}</span><span><b>${count}</b> especies</span></div>
     </div>`;
 }
+// tarjeta de un modo de juego (Caos, Randomlocke, Test): horizontal y compacta, con su símbolo grande, su nombre y qué es
+function modeHTML(g, tag, desc) {
+  return `<span class="m-sym">${g.roman}</span><span class="m-tx"><small>${tag}</small><b>${g.region}</b><span>${desc}</span></span><span class="m-go">→</span>`;
+}
 function buildMenu() {
-  const grid = $('grid');
+  const grid = $('grid'), modes = $('modes');
   // arriba del todo: las partidas sin terminar (una por región), para seguirlas o borrarlas
   items.push({ el: $('savesCard'), act: () => { chord([523, 659, 880]); show('saves'); } });
   // Modo Caos (el primero): gimnasios, Alto Mando y Campeón al azar de todas las regiones
   {
     const g = CHAOS_GEN, b = document.createElement('button');
-    b.type = 'button'; b.className = 'card chaos'; b.style.setProperty('--c', g.color);
-    b.innerHTML = cardHTML(g, false).replace(`GEN ${g.roman}`, 'MODO CAOS');
+    b.type = 'button'; b.className = 'mode chaos'; b.style.setProperty('--c', g.color);
+    b.innerHTML = modeHTML(g, 'Modo Caos', '8 gimnasios, Alto Mando y Campeón al azar de todas las regiones');
     b.setAttribute('aria-label', 'Modo Caos: gimnasios, Alto Mando y Campeón al azar de todas las regiones');
-    grid.appendChild(b);
+    modes.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 740, 1046]); pick(g); } });
   }
   // Randomlocke: el camino del Modo Caos con iniciales y Pokémon salvajes totalmente al azar
   {
     const g = RANDOM_GEN, b = document.createElement('button');
-    b.type = 'button'; b.className = 'card randomlocke'; b.style.setProperty('--c', g.color);
-    b.innerHTML = cardHTML(g, false).replace(`GEN ${g.roman}`, 'RANDOMLOCKE');
+    b.type = 'button'; b.className = 'mode randomlocke'; b.style.setProperty('--c', g.color);
+    b.innerHTML = modeHTML(g, 'Randomlocke', 'Iniciales y Pokémon salvajes totalmente al azar');
     b.setAttribute('aria-label', 'Randomlocke: iniciales y Pokémon salvajes totalmente aleatorios');
-    grid.appendChild(b);
+    modes.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 784, 988]); pick(g); } });
   }
   // Modo Test (solo en modo desarrollador): el camino del Modo Caos, pero eliges tú el equipo y los objetos
   {
     const g = TEST_GEN, b = document.createElement('button');
-    b.type = 'button'; b.className = 'card test dev-only'; b.hidden = !devMode; b.style.setProperty('--c', g.color);   // solo en modo desarrollador
-    b.innerHTML = cardHTML(g, false).replace(`GEN ${g.roman}`, 'MODO TEST');
+    b.type = 'button'; b.className = 'mode test dev-only'; b.hidden = !devMode; b.style.setProperty('--c', g.color);   // solo en modo desarrollador
+    b.innerHTML = modeHTML(g, 'Modo Test', 'Eliges tu equipo y tu mochila (desarrollador)');
     b.setAttribute('aria-label', 'Modo Test: elige tu equipo y tus objetos');
-    grid.appendChild(b);
+    modes.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 740, 988]); pick(g); } });
   }
   GENS.forEach(g => {
