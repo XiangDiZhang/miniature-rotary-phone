@@ -201,6 +201,7 @@ function openInfo(n, from, formId, peek, keep) {
   const idx = navIdx(), len = navNs().length;
   $('infoPos').textContent = idx >= 0 ? `${infoNav ? 'Tus Pokémon · ' : ''}${idx + 1} / ${len}` : '';
   $('infoPrev').disabled = idx <= 0; $('infoNext').disabled = idx < 0 || idx >= len - 1;
+  $('infoPrev').hidden = $('infoNext').hidden = infoSolo;
   $('infoShade').hidden = false; fitEvo(BODY);   // se mide ya visible
   requestAnimationFrame(() => $('infoBody').querySelectorAll('.bar i').forEach(i => i.style.width = i.dataset.w + '%'));
   // evoluciones y variantes de la línea: la ficha nueva conserva el aspecto de esta (shiny o normal)
@@ -245,20 +246,21 @@ async function closeInfo() {
   const nav = infoNav || infoHome, o = nav ? document.querySelector(`#advTeam [data-i="${nav.i}"]`) : (infoOrigin && infoOrigin.isConnected && infoOrigin.dataset.n == infoN ? infoOrigin : null);
   if (o) { $('infoShade').classList.add('closing'); await growFrom(o.getBoundingClientRect(), true); $('infoShade').classList.remove('closing'); }
   else if (li) { const r = li.getBoundingClientRect(); if (r.bottom > vr.top && r.top < vr.bottom) { $('infoShade').classList.add('closing'); await growFrom(r, true); $('infoShade').classList.remove('closing'); } }
-  infoOrigin = null; infoNav = null; infoHome = null;
+  infoOrigin = null; infoNav = null; infoHome = null; infoSolo = false;
   $('infoShade').hidden = true; $('dexView').focus({ preventScroll: true });
 }
 // Navegar entre fichas: por la Pokédex filtrada o, si se abrió desde la aventura, por tus Pokémon (equipo + caja)
+let infoSolo = false;   // abierta desde el aviso «Nuevo registro»: ficha suelta, sin pasar a otros Pokémon
 let infoNav = null, infoHome = null;   // { list: [{ n, shiny, form, m }], i } · infoHome: tu Pokémon del que vienes al mirar su línea evolutiva
-const navNs = () => infoNav ? infoNav.list.map(e => e.n) : shownRows.map(r => r[1][0]).filter(dexHas);
-const navIdx = () => infoNav ? infoNav.i : navNs().indexOf(infoN);
+const navNs = () => infoSolo ? [] : infoNav ? infoNav.list.map(e => e.n) : shownRows.map(r => r[1][0]).filter(dexHas);
+const navIdx = () => infoSolo ? -1 : infoNav ? infoNav.i : navNs().indexOf(infoN);
 // abre la ficha de uno de tus Pokémon con su aspecto (shiny o no)
 function openNav(i, from, peek) {
   const e = infoNav.list[i], s = shinyMode; shinyMode = !!e.shiny;
   try { return openInfo(e.n, from, e.form || 0, peek); } finally { shinyMode = s; }
 }
 function openTeamInfo(i, el) {
-  infoHome = null; infoNav = { list: [...run.team, ...boxList()].map(m => ({ n: m.n, shiny: m.shiny, form: m.form || 0, m })), i };
+  infoHome = null; infoSolo = false; infoNav = { list: [...run.team, ...boxList()].map(m => ({ n: m.n, shiny: m.shiny, form: m.form || 0, m })), i };
   infoOrigin = el; openNav(i, el.getBoundingClientRect());
 }
 function goNav(j) { if (infoNav) { infoNav.i = j; openNav(j); } else openInfo(navNs()[j]); }

@@ -38,7 +38,7 @@ function dexPop(n, shiny, wait, form) {
       + `<div class="dx-ctrl"><div class="dx-row"><i class="dx-round"></i><i class="dx-pill r"></i><i class="dx-pill b"></i></div><span class="dx-green">Nuevo registro</span><i class="dx-pad"></i></div>`;
     // se puede pulsar: abre su ficha de la Pokédex (con esa forma y, si es shiny, en shiny)
     el.title = 'Ver su ficha en la Pokédex'; el.setAttribute('role', 'button');
-    el.onclick = () => { const rr = el.getBoundingClientRect(); el.remove(); withShiny(!!shiny, () => openInfo(n, rr, form || 0, null, true)); };
+    el.onclick = () => { const rr = el.getBoundingClientRect(); el.remove(); infoNav = null; infoHome = null; infoSolo = true; withShiny(!!shiny, () => openInfo(n, rr, form || 0, null, true)); };
     box.appendChild(el); beep(1319, .07, .03, 'triangle'); setTimeout(() => beep(1760, .12, .03, 'triangle'), 90);
     setTimeout(() => el.remove(), 3700);
   }, at - performance.now());
@@ -533,7 +533,7 @@ const LEAD_SVG = {
 (() => {
   const openLog = el => {
     const n = +el.dataset.n; if (!n || infoOpen) return;
-    beep(820, .05, .03); infoNav = null; infoHome = null; infoOrigin = el;
+    beep(820, .05, .03); infoNav = null; infoHome = null; infoSolo = false; infoOrigin = el;
     withShiny(el.dataset.sh === '1', () => openInfo(n, el.getBoundingClientRect(), +el.dataset.f || 0, null, true));   // con su forma (Vivillon Polar, Raichu de Alola…)
   };
   $('advLog').addEventListener('click', e => { const el = e.target.closest('.lg-open'); if (el) openLog(el); });
