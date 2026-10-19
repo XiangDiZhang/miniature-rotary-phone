@@ -750,9 +750,9 @@ img.stone.px { image-rendering: pixelated; }
   .adv-tabs { display: flex; } .adv-tabs button[data-tab="0"] { display: none; }
 }
 /* «VS» entre los dos entrenadores del combate */
-.adv-vs { position: absolute; z-index: 5; transform: translate(calc(-50% - .14em), -50%);   /* (la cursiva se inclina a la derecha: se compensa) */
+.adv-vs { position: absolute; z-index: 5; transform: translate(calc(-50% - .07em), -50%);   /* (la cursiva se inclina a la derecha: se compensa) */
    pointer-events: none; font: 800 italic 46px/1 var(--f-display); letter-spacing: .02em;
   color: #ffd84a; -webkit-text-stroke: 1.5px #10131c; text-shadow: 0 0 14px rgba(255,90,70,.7), 3px 3px 0 #ff5a46; }
 .adv-vs.pop { animation: vsIn .5s cubic-bezier(.2,.9,.3,1.5) both; }
 .adv-vs[hidden] { display: none; }
-@keyframes vsIn { from { opacity: 0; transform: translate(calc(-50% - .14em), -50%) scale(2.2) rotate(-12deg); } }
+@keyframes vsIn { from { opacity: 0; transform: translate(calc(-50% - .07em), -50%) scale(2.2) rotate(-12deg); } }
