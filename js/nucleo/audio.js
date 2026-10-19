@@ -198,35 +198,30 @@ function hofMusic() {
   for (let i = 0; i < 8; i++) bell(N(['D6', 'A6', 'F#6', 'D7'][i % 4]), c + 1.8 + i * .18, 1.4, .018);
   return c + 1.6 - T();   // segundos hasta el momento de la corona
 }
-// «VS» del combate: un choque épico de cine (nada de sonido de 8 bits): un barrido de aire que sube, un golpe grave que cae de tono,
-// un estallido metálico de ruido filtrado y una cola larga con eco
+// «VS» del combate: choque de kunais (como en Naruto): dos golpes metálicos que se cruzan («tsing… ¡TSIING!»), con el roce de la hoja
+// y un tintineo agudo que se queda vibrando. Hecho con parciales inarmónicos (como una lámina de metal) y ruido, nada de 8 bits
 function vsSfx() {
   if (!soundOn) return;
   try {
-    const A = actx(), t0 = A.currentTime + .02, out = A.createGain(); out.gain.value = .9;
-    // eco: dos retardos con realimentación suave, para la cola
-    const dl = A.createDelay(1), fb = A.createGain(), wet = A.createGain(), lp = A.createBiquadFilter();
-    dl.delayTime.value = .18; fb.gain.value = .32; wet.gain.value = .35; lp.type = 'lowpass'; lp.frequency.value = 2200;
-    out.connect(A.destination); out.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(A.destination);
+    const A = actx(), t0 = A.currentTime + .02, out = A.createGain(); out.gain.value = .8; out.connect(A.destination);
     const noise = dur => { const b = A.createBuffer(1, Math.ceil(A.sampleRate * dur), A.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = A.createBufferSource(); s.buffer = b; return s; };
-    // 1) barrido de aire que sube (antes del golpe)
-    const sw = noise(.5), swf = A.createBiquadFilter(), swg = A.createGain(); swf.type = 'bandpass'; swf.Q.value = 3;
-    swf.frequency.setValueAtTime(300, t0); swf.frequency.exponentialRampToValueAtTime(4000, t0 + .42);
-    swg.gain.setValueAtTime(.0001, t0); swg.gain.exponentialRampToValueAtTime(.22, t0 + .38); swg.gain.exponentialRampToValueAtTime(.0001, t0 + .48);
-    sw.connect(swf).connect(swg).connect(out); sw.start(t0); sw.stop(t0 + .5);
-    const hit = t0 + .45;
-    // 2) golpe grave: un seno que cae de 150 a 38 Hz
-    const bo = A.createOscillator(), bg = A.createGain(); bo.type = 'sine';
-    bo.frequency.setValueAtTime(150, hit); bo.frequency.exponentialRampToValueAtTime(38, hit + .7);
-    bg.gain.setValueAtTime(.0001, hit); bg.gain.exponentialRampToValueAtTime(.9, hit + .01); bg.gain.exponentialRampToValueAtTime(.0001, hit + 1.1);
-    bo.connect(bg).connect(out); bo.start(hit); bo.stop(hit + 1.2);
-    // 3) estallido: ruido con un filtro que se cierra (como un impacto metálico) y un brillo agudo
-    const cr = noise(1.2), cf = A.createBiquadFilter(), cg = A.createGain(); cf.type = 'lowpass';
-    cf.frequency.setValueAtTime(7000, hit); cf.frequency.exponentialRampToValueAtTime(400, hit + .9);
-    cg.gain.setValueAtTime(.0001, hit); cg.gain.exponentialRampToValueAtTime(.55, hit + .005); cg.gain.exponentialRampToValueAtTime(.0001, hit + 1);
-    cr.connect(cf).connect(cg).connect(out); cr.start(hit); cr.stop(hit + 1.2);
-    [523, 784, 1046].forEach(f => { const o = A.createOscillator(), g = A.createGain(); o.type = 'sine'; o.frequency.value = f;
-      g.gain.setValueAtTime(.0001, hit); g.gain.exponentialRampToValueAtTime(.06, hit + .02); g.gain.exponentialRampToValueAtTime(.0001, hit + 1.4);
-      o.connect(g).connect(out); o.start(hit); o.stop(hit + 1.5); });
+    // un golpe de metal: chasquido de ruido muy agudo + varias frecuencias que vibran y se apagan (ring = cuánto dura)
+    const clang = (t, base, vol, ring, pan) => {
+      const p = A.createStereoPanner ? A.createStereoPanner() : null; if (p) { p.pan.value = pan; p.connect(out); }
+      const dest = p || out;
+      const n = noise(.08), hp = A.createBiquadFilter(), ng = A.createGain(); hp.type = 'highpass'; hp.frequency.value = 4500;
+      ng.gain.setValueAtTime(vol * .9, t); ng.gain.exponentialRampToValueAtTime(.0001, t + .06); n.connect(hp).connect(ng).connect(dest); n.start(t); n.stop(t + .08);
+      [1, 1.53, 2.27, 2.94, 3.76].forEach((k, i) => { const o = A.createOscillator(), g = A.createGain(); o.type = 'sine';
+        o.frequency.setValueAtTime(base * k * 1.01, t); o.frequency.exponentialRampToValueAtTime(base * k, t + .05);
+        const v = vol * [.5, .32, .24, .16, .1][i]; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + ring * (1 - i * .12));
+        o.connect(g).connect(dest); o.start(t); o.stop(t + ring + .05); });
+    };
+    // el roce de las hojas al cruzarse (un «shhk» que sube)
+    const sc = noise(.22), bp = A.createBiquadFilter(), sg = A.createGain(); bp.type = 'bandpass'; bp.Q.value = 6;
+    bp.frequency.setValueAtTime(2500, t0 + .1); bp.frequency.exponentialRampToValueAtTime(7000, t0 + .3);
+    sg.gain.setValueAtTime(.0001, t0 + .1); sg.gain.exponentialRampToValueAtTime(.18, t0 + .2); sg.gain.exponentialRampToValueAtTime(.0001, t0 + .32);
+    sc.connect(bp).connect(sg).connect(out); sc.start(t0 + .1); sc.stop(t0 + .34);
+    clang(t0, 1850, .22, .35, -.5);           // primer golpe, más flojo
+    clang(t0 + .33, 2350, .38, 1.3, .4);      // el choque fuerte, que se queda vibrando
   } catch (e) {}
 }

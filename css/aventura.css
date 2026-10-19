@@ -750,9 +750,14 @@ img.stone.px { image-rendering: pixelated; }
   .adv-tabs { display: flex; } .adv-tabs button[data-tab="0"] { display: none; }
 }
 /* «VS» entre los dos entrenadores del combate */
-.adv-vs { position: absolute; z-index: 5; transform: translate(calc(-50% - .07em), -50%);   /* (la cursiva se inclina a la derecha: se compensa) */
+.adv-vs { position: absolute; z-index: 5; transform: translate(calc(-50% - .04em), -50%);   /* (la cursiva se inclina a la derecha: se compensa) */
    pointer-events: none; font: 800 italic 46px/1 var(--f-display); letter-spacing: .02em;
   color: #ffd84a; -webkit-text-stroke: 1.5px #10131c; text-shadow: 0 0 14px rgba(255,90,70,.7), 3px 3px 0 #ff5a46; }
 .adv-vs.pop { animation: vsIn .5s cubic-bezier(.2,.9,.3,1.5) both; }
 .adv-vs[hidden] { display: none; }
-@keyframes vsIn { from { opacity: 0; transform: translate(calc(-50% - .07em), -50%) scale(2.2) rotate(-12deg); } }
+@keyframes vsIn { from { opacity: 0; transform: translate(calc(-50% - .04em), -50%) scale(2.2) rotate(-12deg); } }
+/* entrenadores con vida: respiran (se estiran un poco desde los pies) y se balancean, cada uno a su ritmo; el busto de fondo, quieto */
+.lf-row img, .lc-full img { transform-origin: 50% 100%; animation: trIdle 2.6s ease-in-out infinite; }
+.lf-row img:nth-child(2) { animation-duration: 2.9s; animation-delay: -.7s; } .lf-row img:nth-child(3) { animation-duration: 2.4s; animation-delay: -1.3s; }
+.adv-playerfig .lf-row img { animation-duration: 2.3s; animation-delay: -1s; }
+@keyframes trIdle { 0%, 100% { scale: 1 1; rotate: 0deg; } 30% { scale: 1.015 .985; } 50% { scale: .99 1.025; rotate: -.6deg; } 75% { rotate: .5deg; } }

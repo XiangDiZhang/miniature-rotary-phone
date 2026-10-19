@@ -467,12 +467,12 @@ function renderCard() {
 const trainerFeet = new Map();
 function feetOf(im) {
   if (trainerFeet.has(im.src)) return trainerFeet.get(im.src);
-  const w = im.naturalWidth, h = im.naturalHeight, out = { fb: 0, fx: .5, ft: 0 };   // ft = hueco vacío encima de la cabeza
+  const w = im.naturalWidth, h = im.naturalHeight, out = { fb: 0, fx: .5, ft: 0, fl: 0, fr: 1 };   // ft = hueco vacío encima de la cabeza; fl / fr = primera y última columna con figura
   try {
     const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
     const d = g.getImageData(0, 0, w, h).data; let maxY = -1, minY = -1, minX = w, maxX = -1;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { if (minY < 0) minY = y; maxY = y; if (x < minX) minX = x; if (x > maxX) maxX = x; }
-    if (maxY >= 0) { out.fb = 1 - (maxY + 1) / h; out.fx = (minX + maxX + 1) / 2 / w; out.ft = minY / h; }
+    if (maxY >= 0) { out.fb = 1 - (maxY + 1) / h; out.fx = (minX + maxX + 1) / 2 / w; out.ft = minY / h; out.fl = minX / w; out.fr = (maxX + 1) / w; }
   } catch (e) {}
   trainerFeet.set(im.src, out); return out;
 }
@@ -495,7 +495,11 @@ function placeVs() {
     // tu entrenador, a la izquierda del rival con hueco para el VS (sea uno o un grupo)
     pf.style.left = 'auto'; pf.style.right = (s.right - b.left + Math.max(70, b.height * .45)) + 'px';
     const a = pf.getBoundingClientRect(); if (!a.width) return;
-    vs.style.left = ((a.right + b.left) / 2 - s.left) + 'px'; vs.style.top = (Math.min(a.top + a.height * .45, b.top + b.height * .45) - s.top) + 'px';
+    // en medio del hueco entre lo que se ve de los dos: el borde derecho de tu entrenador (está dado la vuelta) y el izquierdo del rival
+    const ok = im => im.complete && im.naturalWidth, pis = [...pf.querySelectorAll('img')].filter(ok), fis = [...fo.querySelectorAll('img')].filter(ok);
+    const pR = pis.length ? Math.max(...pis.map(im => { const r = im.getBoundingClientRect(), f = feetOf(im); return r.left + (1 - f.fl) * r.width; })) : a.right;
+    const fL = fis.length ? Math.min(...fis.map(im => { const r = im.getBoundingClientRect(), f = feetOf(im); return r.left + f.fl * r.width; })) : b.left;
+    vs.style.left = ((pR + fL) / 2 - s.left) + 'px'; vs.style.top = (Math.min(a.top + a.height * .45, b.top + b.height * .45) - s.top) + 'px';
   };
   put(); requestAnimationFrame(put);
   // (se vuelve a colocar cuando los sprites terminan de cargar o cambian de tamaño)
