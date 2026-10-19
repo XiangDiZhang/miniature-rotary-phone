@@ -612,7 +612,7 @@ Object.assign(REGIONS.randomlocke, { name: 'Randomlocke', prof: 'un profesor que
 // 3 iniciales al azar (para el plan de la partida)
 function randomStarters() {
   const ok = [], seen = new Set();
-  // (solo Pokémon que evolucionan al menos una vez: sin legendarios, singulares ni Pokémon que no evolucionan)
-  while (ok.length < 3) { const n = 1 + Math.floor(Math.random() * 1025); if (seen.has(n) || BY_NUM.get(n)[4] || BY_NUM.get(n)[5] || !nextEvos(n).length) continue; seen.add(n); ok.push(n); }
+  // (solo Pokémon de fase 1 —el primero de su línea— que evolucionan al menos una vez: sin legendarios, singulares ni Pokémon que no evolucionan)
+  while (ok.length < 3) { const n = 1 + Math.floor(Math.random() * 1025); if (seen.has(n) || BY_NUM.get(n)[4] || BY_NUM.get(n)[5] || !nextEvos(n).length || INFO[n - 1][13]) continue; seen.add(n); ok.push(n); }
   return ok;
 }
