@@ -81,6 +81,8 @@ function caught(n, shiny, legend, form) {
 function shinyCheck(n, legend = false) { caught(n, Math.random() < SHINY_RATE, legend); }
 
 function wildWheel(title, sub, pool, center, legend = false) {
+  // Nuzlocke: solo el primer encuentro de cada zona
+  if (REG().nuzlocke) { if (run.nuzZone === run.step) return advSay('Regla Nuzlocke: ya has tenido tu encuentro en esta zona, aquí no puedes capturar más.', goOn); run.nuzZone = run.step; }
   // Randomlocke: en vez de los Pokémon de la zona, otros tantos (entre 8 y 14) de toda la Pokédex, al azar (sin legendarios ni singulares:
   // esos solo salen por el quesito «★ ???» de la ruta). En las demás regiones, los Pokémon de la zona, como siempre
   if (REG().randomlocke) pool = allOf(randomPick(DEX.map(r => r[0]).filter(k => !isLegend(k)), Math.max(8, Math.min(14, pool.length))));

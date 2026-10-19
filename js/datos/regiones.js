@@ -580,7 +580,7 @@ function chaosPath(plan) {
   chaosCache = { plan, path };
   return path;
 }
-const chaosRun = () => run && (run.region === 'caos' || run.region === 'test' || run.region === 'randomlocke') && run.chaos && run.chaos.gyms ? run.chaos : null;
+const chaosRun = () => run && (run.region === 'caos' || run.region === 'test' || run.region === 'randomlocke' || run.region === 'nuzlocke') && run.chaos && run.chaos.gyms ? run.chaos : null;
 REGIONS.caos = {
   name: 'Caos', prof: 'un profesor muy despistado', range: [1, 1025], rankScale: 4, potions: 1, league: 'la Liga del Caos', chaos: true,
   legends: [...new Set(KEYS9.flatMap(k => REGIONS[k].legends))],
@@ -616,3 +616,11 @@ function randomStarters() {
   while (ok.length < 3) { const n = 1 + Math.floor(Math.random() * 1025); if (seen.has(n) || BY_NUM.get(n)[4] || BY_NUM.get(n)[5] || !nextEvos(n).length || INFO[n - 1][13]) continue; seen.add(n); ok.push(n); }
   return ok;
 }
+
+// ===================== NUZLOCKE =====================
+// El camino del Modo Caos con las reglas del Nuzlocke: solo el primer encuentro de cada zona (después ya no se captura ahí) y cada
+// derrota en un combate se lleva a uno de tus Pokémon para siempre (nuzFaint de combate.js). Sin Pokémon, se acaba la partida.
+const NUZ_GEN = { id: 13, roman: '☠', region: 'Nuzlocke', from: 1, to: 1025, year: '', games: 'Un encuentro por zona y los Pokémon que caen no vuelven', color: '#e04a4a' };
+REGIONS.nuzlocke = Object.defineProperties({}, Object.getOwnPropertyDescriptors(REGIONS.caos));
+Object.assign(REGIONS.nuzlocke, { name: 'Nuzlocke', prof: 'un profesor muy serio', league: 'la Liga Nuzlocke', nuzlocke: true,
+  end: () => '¡Has superado el Nuzlocke! Has completado la aventura con' });

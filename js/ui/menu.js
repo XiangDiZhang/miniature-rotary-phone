@@ -36,6 +36,15 @@ function buildMenu() {
     modes.appendChild(b);
     items.push({ el: b, act: () => { chord([523, 784, 988]); pick(g); } });
   }
+  // Nuzlocke: un encuentro por zona y los Pokémon que caen no vuelven
+  {
+    const g = NUZ_GEN, b = document.createElement('button');
+    b.type = 'button'; b.className = 'mode nuzlocke'; b.style.setProperty('--c', g.color);
+    b.innerHTML = modeHTML(g, 'Nuzlocke', 'Un encuentro por zona; si pierdes, uno de tus Pokémon cae para siempre');
+    b.setAttribute('aria-label', 'Nuzlocke: un encuentro por zona y los Pokémon que caen no vuelven');
+    modes.appendChild(b);
+    items.push({ el: b, act: () => { chord([392, 523, 659]); pick(g); } });
+  }
   // Modo Test (solo en modo desarrollador): el camino del Modo Caos, pero eliges tú el equipo y los objetos
   {
     const g = TEST_GEN, b = document.createElement('button');
@@ -76,7 +85,7 @@ function pick(g) {
   state.chosen = g.id;
   $('chosenCard').style.setProperty('--c', g.color);
   $('chosenGhost').textContent = g.roman;
-  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : g === TEST_GEN ? 'MODO TEST' : g === RANDOM_GEN ? 'RANDOMLOCKE' : 'GENERACIÓN ' + g.roman;
+  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : g === TEST_GEN ? 'MODO TEST' : g === RANDOM_GEN ? 'RANDOMLOCKE' : g === NUZ_GEN ? 'NUZLOCKE' : 'GENERACIÓN ' + g.roman;
   $('chosenRegion').textContent = g.region;
   $('chosenRange').textContent = `Nº ${pad(g.from)}–${pad(g.to)}`;
   $('chosenCount').textContent = g.to - g.from + 1;
@@ -84,6 +93,7 @@ function pick(g) {
   $('chosenGames').textContent = g.games;
   show('chosen');
   typeText($('chosenText'), g === CHAOS_GEN ? 'Modo Caos: 8 gimnasios de cualquier región, un Alto Mando y un Campeón al azar. Cada partida es distinta. ¿Te atreves?'
+    : g === NUZ_GEN ? 'Nuzlocke: el camino del Modo Caos con reglas duras. Solo puedes capturar el primer Pokémon de cada zona, y cada vez que pierdas un giro de combate, uno de tus Pokémon cae para siempre. ¿Llegarás a la Liga?'
     : g === RANDOM_GEN ? 'Randomlocke: el camino del Modo Caos, pero todo al azar. Tus tres iniciales y cada Pokémon salvaje pueden ser cualquiera de los 1025. ¡Suerte!'
     : g === TEST_GEN ? 'Modo Test: el camino del Modo Caos, pero tú eliges los Pokémon de tu equipo y los objetos de tu mochila. No cuenta para la Pokédex ni para los récords.'
     : `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);

@@ -158,6 +158,11 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
       const vs = title.split(' · ').pop(), ace = foe.length ? foe[foe.length - 1] : null;
       if (r.ok) { setNow(`¡Victoria contra ${vs}!`, { n: ace }); end(); return onWin(); }
       setNow(`${vs} te ha ganado`, { n: ace });
+      // Nuzlocke: cada derrota se lleva a uno de tus Pokémon (la ruleta elige quién cae); después, lo de siempre
+      if (REG().nuzlocke) return nuzFaint(lose);
+      lose();
+    }, { txt: `${again ? 'Revancha' : 'Combatiendo'} contra ${title.split(' · ').pop()}`, n: foe.length ? foe[foe.length - 1] : null });
+    const lose = () => {
       if (onLose) { end(); return onLose(); }
       if (retries > 0) { retries--; again = true; note = '¡Revancha! La poción aún aguanta.'; return advSay(`${who} te ha ganado… pero tu poción aún aguanta.`, () => advButtons([{ label: 'Volver a girar', fn: show }])); }
       // si te quedan pociones, se usa una sola, sin preguntar (primero la más flojita, para guardar las mejores)
@@ -171,7 +176,7 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
       pot = null; renderPotion(null);
       if (!disguise && run.team.some(m => m.n === 778)) { disguise = true; again = true; note = '¡El Disfraz de Mimikyu te da otra oportunidad!'; log('👻 ¡El Disfraz de Mimikyu aguanta el golpe!'); return advSay('¡El Disfraz de Mimikyu se rompe, pero aguanta el golpe! Una oportunidad más.', () => advButtons([{ label: 'Volver a girar', fn: show }])); }
       end(); gameOver(who);
-    }, { txt: `${again ? 'Revancha' : 'Combatiendo'} contra ${title.split(' · ').pop()}`, n: foe.length ? foe[foe.length - 1] : null });   // en la tarjeta, el Pokémon fuerte del rival
+    };
     curBattle = show;
     if (pot && again) renderPotion(pot, retries + 1);   // spinUI la oculta: vuelve a salir mientras dure la poción
     renderAdv();          // la megapiedra y la banda se encienden mientras se puede usar
@@ -191,4 +196,21 @@ function phaseGameOver(cine) {
   $('advStep').textContent = 'Fin de la partida'; advWheel.enabled = false;
   advSay(`${run.overMsg || `${run.lostTo || 'Tu rival'} te ha derrotado y no te quedaban Pociones.`} Fin de la partida: ${run.points} puntos (rango ${rank(run.points)}).${run.record ? ' ¡Nuevo récord!' : ''}`, () => advButtons([
     { label: 'Nueva partida', fn: () => advStart(true) }, { label: '← Menú', ghost: true, fn: goMenu }]));
+}
+
+// ---- Nuzlocke: al perder un giro de combate, uno de tus Pokémon del equipo cae para siempre (la ruleta elige quién) y va al cementerio.
+// Si ya no te queda ninguno (ni en la caja), se acaba la partida. Después sigue el combate como siempre (pociones, revancha…)
+function nuzFaint(cont) {
+  const pool = [...run.team]; if (!pool.length) return cont();
+  const kill = m => {
+    run.team.splice(run.team.indexOf(m), 1); (run.graves = run.graves || []).push({ n: m.n, form: m.form || 0, shiny: !!m.shiny, nick: m.nick || '' });
+    if (!run.team.length) { const bi = run.box.findIndex(Boolean); if (bi >= 0) { run.team.push(run.box[bi]); run.box[bi] = null; } }
+    logm(`🪦 ${mname(m)} ha caído. Descansa en el cementerio.`, m); renderAdv(); saveRun();
+    if (!allMine().length) { run.overMsg = `${mname(m)} era tu último Pokémon. Sin Pokémon, el Nuzlocke se acaba.`; return gameOver('el Nuzlocke'); }
+    advSay(`${mname(m)} ha caído y no volverá (regla Nuzlocke).`, () => advButtons([{ label: 'Continuar →', fn: cont }]));
+  };
+  if (pool.length === 1) return advSay(`¡Derrota! Regla Nuzlocke: ${mname(pool[0])} cae en combate…`, () => advButtons([{ label: 'Continuar →', fn: () => kill(pool[0]) }]));
+  advSay('¡Derrota! Regla Nuzlocke: uno de tus Pokémon cae para siempre. ¿Quién?', () => advButtons([{ label: '¿Quién cae?', fn: () =>
+    spinUI('Nuzlocke · ¿Quién cae?', 'El que salga va al cementerio.', pool.map(m => ({ label: dname(m), n: mid(m), shiny: m.shiny, color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m })), 'CAE', r => kill(r.m),
+      { txt: 'Nuzlocke: ¿quién cae?', mons: pool.slice(0, 6) }) }]));
 }

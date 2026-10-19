@@ -241,7 +241,8 @@ function renderAdv() {
     + (bands.length ? `<span class="bag-slot gem" data-k="dmax" style="--c:#ff2d55" title="Banda Dinamax: ${bands.map(mname).join(', ')}. En combate, púlsala en su ficha para gigamaxizarlo durante ese giro."><span class="bag-ico">${dmaxIcon()}</span><span class="bag-nm">Banda Dinamax</span>${bands.length > 1 ? `<b class="bag-n">×${bands.length}</b>` : ''}</span>` : '')
     + (run.ball ? `<span class="bag-slot buff" data-k="ball" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${bagIcon('ball')}</span><span class="bag-nm">Ball de Kurt</span></span>` : '')
     || '<span class="bag-empty">Mochila vacía</span>')
-    + (stolenList().length ? `<span class="bag-note">Robado por el ${VIL().name}: ${stolenList().map(mname).join(', ')}</span>` : '');
+    + (stolenList().length ? `<span class="bag-note">Robado por el ${VIL().name}: ${stolenList().map(mname).join(', ')}</span>` : '')
+    + (run.graves && run.graves.length ? `<span class="bag-note">🪦 Cementerio (Nuzlocke): ${run.graves.map(g => mname(g)).join(', ')}</span>` : '');
   if ($('advBag')._h !== bag) { $('advBag')._h = bag; $('advBag').innerHTML = bag; }
   // objeto nuevo (o uno más de los que ya tenías): suena la fanfarria y su hueco de la mochila salta
   const counts = { ...Object.fromEntries(items), ...Object.fromEntries(stones.map(m => ['st' + m.stone, 1])), dmax: bands.length, ball: run.ball ? 1 : 0 };
