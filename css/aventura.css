@@ -756,8 +756,18 @@ img.stone.px { image-rendering: pixelated; }
 .adv-vs.pop { animation: vsIn .5s cubic-bezier(.2,.9,.3,1.5) both; }
 .adv-vs[hidden] { display: none; }
 @keyframes vsIn { from { opacity: 0; transform: translate(calc(-50% - .04em), -50%) scale(2.2) rotate(-12deg); } }
-/* entrenadores con vida: respiran (se estiran un poco desde los pies) y se balancean, cada uno a su ritmo; el busto de fondo, quieto */
-.lf-row img, .lc-full img { transform-origin: 50% 100%; animation: trIdle 2.6s ease-in-out infinite; }
-.lf-row img:nth-child(2) { animation-duration: 2.9s; animation-delay: -.7s; } .lf-row img:nth-child(3) { animation-duration: 2.4s; animation-delay: -1.3s; }
-.adv-playerfig .lf-row img { animation-duration: 2.3s; animation-delay: -1s; }
-@keyframes trIdle { 0%, 100% { scale: 1 1; rotate: 0deg; } 30% { scale: 1.015 .985; } 50% { scale: .99 1.025; rotate: -.6deg; } 75% { rotate: .5deg; } }
+/* entrenadores con vida en su sitio: cada uno con su movimiento, su ritmo y su desfase (groundSprites los reparte al azar); el busto de fondo, quieto */
+.lf-row img, .lc-full img { transform-origin: 50% 100%; animation: var(--ia, trIdle) var(--id, 2.6s) ease-in-out var(--idl, 0s) infinite; }
+@keyframes trIdle { 0%, 100% { scale: 1 1; rotate: 0deg; } 30% { scale: 1.015 .985; } 55% { scale: .99 1.025; rotate: -.6deg; } 80% { rotate: .5deg; } }
+@keyframes trSway { 0%, 100% { rotate: 0deg; translate: 0 0; } 25% { rotate: -1.4deg; translate: -1px 0; } 50% { rotate: 0deg; scale: 1 1.015; } 75% { rotate: 1.2deg; translate: 1px 0; } }
+@keyframes trBob { 0%, 100% { translate: 0 0; scale: 1 1; } 20% { translate: 0 0; scale: 1.03 .97; } 40% { translate: 0 -3%; scale: .98 1.03; } 60% { translate: 0 0; scale: 1.02 .98; } }
+/* «VS» con rayos: dos relámpagos que parpadean a los lados y un destello eléctrico en la letra */
+.adv-vs::before, .adv-vs::after { content: ""; position: absolute; top: 50%; width: 1.6em; height: 2em; pointer-events: none; background: center / contain no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 50'%3E%3Cpath d='M24 1 7 28h11l-6 21 21-31H21z' fill='%23fff6b0' stroke='%23ffd84a' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 6px #ffd84a) drop-shadow(0 0 12px #ff5a46); opacity: 0; }
+.adv-vs::before { right: 100%; transform: translate(-.05em, -60%) rotate(-18deg) scale(.8); animation: bolt1 1.7s steps(1) infinite; }
+.adv-vs::after { left: 100%; transform: translate(.05em, -40%) rotate(160deg) scale(.7); animation: bolt1 1.7s steps(1) -.85s infinite; }
+@keyframes bolt1 { 0%, 8%, 14%, 52%, 56%, 100% { opacity: 0; } 4%, 11%, 54% { opacity: 1; } }
+.adv-vs { animation: vsZap 1.7s steps(1) infinite; }
+.adv-vs.pop { animation: vsIn .5s cubic-bezier(.2,.9,.3,1.5) both, vsZap 1.7s steps(1) .5s infinite; }
+@keyframes vsZap { 0%, 100% { text-shadow: 0 0 14px rgba(255,90,70,.7), 3px 3px 0 #ff5a46; } 4%, 11% { color: #fffbe0; text-shadow: 0 0 6px #fff, 0 0 22px #ffd84a, 0 0 40px #ff5a46, 3px 3px 0 #ff5a46; } 8% { text-shadow: 0 0 14px rgba(255,90,70,.7), 3px 3px 0 #ff5a46; } }

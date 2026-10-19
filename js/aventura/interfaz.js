@@ -488,7 +488,7 @@ function headTop(big) {
 function placeVs() {
   const vs = $('advVs'), fo = $('advLeadFig'), pf = $('advPlayerFig'), st = document.querySelector('.adv-stage'); if (!vs || !st) return;
   const on = !!(fo && pf && !fo.hidden && !pf.hidden && pf.offsetParent && fo.offsetParent);
-  if (on && vs.hidden) { vs.hidden = false; vs.classList.remove('pop'); void vs.offsetWidth; vs.classList.add('pop'); vsSfx(); }   // aparece: golpe y sonido
+  if (on && vs.hidden) { vs.hidden = false; vs.classList.remove('pop'); void vs.offsetWidth; vs.classList.add('pop'); }   // aparece con un golpe
   if (!on) { vs.hidden = true; return; }
   const put = () => {
     let s = st.getBoundingClientRect(), b = fo.getBoundingClientRect(); if (!b.width) return;
@@ -510,6 +510,9 @@ addEventListener('resize', () => { if (typeof state !== 'undefined' && state.sce
 function groundSprites(row, glow) {
   if (!row) return;
   const imgs = [...row.querySelectorAll('img')];
+  // cada entrenador con su propia «vida»: un movimiento distinto (respirar, balancearse, botar…), su ritmo y su desfase, al azar
+  imgs.forEach(im => { const r = Math.random(); im.style.setProperty('--ia', ['trIdle', 'trSway', 'trBob'][Math.floor(r * 3)]);
+    im.style.setProperty('--id', (2 + Math.random() * 1.6).toFixed(2) + 's'); im.style.setProperty('--idl', (-Math.random() * 3).toFixed(2) + 's'); });
   const go = () => {
     if (!imgs.every(im => im.complete && im.naturalWidth)) return;
     const ft = imgs.map(feetOf);
