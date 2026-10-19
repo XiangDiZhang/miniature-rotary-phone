@@ -80,7 +80,7 @@ function testRender() {
   $('tstBag').innerHTML = Object.entries(ITEMS).map(([k, it]) => { const v = testSet.bag[k] || 0;
     return `<div class="tst-item${v ? ' on' : ''}" style="--c:${it.color}" title="${it.name}: ${it.desc || ''}"><span class="bag-ico">${bagIcon(k)}</span><span class="tst-inm">${it.name}</span>
       <button type="button" data-k="${k}" data-d="-1" aria-label="Uno menos">−</button><b>${v}</b><button type="button" data-k="${k}" data-d="1" aria-label="Uno más">+</button></div>`; }).join('')
-    + `<div class="tst-item${testSet.ball ? ' on' : ''}" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde en la próxima captura"><span class="bag-ico">${bagIcon('ball')}</span><span class="tst-inm">Ball de Kurt</span>
+    + `<div class="tst-item${testSet.ball ? ' on' : ''}" style="--c:#ff5a46" title="Ball de Kurt: +1 quesito verde al intentar capturar un legendario"><span class="bag-ico">${bagIcon('ball')}</span><span class="tst-inm">Ball de Kurt</span>
       <button type="button" class="tst-tog" data-ball="1">${testSet.ball ? 'Sí' : 'No'}</button></div>`;
   $('tstBag').querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; testSet.bag[k] = Math.max(0, Math.min(9, (testSet.bag[k] || 0) + +b.dataset.d)); testDone(); });
   $('tstBag').querySelector('[data-ball]').onclick = () => { testSet.ball = testSet.ball ? 0 : 1; testDone(); };

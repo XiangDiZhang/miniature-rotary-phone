@@ -38,6 +38,11 @@ function encounter(n, legend, shiny, cont) {
 function throwBall(n, legend = false, shiny, form = 0, sure = false) {
   if (shiny === undefined) shiny = Math.random() < SHINY_RATE;
   const nm0 = form ? mname({ n, form }) : pname(n);
+  // los Pokémon normales se capturan siempre (la ruleta de captura es solo para legendarios y singulares)
+  if (!sure && !legend && !isLegend(n)) {
+    const w = shiny ? `¡Un ${nm0} de color distinto! Es shiny ★.` : `¡Un ${nm0} salvaje!`;
+    return advSay(`${w} ¡Lanza la Poké Ball!`, () => advButtons([{ label: 'Lanzar la Poké Ball', fn: () => caught(n, shiny, legend, form) }]));
+  }
   if (sure) {   // Sudowoodo, Snorlax… si toca capturarlo, se captura sin ruleta
     return advSay(`¡${nm0}${shiny ? ' (¡y es shiny!)' : ''} se deja atrapar sin oponer resistencia!`, () => advButtons([{ label: 'Lanzar la Poké Ball', fn: () => caught(n, shiny, legend, form) }]));
   }
