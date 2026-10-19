@@ -1,6 +1,6 @@
 // Jugar: partidas en curso. Se guarda una por región (la última que jugaste ahí); aquí se ven las que no has terminado
 // para seguirlas o borrarlas.
-const genOf = k => k === 'caos' ? CHAOS_GEN : k === 'test' ? TEST_GEN : k === 'randomlocke' ? RANDOM_GEN : k === 'nuzlocke' ? NUZ_GEN : GENS.find(g => g.region.toLowerCase() === k);
+const genOf = k => k === 'caos' ? CHAOS_GEN : k === 'test' ? TEST_GEN : k === 'randomlocke' ? RANDOM_GEN : k === 'nuzlocke' ? NUZ_GEN : k === 'diario' ? DAILY_GEN : GENS.find(g => g.region.toLowerCase() === k);
 // partidas sin terminar: con equipo, sin perder y sin haber llegado al Hall de la Fama
 function activeSaves() {
   return Object.keys(REGIONS).map(k => [k, loadRun(k)]).filter(([k, r]) => r && genOf(k) && (k !== 'test' || devMode) && r.team && r.team.length && !r.over && !r.histSaved);
@@ -8,7 +8,7 @@ function activeSaves() {
 const saveSpr = m => { const r = monSprite(m); return r ? `<img src="${r.u}" alt=""${r.px ? ' class="px"' : ''}>` : ''; };
 // dónde se quedó: el nombre de la parada (en el Modo Caos, el camino de esa partida)
 function savePlace(k, r) {
-  try { const path = k === 'caos' || k === 'test' || k === 'randomlocke' || k === 'nuzlocke' ? chaosPath(r.chaos) : REGIONS[k].path, p = path[Math.min(r.step, path.length - 1)]; return p.leader && p.kind === 'gym' ? `${p.name} · ${p.leader}` : p.name; } catch (e) { return ''; }
+  try { const path = k === 'caos' || k === 'test' || k === 'randomlocke' || k === 'nuzlocke' || k === 'diario' ? chaosPath(r.chaos) : REGIONS[k].path, p = path[Math.min(r.step, path.length - 1)]; return p.leader && p.kind === 'gym' ? `${p.name} · ${p.leader}` : p.name; } catch (e) { return ''; }
 }
 function whenTxt(t) {
   if (!t) return '';
@@ -30,7 +30,7 @@ function renderSaves() {
   if (!s.length) { L.innerHTML = '<p class="wip">NO HAY PARTIDAS EN CURSO</p>'; return; }
   L.innerHTML = s.map(([k, r]) => { const g = genOf(k), team = r.team.slice(0, 6);
     return `<div class="save-row" style="--c:${g.color}" data-k="${k}">
-      <div class="save-head"><span class="save-gen">${k === 'caos' ? 'MODO CAOS' : k === 'test' ? 'MODO TEST' : k === 'randomlocke' ? 'RANDOMLOCKE' : k === 'nuzlocke' ? 'NUZLOCKE' : 'GEN ' + g.roman}</span><b>${g.region}</b><span class="save-when">${whenTxt(r.t)}</span></div>
+      <div class="save-head"><span class="save-gen">${k === 'caos' ? 'MODO CAOS' : k === 'test' ? 'MODO TEST' : k === 'randomlocke' ? 'RANDOMLOCKE' : k === 'nuzlocke' ? 'NUZLOCKE' : k === 'diario' ? 'RETO DIARIO' : 'GEN ' + g.roman}</span><b>${g.region}</b><span class="save-when">${whenTxt(r.t)}</span></div>
       <div class="save-team">${team.map(m => `<span class="save-mon${m.shiny ? ' shiny' : ''}" title="${dname(m)}">${saveSpr(m)}</span>`).join('')}${r.box && r.box.filter(Boolean).length ? `<span class="save-box">+${r.box.filter(Boolean).length} en la caja</span>` : ''}</div>
       <div class="save-meta"><span>📍 ${savePlace(k, r)}</span><span>◆ ${r.badges.length} medalla${r.badges.length === 1 ? '' : 's'}</span><span>⭐ ${r.points} pts · ${rank(r.points, k)}</span></div>
       <div class="save-btns"><button class="btn" type="button" data-go="${k}">Continuar →</button><button class="btn ghostbtn save-del" type="button" data-del="${k}">Borrar</button></div>

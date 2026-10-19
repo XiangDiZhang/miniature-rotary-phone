@@ -4,7 +4,7 @@ let run = null, advWheel = null;
 const REG = () => REGIONS[run.region];
 const loc = () => REG().path[run.step];
 const VIL = () => VILLAINS[(run && REG().villain) || 'rocket'];
-function newRun(region = 'kanto') { return { nuzlocke: region === 'nuzlocke' || undefined, chaos: region === 'caos' || region === 'test' || region === 'nuzlocke' ? chaosPlan() : region === 'randomlocke' ? { ...chaosPlan(), rl: randomStarters() } : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
+function newRun(region = 'kanto') { return { nuzlocke: region === 'nuzlocke' || undefined, daily: region === 'diario' ? todayKey() : undefined, chaos: region === 'diario' ? dailyPlan() : region === 'caos' || region === 'test' || region === 'nuzlocke' ? chaosPlan() : region === 'randomlocke' ? { ...chaosPlan(), rl: randomStarters() } : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
 function saveRun() { run.t = Date.now(); store.setJSON('ruleta-run-' + run.region, run); }   // t: cuándo se jugó por última vez (Partidas en curso)
 function loadRun(region) {
   const r = store.getJSON('ruleta-run-' + region);
@@ -13,15 +13,17 @@ function loadRun(region) {
   [...(r.team || []), ...(r.box || []).filter(Boolean), ...(Array.isArray(r.stolen) ? r.stolen : r.stolen ? [r.stolen] : [])].forEach(m => {
     restoreForm(m);
   });
-  if ((r.region === 'caos' || r.region === 'test' || r.region === 'randomlocke' || r.region === 'nuzlocke') && !(r.chaos && r.chaos.gyms)) return null;
+  if ((r.region === 'caos' || r.region === 'test' || r.region === 'randomlocke' || r.region === 'nuzlocke' || r.region === 'diario') && !(r.chaos && r.chaos.gyms)) return null;
+  if (r.region === 'diario' && r.daily !== todayKey()) return null;   // el reto de otro día ya no vale
   return r;
 }
 // récord de puntos de cada región
 const getBest = () => store.getJSON('ruleta-best', {});
 function saveBest() {
   if (run.region === 'test') return false;   // el Modo Test no cuenta para los récords
-  const b = getBest(), prev = b[run.region] || 0; if (run.points <= prev) return false;
-  b[run.region] = run.points; store.setJSON('ruleta-best', b); return true;
+  const bk = run.region === 'diario' ? 'diario:' + run.daily : run.region;   // (el reto diario, un récord por día)
+  const b = getBest(), prev = b[bk] || 0; if (run.points <= prev) return false;
+  b[bk] = run.points; store.setJSON('ruleta-best', b); return true;
 }
 function log(t) { run.log.unshift(t); run.log = run.log.slice(0, 40); if (typeof logNow === 'function') logNow(t); }
 // entrada del diario que lleva dentro (invisible) la forma exacta del Pokémon y si es shiny: así el diario enseña

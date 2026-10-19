@@ -45,6 +45,15 @@ function buildMenu() {
     modes.appendChild(b);
     items.push({ el: b, act: () => { chord([392, 523, 659]); pick(g); } });
   }
+  // Reto diario: el mismo camino e iniciales para todos cada día
+  {
+    const g = DAILY_GEN, b = document.createElement('button');
+    b.type = 'button'; b.className = 'mode daily'; b.style.setProperty('--c', g.color);
+    b.innerHTML = modeHTML(g, 'Reto diario · ' + new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }), 'El mismo camino e iniciales para todos hoy. ¿Cuántos puntos sacas?');
+    b.setAttribute('aria-label', 'Reto diario: el mismo camino e iniciales para todos cada día');
+    modes.appendChild(b);
+    items.push({ el: b, act: () => { chord([523, 659, 988]); pick(g); } });
+  }
   // Modo Test (solo en modo desarrollador): el camino del Modo Caos, pero eliges tú el equipo y los objetos
   {
     const g = TEST_GEN, b = document.createElement('button');
@@ -85,7 +94,7 @@ function pick(g) {
   state.chosen = g.id;
   $('chosenCard').style.setProperty('--c', g.color);
   $('chosenGhost').textContent = g.roman;
-  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : g === TEST_GEN ? 'MODO TEST' : g === RANDOM_GEN ? 'RANDOMLOCKE' : g === NUZ_GEN ? 'NUZLOCKE' : 'GENERACIÓN ' + g.roman;
+  $('chosenGen').textContent = g === CHAOS_GEN ? 'MODO CAOS' : g === TEST_GEN ? 'MODO TEST' : g === RANDOM_GEN ? 'RANDOMLOCKE' : g === NUZ_GEN ? 'NUZLOCKE' : g === DAILY_GEN ? 'RETO DIARIO' : 'GENERACIÓN ' + g.roman;
   $('chosenRegion').textContent = g.region;
   $('chosenRange').textContent = `Nº ${pad(g.from)}–${pad(g.to)}`;
   $('chosenCount').textContent = g.to - g.from + 1;
@@ -93,15 +102,16 @@ function pick(g) {
   $('chosenGames').textContent = g.games;
   show('chosen');
   typeText($('chosenText'), g === CHAOS_GEN ? 'Modo Caos: 8 gimnasios de cualquier región, un Alto Mando y un Campeón al azar. Cada partida es distinta. ¿Te atreves?'
+    : g === DAILY_GEN ? `Reto del ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}: hoy todo el mundo juega el mismo camino con los mismos iniciales. Mañana, otro. ¡Saca la mejor puntuación!`
     : g === NUZ_GEN ? 'Nuzlocke: el camino del Modo Caos con reglas duras. Solo puedes capturar el primer Pokémon de cada zona, y cada vez que pierdas un giro de combate, uno de tus Pokémon cae para siempre. ¿Llegarás a la Liga?'
     : g === RANDOM_GEN ? 'Randomlocke: el camino del Modo Caos, pero todo al azar. Tus tres iniciales y cada Pokémon salvaje pueden ser cualquiera de los 1025. ¡Suerte!'
     : g === TEST_GEN ? 'Modo Test: el camino del Modo Caos, pero tú eliges los Pokémon de tu equipo y los objetos de tu mochila. No cuenta para la Pokédex ni para los récords.'
     : `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);
-  const key = g.region.toLowerCase();
+  const key = g.key || g.region.toLowerCase();
   if (REGIONS[key]) {
     // una partida perdida (o ya terminada en el Hall de la Fama) no se puede seguir: se borra y la región empieza de cero
     let saved = loadRun(key); if (saved && (saved.over || saved.histSaved)) { store.remove('ruleta-run-' + key); saved = null; }
-    const cont = saved && saved.team && saved.team.length, best = getBest()[key];
+    const cont = saved && saved.team && saved.team.length, best = getBest()[key === 'diario' ? 'diario:' + todayKey() : key];
     $('advEntry').innerHTML = (cont ? `<button class="btn" type="button" id="advCont">Continuar partida</button>` : '') + `<button class="btn${cont ? ' ghostbtn' : ''}" type="button" id="advGo">${cont ? 'Nueva aventura' : 'Empezar aventura →'}</button>` + (best ? `<p class="wip" style="flex-basis:100%;padding:8px">RÉCORD EN ${g.region.toUpperCase()} · ${best} PUNTOS · RANGO ${rank(best, key)}</p>` : '');
     if (cont) $('advCont').onclick = () => { chord([659, 880, 1175]); run = saved; advStart(false, key); };
     histFilter = 'all'; renderHistory(key); requestAnimationFrame(fitHistory);

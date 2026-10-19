@@ -580,7 +580,7 @@ function chaosPath(plan) {
   chaosCache = { plan, path };
   return path;
 }
-const chaosRun = () => run && (run.region === 'caos' || run.region === 'test' || run.region === 'randomlocke' || run.region === 'nuzlocke') && run.chaos && run.chaos.gyms ? run.chaos : null;
+const chaosRun = () => run && (run.region === 'caos' || run.region === 'test' || run.region === 'randomlocke' || run.region === 'nuzlocke' || run.region === 'diario') && run.chaos && run.chaos.gyms ? run.chaos : null;
 REGIONS.caos = {
   name: 'Caos', prof: 'un profesor muy despistado', range: [1, 1025], rankScale: 4, potions: 1, league: 'la Liga del Caos', chaos: true,
   legends: [...new Set(KEYS9.flatMap(k => REGIONS[k].legends))],
@@ -624,3 +624,19 @@ const NUZ_GEN = { id: 13, roman: '☠', region: 'Nuzlocke', from: 1, to: 1025, y
 REGIONS.nuzlocke = Object.defineProperties({}, Object.getOwnPropertyDescriptors(REGIONS.caos));
 Object.assign(REGIONS.nuzlocke, { name: 'Nuzlocke', prof: 'un profesor muy serio', league: 'la Liga Nuzlocke', nuzlocke: true,
   end: () => '¡Has superado el Nuzlocke! Has completado la aventura con' });
+
+// ===================== RETO DIARIO =====================
+// Cada día, un camino del Modo Caos y 3 iniciales sacados de la fecha: el mismo para todo el mundo ese día. Tiene su propio récord por día.
+const DAILY_GEN = { id: 14, key: 'diario', roman: 'D', region: 'Reto diario', from: 1, to: 1025, year: '', games: 'El mismo camino e iniciales para todos, cada día', color: '#3fb6a8' };
+const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+// número aleatorio con semilla (mulberry32): mientras dura fn, Math.random sale siempre igual para la misma semilla
+function withSeed(seed, fn) {
+  let a = seed >>> 0; const orig = Math.random;
+  Math.random = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  try { return fn(); } finally { Math.random = orig; }
+}
+const dailyPlan = () => { const day = todayKey(), seed = [...day].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7); return withSeed(seed, () => ({ ...chaosPlan(), rl: randomStarters(), day })); };
+REGIONS.diario = Object.defineProperties({}, Object.getOwnPropertyDescriptors(REGIONS.caos));
+Object.defineProperty(REGIONS.diario, 'starters', { get() { const c = chaosRun(); return c && c.rl ? c.rl : [1, 4, 7]; } });
+Object.assign(REGIONS.diario, { name: 'Reto diario', prof: 'el profesor del reto de hoy', league: 'la Liga del Reto', daily: true,
+  end: () => '¡Has superado el reto de hoy! Has completado la aventura con' });
