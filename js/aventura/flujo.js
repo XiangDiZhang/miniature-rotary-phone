@@ -218,7 +218,8 @@ function gymRewards(next) {
   // megapiedra: una por gimnasio, para uno de los Pokémon del equipo que puedan megaevolucionar (si hay varios, la ruleta decide);
 
   steps.push(go => {
-    const opts = run.team.filter(m => !m.stone).flatMap(m => megaForms(m).map(f => ({ m, f })));
+    // (el que acaba de recibir la Banda Dinamax en este gimnasio no se lleva también la megapiedra: esa, en otro gimnasio)
+    const opts = run.team.filter(m => !m.stone && !dm.includes(m)).flatMap(m => megaForms(m).map(f => ({ m, f })));
     if (!opts.length) return go();
     const give = ({ m, f }) => {
       m.stone = f; const nm = mname({ n: m.n, form: f }), st = stoneName(f); logm(`💎 ${mname(m)} recibe la ${st}.`, m); advToast(`💎 ¡${st} para ${mname(m)}!`); renderAdv(); saveRun();
