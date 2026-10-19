@@ -199,3 +199,8 @@ $('optImportFile').onchange = e => {
   };
   rd.readAsText(f); e.target.value = '';
 };
+
+// ---- Música de fondo ----
+function syncMusic() { $('optMusic').textContent = musicOn ? 'ON' : 'OFF'; $('optMusic').setAttribute('aria-pressed', musicOn); }
+$('optMusic').onclick = () => { musicOn = !musicOn; store.set('ruleta-music', musicOn ? '1' : '0'); syncMusic(); beep(musicOn ? 880 : 440); if (!musicOn) setMusic(null); };
+syncMusic();
