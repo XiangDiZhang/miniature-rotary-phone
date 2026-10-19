@@ -36,8 +36,8 @@ function doTrainer(force) {
 }
 function doRocket() { doRocketWheel(loc().rocketTxt); }
 function doKurt() {
-  run.ball = 1; log('⚪ Kurt te fabrica una Ball con un Bonguri: +1 quesito verde al intentar capturar un legendario.');
-  advSay('Kurt, el artesano de Pueblo Azalea, te fabrica una Ball con un Bonguri. Cuando intentes capturar un legendario tendrás un quesito verde más.', goOn);
+  run.ball = 1; log('⚪ Kurt te fabrica una Ball con un Bonguri: +1 quesito verde en la próxima captura.');
+  advSay('Kurt, el artesano de Pueblo Azalea, te fabrica una Ball con un Bonguri. En tu próxima captura tendrás un quesito verde más.', goOn);
 }
 function doCasino() {
   advSay(`Entras en el Casino de ${REG().name === 'Kanto' ? 'Ciudad Azulona' : 'Ciudad Trigal'}. ¡A probar suerte en la ruleta!`, () => advButtons([{ label: 'Jugar', fn: () =>
@@ -162,7 +162,7 @@ function doItem() {
           return advSay('¡Un Caramelo raro! Nadie de tu equipo puede evolucionar ahora, así que lo guardas en la mochila: se usará solo en cuanto tengas un Pokémon que pueda.', goOn); }
         return evolveSure('¡Un Caramelo raro!');
       }
-      if (r.k === 'ball') { run.ball = 1; log('⚪ Encuentras una Ball especial: +1 quesito al intentar capturar un legendario.'); return advSay('¡Una Ball especial! Cuando intentes capturar un legendario tendrás un quesito verde más.', goOn); }
+      if (r.k === 'ball') { run.ball = 1; log('⚪ Encuentras una Ball especial: +1 quesito en la próxima captura.'); return advSay('¡Una Ball especial! En tu próxima captura tendrás un quesito verde más.', goOn); }
       run.bag[r.k] = (run.bag[r.k] || 0) + 1; log(`🎒 Encuentras: ${ITEMS[r.k].name}.`); renderAdv();
       advSay(`¡Has encontrado ${ITEMS[r.k].name}! ${ITEMS[r.k].desc}`, goOn);
     });
