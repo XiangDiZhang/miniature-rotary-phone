@@ -12,7 +12,6 @@ function loadRun(region) {
   // si se guardó en mitad de un combate, cada Pokémon vuelve a su forma normal (también si estaba megaevolucionado o Gigamax)
   [...(r.team || []), ...(r.box || []).filter(Boolean), ...(Array.isArray(r.stolen) ? r.stolen : r.stolen ? [r.stolen] : [])].forEach(m => {
     restoreForm(m);
-    if (m.stone && m.dmax) { delete m.dmax; m.tfPath = 'mega'; }   // (partidas de antes: un Pokémon solo puede llevar una de las dos)
   });
   if ((r.region === 'caos' || r.region === 'test' || r.region === 'randomlocke') && !(r.chaos && r.chaos.gyms)) return null;
   return r;

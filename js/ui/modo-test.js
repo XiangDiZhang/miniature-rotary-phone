@@ -17,7 +17,7 @@ const tsSpr = (n, sh) => { const r = (sh && SPR.shiny.get(n)) || SPR.normal.get(
 function testMon(n) {
   const t = { n, shiny: false }, ms = megaForms({ n });
   if (ms.length) t.stone = ms[0];
-  else if (gmaxForms({ n }).length) t.dmax = 1;   // (solo una de las dos: si puede megaevolucionar, lleva la megapiedra)
+  if (gmaxForms({ n }).length) t.dmax = 1;
   return t;
 }
 
@@ -73,8 +73,8 @@ function testRender() {
   S.querySelectorAll('[data-sh]').forEach(b => b.onclick = () => { const t = T[+b.dataset.sh]; t.shiny = !t.shiny; testDone(t.shiny ? 988 : 660); });
   // megapiedra: la primera → la siguiente (X / Y) → sin piedra → la primera…
   S.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { const t = T[+b.dataset.st], ms = megaForms({ n: t.n }), i = ms.indexOf(t.stone);
-    if (i < 0) { t.stone = ms[0]; t.dmax = 0; } else if (i < ms.length - 1) t.stone = ms[i + 1]; else delete t.stone; testDone(); });
-  S.querySelectorAll('[data-dm]').forEach(b => b.onclick = () => { const t = T[+b.dataset.dm]; t.dmax = t.dmax ? 0 : 1; if (t.dmax) delete t.stone; testDone(); });   // (megapiedra o banda: ponerse una quita la otra)
+    if (i < 0) t.stone = ms[0]; else if (i < ms.length - 1) t.stone = ms[i + 1]; else delete t.stone; testDone(); });
+  S.querySelectorAll('[data-dm]').forEach(b => b.onclick = () => { const t = T[+b.dataset.dm]; t.dmax = t.dmax ? 0 : 1; testDone(); });
   $('tstDex').disabled = T.length >= 6;
   // mochila: cada objeto con − y +, y la Ball de Kurt (sí o no)
   $('tstBag').innerHTML = Object.entries(ITEMS).map(([k, it]) => { const v = testSet.bag[k] || 0;
@@ -128,7 +128,7 @@ function testStart() {
     r.team = testSet.team.map(t => {
       const m = { n: t.n, shiny: !!t.shiny };
       if (t.stone && megaForms(m).includes(t.stone)) m.stone = t.stone;
-      if (t.dmax && !m.stone && gmaxForms(m).length) m.dmax = 1;   // (nunca las dos)
+      if (t.dmax && gmaxForms(m).length) m.dmax = 1;
       return m;
     });
     r.bag = Object.fromEntries(Object.entries(testSet.bag).filter(([k, v]) => v > 0 && ITEMS[k]));
