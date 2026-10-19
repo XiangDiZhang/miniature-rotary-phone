@@ -15,7 +15,7 @@ function advNext() {
   if (!run.stepDone && L.kind !== 'start') return ({ route: phaseCapture, rival: phaseRival, city: phaseCity, gym: phaseGym, leg: phaseAdventure, prep: phaseAdventure })[L.kind]();
   if (run.step >= REG().path.length - 1) return phaseEnd();
   // siguiente parada
-  run.step++; run.stepDone = false; const N = loc();
+  run.step++; run.stepDone = false; const N = loc(); run.weather = rollWeather();   // el clima de esta zona
   log(`📍 ${N.kind === 'rival' ? `Tu rival ${N.rival} te corta el paso.` : `Llegas a ${N.name}.`}`); saveRun(); renderAdv();
   $('advStep').textContent = N.name; $('advRpm').textContent = '';
   const intro = N.kind === 'route' ? `${N.name}: por aquí viven ${N.wild.map(w => pname(w[0])).join(', ')}… y dicen que a veces pasa corriendo algo legendario. Tendrás una sola oportunidad de captura.`

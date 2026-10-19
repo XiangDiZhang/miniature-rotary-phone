@@ -58,6 +58,12 @@ function battleSegs(foe, base, types) {
   for (let i = 0; i < tr; i++) Rd.push({ label: 'Derrota' });
   if (tr) notes.push(`▼ Tipos en contra +${tr} (${mu.filter(x => x.r).map(x => `${mname(x.m)} ${x.def >= 1.5 ? 'recibe ' + xTxt(x.def) : 'apenas hace daño'}`).join(', ')})`);
   if (rd) notes.push(`Dificultad +${rd}`);
+  // clima: sus tipos tienen ventaja (en los dos bandos)
+  const W = curWeather();
+  if (W && W.types.length) {
+    if (run.team.some(m => mtypes(m).some(t => W.types.includes(t)))) { G.push({ label: 'Victoria' }); notes.push(`${W.ico} ${W.name}: tu equipo +1`); }
+    if (foe.some(n => ptypes(n).some(t => W.types.includes(t)))) { Rd.push({ label: 'Derrota' }); notes.push(`${W.ico} ${W.name}: el rival +1`); }
+  }
   // reparte verdes y rojos intercalados
   const N = G.length + Rd.length, segs = []; let acc = 0, g = 0, r = 0;
   for (let i = 0; i < N; i++) {

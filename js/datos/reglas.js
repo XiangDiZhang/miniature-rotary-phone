@@ -162,3 +162,17 @@ const BATTLE_FORMS = {
   '1024:0': [10276, 'Teracambio'],                    // Terapagos → Forma Teracristal
   '774:0': [10136, 'Escudo Limitado'],                // Minior → Núcleo
 };
+
+// ---- Clima de cada zona: al llegar se sortea. Sus tipos tienen ventaja en combate (+1 quesito verde si alguno de tu equipo es de ellos,
+// +1 rojo si alguno del rival lo es) y salen el doble en las ruletas de Pokémon salvajes. Despejado: sin efecto ----
+const WEATHERS = {
+  sol: { name: 'Soleado', ico: '☀️', types: ['Fuego', 'Planta'], w: 2 },
+  lluvia: { name: 'Lluvia', ico: '🌧️', types: ['Agua', 'Eléctrico'], w: 2 },
+  nieve: { name: 'Nieve', ico: '❄️', types: ['Hielo'], w: 1 },
+  arena: { name: 'Tormenta de arena', ico: '🌪️', types: ['Roca', 'Tierra', 'Acero'], w: 1 },
+  niebla: { name: 'Niebla', ico: '🌫️', types: ['Fantasma', 'Psíquico', 'Hada'], w: 1 },
+  noche: { name: 'Noche', ico: '🌙', types: ['Siniestro', 'Fantasma', 'Bicho'], w: 2 },
+  despejado: { name: 'Despejado', ico: '⛅', types: [], w: 5 },
+};
+function rollWeather() { const e = Object.entries(WEATHERS), t = e.reduce((a, [, x]) => a + x.w, 0); let r = Math.random() * t; for (const [k, x] of e) { r -= x.w; if (r < 0) return k; } return 'despejado'; }
+const curWeather = () => (run && WEATHERS[run.weather]) || null;

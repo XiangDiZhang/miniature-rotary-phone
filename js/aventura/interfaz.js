@@ -383,7 +383,7 @@ function leaderHTML(L) {
   // (si son varios personajes, como Vito y Leti, salen todos juntos, un poco montados uno sobre otro)
   const art = trainerArt(leaderSprs(L.leader));
   return { c: TYPE_COLORS[T], html: `${art}<div class="lc-spr${ni ? ' lc-mon' : bsp ? ' medal' : ''}">${ni || phaseLook(L).icon}</div>
-    <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div>${chip(T)}</div></div>
+    <div class="lc-top">${N ? nowLine(N) : `<small>${role}${done ? ' · ✓ derrotado' : ''}</small>`}<b>${L.leader}</b><div class="lc-tyrow">${chip(T)}${(() => { const W = curWeather(); return W && W.types.length ? `<span class="lc-wmini" title="${W.name}: favorece a ${W.types.join(', ')}">${W.ico} ${W.name}</span>` : ''; })()}</div></div>
     <div class="lc-rows">${N && N.mons ? monsRow(N) : `
       <div class="lc-row"><em>Tienen ventaja los</em>${weak.map(chip).join('') || '—'}</div>
       <div class="lc-row"><em>Tienen desventaja los</em>${danger.map(chip).join('') || '—'}</div>
@@ -434,6 +434,7 @@ function renderCard() {
         ${L.local && !(N && N.mons) ? `<div class="lc-row"><em>Sitios</em>${places || '—'}</div>` : ''}
         ${nextGym ? `<div class="lc-row"><em>Próximo</em><span class="lc-txt">${nextGym.role === 'elite' ? 'Alto Mando · ' : nextGym.role === 'champ' ? 'Campeón · ' : ''}${nextGym.leader}</span>${chip(nextGym.typeName)}</div>` : ''}
         <div class="lc-row"><em>Medallas</em><span class="lc-txt">${run.badges.length} / 8</span></div>
+        ${weatherRow()}
       </div>`;
   }
   el.style.setProperty('--c', c); el.hidden = false;
@@ -538,3 +539,5 @@ const LEAD_SVG = {
   $('advLog').addEventListener('click', e => { const el = e.target.closest('.lg-open'); if (el) openLog(el); });
   $('advLog').addEventListener('keydown', e => { const el = e.target.closest('.lg-open'); if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openLog(el); } });
 })();
+// fila del clima en la tarjeta de información: su icono, su nombre y los tipos que favorece
+function weatherRow() { const W = curWeather(); return W ? `<div class="lc-row lc-weather"><em>Clima</em><span class="lc-txt">${W.ico} ${W.name}</span>${W.types.map(chip).join('')}</div>` : ''; }

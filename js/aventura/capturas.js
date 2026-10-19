@@ -86,6 +86,8 @@ function wildWheel(title, sub, pool, center, legend = false) {
   // Randomlocke: en vez de los Pokémon de la zona, otros tantos (entre 8 y 14) de toda la Pokédex, al azar (sin legendarios ni singulares:
   // esos solo salen por el quesito «★ ???» de la ruta). En las demás regiones, los Pokémon de la zona, como siempre
   if (REG().randomlocke) pool = allOf(randomPick(DEX.map(r => r[0]).filter(k => !isLegend(k)), Math.max(8, Math.min(14, pool.length))));
+  // clima: sus tipos salen el doble
+  { const Wc = curWeather(); if (Wc && Wc.types.length) pool = pool.map(([n, w]) => [n, ptypes(n).some(t => Wc.types.includes(t)) ? w * 2 : w]); }
   const tot = pool.reduce((a, w) => a + w[1], 0);
   spinUI(title, sub, [...pool.map(([n, w]) => wseg(n, w)),
     ...(legend ? [{ label: '★ ???', short: '¡¿???!', color: '#ffd84a', w: tot * LEGEND_W, legend: 1 }] : [])], center, r => {

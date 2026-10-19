@@ -765,3 +765,5 @@ img.stone.px { image-rendering: pixelated; }
 .adv-vs { color: #fffbe0; text-shadow: 0 0 6px #fff, 0 0 18px #ffd84a, 0 0 34px #ff5a46, 3px 3px 0 #ff5a46; }
 /* sin botones de texto (Girar, Continuar…): todo se hace con el botón del centro de la ruleta (GIRAR / SEGUIR) */
 #advBtns { display: none !important; }
+.lc-tyrow { display: flex; align-items: center; gap: 8px; }
+.lc-wmini { font: 600 10px var(--f-mono); letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--fg-soft); }
