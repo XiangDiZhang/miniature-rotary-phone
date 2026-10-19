@@ -31,6 +31,8 @@ $html = [regex]::Replace($html, '\s*<script src="((?:js|assets)/[^"?]+)(?:\?v=[^
   ''
 })
 $html = $html.Replace("  <!-- El orden importa: cada archivo solo usa lo que han definido los anteriores -->`n", '')
+# la versión instalable (manifiesto, icono de inicio y service worker) solo sirve publicada con sus archivos: en el archivo único, fuera
+$html = [regex]::Replace($html, '\s*<link rel="(manifest|apple-touch-icon)" href="[^"]*">', '')
 $html = $html.Replace('</body>', $scripts.ToString() + '</body>')
 if ($html -match '(href|src)="(css|js|assets)/') { throw 'Ha quedado alguna referencia a un archivo local sin incluir' }
 New-Item -ItemType Directory -Force (Split-Path $Salida) | Out-Null

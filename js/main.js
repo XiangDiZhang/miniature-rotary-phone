@@ -36,3 +36,6 @@ function start(saved) {
 // en claude.ai, al recargar el artefacto en caliente se vuelve a la misma escena
 window.claude?.hot?.snapshot?.(() => ({ scene: state.scene, chosen: state.chosen }));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+
+// versión instalable: registra el service worker (solo publicado en internet, no abriendo el archivo)
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
