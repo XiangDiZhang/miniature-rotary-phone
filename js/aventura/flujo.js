@@ -208,9 +208,23 @@ function evoPlay(list, msg) {
 // ---- Recompensas del gimnasio: megapiedra (para un Pokémon del equipo que pueda megaevolucionar) y Banda Dinamax ----
 function gymRewards(next) {
   const steps = [];
-  // un Pokémon puede llevar la megapiedra y la Banda Dinamax a la vez: en cada giro de un combate eliges cuál usar (nunca las dos en el mismo)
-  // Banda Dinamax: todos tus Pokémon con forma Gigamax que aún no la tengan (equipo y caja)
-  const dm = allMine().filter(m => !m.dmax && gmaxForms(m).length);
+  // un Pokémon puede acabar llevando la megapiedra y la Banda Dinamax (en cada giro de un combate eliges cuál usar, nunca las dos en el mismo).
+  // Si a uno le pueden tocar las dos y aún no tiene ninguna, la ruleta decide cuál recibe ahora; la otra, en el próximo gimnasio
+  const dual = run.team.filter(m => !m.stone && !m.dmax && megaForms(m).length && gmaxForms(m).length);
+  dual.forEach(m => steps.push(go => {
+    const mg = megaForms(m)[rnd(0, megaForms(m).length - 1)], gm = gmaxForms(m)[0];
+    advSay(`¡${mname(m)} puede megaevolucionar y también gigamaxizarse! La ruleta decide qué recibe ahora; lo otro llegará en el próximo gimnasio.`, () => advButtons([{ label: 'Girar la ruleta', fn: () =>
+      spinUI(`${mname(m)} · ¿Mega o Gigamax?`, `Si sale Megaevolución recibe la ${stoneName(mg)}; si sale Gigamax, la Banda Dinamax. Lo que falte, en el próximo gimnasio.`, [
+        { label: 'Megaevolución', short: 'MEGA', n: mg, shiny: m.shiny, color: '#c9a7ff', k: 'mega' },
+        { label: 'Gigamax', short: 'GIGAMAX', n: gm, shiny: m.shiny, color: '#ff4d6d', k: 'gmax' }], '¿CUÁL?', r => {
+        if (r.k === 'gmax') { m.dmax = 1; logm(`🔴 ${mname(m)} recibe la Banda Dinamax.`, m); advToast('🔴 ¡Banda Dinamax!'); }
+        else { m.stone = mg; logm(`💎 ${mname(m)} recibe la ${stoneName(mg)}.`, m); advToast(`💎 ¡${stoneName(mg)} para ${mname(m)}!`); }
+        renderAdv(); saveRun();
+        advSay(r.k === 'gmax' ? `¡Gigamax! ${mname(m)} recibe la Banda Dinamax. Su megapiedra llegará en el próximo gimnasio.` : `¡Megaevolución! ${mname(m)} recibe la ${stoneName(mg)}. Su Banda Dinamax llegará en el próximo gimnasio.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
+      }, { txt: `${mname(m)}: ¿mega o Gigamax?`, n: mid(m), shiny: m.shiny }) }]));
+  }));
+  // Banda Dinamax: todos tus Pokémon con forma Gigamax que aún no la tengan (equipo y caja), menos los que acaban de pasar por la ruleta
+  const dm = allMine().filter(m => !m.dmax && gmaxForms(m).length && !dual.includes(m));
   if (dm.length) steps.push(go => {
     dm.forEach(m => m.dmax = 1); logm(`🔴 Banda Dinamax para ${dm.map(mname).join(", ")}.`, dm[0]); advToast('🔴 ¡Banda Dinamax!'); renderAdv(); saveRun();
     advSay(`¡El estadio vibra con energía Dinamax! ${listJoin(dm.map(mname))} ${dm.length > 1 ? 'reciben' : 'recibe'} la Banda Dinamax: en combate, púlsala para que se gigamaxice durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
@@ -219,7 +233,7 @@ function gymRewards(next) {
 
   steps.push(go => {
     // (el que acaba de recibir la Banda Dinamax en este gimnasio no se lleva también la megapiedra: esa, en otro gimnasio)
-    const opts = run.team.filter(m => !m.stone && !dm.includes(m)).flatMap(m => megaForms(m).map(f => ({ m, f })));
+    const opts = run.team.filter(m => !m.stone && !dm.includes(m) && !dual.includes(m)).flatMap(m => megaForms(m).map(f => ({ m, f })));
     if (!opts.length) return go();
     const give = ({ m, f }) => {
       m.stone = f; const nm = mname({ n: m.n, form: f }), st = stoneName(f); logm(`💎 ${mname(m)} recibe la ${st}.`, m); advToast(`💎 ¡${st} para ${mname(m)}!`); renderAdv(); saveRun();
