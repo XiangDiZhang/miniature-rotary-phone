@@ -1,5 +1,5 @@
 // Escenas, cabecera (sonido, pantalla completa) y menú principal
-const SCENE_TITLES = { home: 'Menú principal', dex: 'Pokédex', menu: 'Jugar · Selección de región', saves: 'Jugar · Partidas en curso', roulette: 'Jugar · Ruleta', chosen: 'Jugar · Generación elegida', options: 'Opciones', adv: 'Aventura' };
+const SCENE_TITLES = { home: 'Menú principal', dex: 'Pokédex', profile: 'Perfil', menu: 'Jugar · Selección de región', saves: 'Jugar · Partidas en curso', roulette: 'Jugar · Ruleta', chosen: 'Jugar · Generación elegida', options: 'Opciones', adv: 'Aventura' };
 
 // Pantalla completa (si el navegador o la app lo permiten)
 $('fsBtn').onclick = async () => {
@@ -24,7 +24,7 @@ $('soundBtn').onclick = () => {
 // Fuera de la partida (inicio, selección de región, generación elegida, opciones, partidas en curso y ruleta) todo se
 // agranda con la pantalla (zoom del bloque central, --mz): a 1920 × 1080, un 25 % más. En pantallas pequeñas y en el móvil, igual que siempre.
 // uiZ(): el zoom que tiene ahora la página (para lo que se mide en JS y se vuelve a poner en px: el botón de la ruleta, el historial)
-const MENU_SCENES = ['home', 'menu', 'chosen', 'options', 'saves', 'roulette'];
+const MENU_SCENES = ['home', 'menu', 'chosen', 'options', 'saves', 'roulette', 'profile'];
 let MZ = 1;
 function setMenuZoom() {
   MZ = innerWidth >= 1100 ? Math.max(1, Math.min(1.6, innerWidth / 1250, innerHeight / 860)) : 1;
@@ -37,7 +37,8 @@ setMenuZoom(); addEventListener('resize', setMenuZoom);
 function show(scene) {
   state.scene = scene;
   if (scene !== 'dex' && typeof endDexPick === 'function') endDexPick(true);   // sales de la Pokédex: se acaba el «modo elegir» del Modo Test
-  ['home', 'dex', 'options', 'menu', 'saves', 'roulette', 'chosen', 'adv'].forEach(s => $('scene-' + s).hidden = s !== scene);
+  ['home', 'dex', 'options', 'menu', 'saves', 'roulette', 'chosen', 'adv', 'profile'].forEach(s => $('scene-' + s).hidden = s !== scene);
+  if (scene === 'profile' && typeof renderProfile === 'function') renderProfile();
   document.body.classList.toggle('wide-adv', scene === 'adv');
   document.body.classList.toggle('menu-z', MENU_SCENES.includes(scene));
   if (scene !== 'adv' && advWheel) advWheel.stop();

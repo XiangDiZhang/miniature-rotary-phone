@@ -176,3 +176,26 @@ $('optTrade').onclick = () => { if (!needMotion()) return; beep(880); tradeAnim(
 $('optEvo').onclick = () => { if (!needMotion()) return; beep(880); evoAnim([{ m: { n: 5 }, A: demoSide(5, 5), B: demoSide(6, 6) }], () => {}, () => {}); };
 $('optMega').onclick = () => { if (!needMotion()) return; beep(880); transformAnim({ n: 6, stone: 10034 }, 'mega', demoSide(6, 6), demoSide(10034, 6), () => {}, () => {}); };
 $('optDmax').onclick = () => { if (!needMotion()) return; beep(880); const g = (FORMS[6] || []).find(f => f[8] === 'gmax'); if (g) transformAnim({ n: 6 }, 'gmax', demoSide(6, 6), demoSide(g[0], 6), () => {}, () => {}); };
+
+// ---- Copia de seguridad: todo lo guardado del juego (claves «ruleta-…» de este navegador) en un archivo .json, y cargarlo de vuelta ----
+$('optExport').onclick = () => {
+  const data = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('ruleta-')) data[k] = localStorage.getItem(k); } } catch (e) {}
+  const blob = new Blob([JSON.stringify({ juego: 'ruleta-pokemon', fecha: new Date().toISOString(), data }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ruleta-pokemon-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); beep(880);
+};
+$('optImport').onclick = () => { beep(740); $('optImportFile').click(); };
+$('optImportFile').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const j = JSON.parse(rd.result); if (!j || j.juego !== 'ruleta-pokemon' || !j.data) throw 0;
+      if (!confirm('¿Cargar esta copia? Sustituye tus partidas, Pokédex, récords y ajustes de este navegador.')) return;
+      Object.keys(localStorage).filter(k => k.startsWith('ruleta-')).forEach(k => localStorage.removeItem(k));
+      Object.entries(j.data).forEach(([k, v]) => { if (k.startsWith('ruleta-')) localStorage.setItem(k, v); });
+      chord([523, 659, 784]); setTimeout(() => location.reload(), 300);
+    } catch (err) { alert('Ese archivo no es una copia de la Ruleta Pokémon.'); }
+  };
+  rd.readAsText(f); e.target.value = '';
+};

@@ -129,7 +129,7 @@ function transformMon(m, kind) {
   advButtons([]); advWheel.enabled = false;
   const battleNow = curBattle;
   transformAnim(m, kind, from, { id: to, n: m.n, ty: formRec(to)[1][2], name: shown }, () => {
-    m.tf = { from: form0, kind }; m.form = to;
+    m.tf = { from: form0, kind }; m.form = to; stat(kind);
     logm(kind === 'mega' ? `💎 ¡${from.name} megaevoluciona en ${shown}!` : `🔴 ¡${from.name} se gigamaxiza!`, { n: m.n, form: to, shiny: m.shiny });
     advToast(kind === 'mega' ? `💎 ¡${shown}!` : `🔴 ¡${shown}!`); saveRun();
   }, () => battleNow());   // los quesitos del combate se recalculan con su nueva forma
@@ -163,7 +163,7 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
       // si te quedan pociones, se usa una sola, sin preguntar (primero la más flojita, para guardar las mejores)
       const k = ['potion', 'super', 'hyper'].find(k => (run.bag[k] || 0) > 0);
       if (k) {
-        run.bag[k]--; retries = ITEMS[k].retries - 1; again = true; note = `¡Revancha con ${ITEMS[k].name}!`; pot = k;
+        run.bag[k]--; run.potUsed = 1; retries = ITEMS[k].retries - 1; again = true; note = `¡Revancha con ${ITEMS[k].name}!`; pot = k;
         renderPotion(pot, ITEMS[k].retries, true);
         log(`🧪 Pierdes contra ${who}… y usas ${ITEMS[k].name}: ¡revancha!`); advToast(`🧪 ${ITEMS[k].name}`); renderAdv(); saveRun();
         return advSay(`${who} te ha ganado… pero usas ${ITEMS[k].name} automáticamente${ITEMS[k].retries > 1 ? ` (${ITEMS[k].retries} giros)` : ''}. ¡Revancha con la misma ruleta!`, () => advButtons([{ label: 'Volver a girar', fn: show }]));

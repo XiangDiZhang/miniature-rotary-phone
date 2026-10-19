@@ -65,6 +65,7 @@ function caught(n, shiny, legend, form) {
       spinUI(`Forma · ${pname(n)}`, `Todas las formas tienen la misma probabilidad (${pct(1 / segs.length)} cada una).`, segs, 'FORMA', r => caught(n, shiny, legend, r.form), { txt: `¿Qué forma tiene tu ${pname(n)}?`, n, shiny }) }]));
   }
   const m = addMon(n, shiny, form);
+  stat('cap'); if (shiny) stat('shiny'); if (isLegend(n)) stat('legend');
   const inTeam = run.team.includes(m), nm = mname(m);
   logm(`🎯 ¡${nm}${shiny ? ' ★' : ''} capturado!${inTeam ? '' : ' Va a la caja.'}`, m);   // en el diario, con su forma (y su sprite shiny si lo es)
   setNow(`¡${nm} capturado!`, { n: mid(m), shiny });

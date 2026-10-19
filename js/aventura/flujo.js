@@ -172,7 +172,7 @@ function evoVariant(m, o, cb) {
     V.map(f => seg(f, f ? formLabel(o.n, formRec(f)[1]) : baseFormName(o.n))), r => cb({ n: o.n, form: r.f }));
 }
 // cambia los datos de un Pokémon que evoluciona (la megapiedra y la Banda Dinamax solo se quedan si le siguen sirviendo)
-function applyEvo(m, o) {
+function applyEvo(m, o) { stat('evo');
   const from = mname(m); m.n = o.n; if (o.form) m.form = o.form; else delete m.form; dexRegister(o.n, m.shiny, o.form);
   if (m.stone && !megaForms(m).includes(m.stone)) { const ok = megaForms(m); if (ok.length) m.stone = ok[0]; else delete m.stone; }
   if (m.dmax && !gmaxForms(m).length) delete m.dmax;
@@ -257,7 +257,7 @@ function phaseGym() {
   renderCard();
   const foeTeam = L.rivalStarter ? [...L.team, evoAt(rivalStarter(), 2)] : L.team;
   battle(title, who, foeTeam, L.role === 'champ' ? 3 : L.role === 'elite' ? 2 : 1, () => {
-    if (L.badge) { run.badges.push(L.badge); addPoints(PTS.badge, L.badge); advToast(`◆ ¡${L.badge}!`); }
+    if (L.badge) { run.badges.push(L.badge); stat('badges'); addPoints(PTS.badge, L.badge); advToast(`◆ ¡${L.badge}!`); }
     else { run.eliteWins = (run.eliteWins || 0) + 1; addPoints(L.role === 'champ' ? PTS.champ : PTS.elite, `victoria contra ${L.leader}`); advToast(L.role === 'champ' ? '👑 ¡CAMPEÓN!' : `¡${L.leader} derrotado!`); }
     chord([659, 784, 1046, 1318]); renderAdv(); saveRun();
     if (L.role === 'champ') return advSay(`¡Has derrotado a ${L.leader}! ¡Eres el nuevo Campeón!`, () => { run.stepDone = true; advButtons([{ label: 'Entrar en el Hall de la Fama →', fn: () => hallOfFame(phaseEnd) }]); });

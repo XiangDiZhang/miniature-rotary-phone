@@ -78,7 +78,7 @@ function evoOptions(m) {
 
 // ---- Historial de partidas: equipo (con motes), puntos y si ganaste o perdiste ----
 function saveHistory(won) {
-  if (!run || run.histSaved) return; run.histSaved = true;
+  if (!run || run.histSaved) return; run.histSaved = true; statsEndRun(won);   // (estadísticas, logros y Hall de la Fama histórico)
   if (run.region === 'test') return saveRun();   // el Modo Test no se apunta en el historial
   const mons = allMine().map(m => ({ n: m.n, form: m.form || 0, shiny: !!m.shiny, nick: m.nick || '' }));
   const e = { t: Date.now(), region: run.region, name: REG().name, won: !!won, points: run.points, rank: rank(run.points), badges: run.badges.length, lostTo: won ? '' : (run.lostTo || ''), team: mons };
