@@ -273,3 +273,18 @@ function transformAnim(m, kind, A, B, onSwap, onEnd) {
   shade.addEventListener('click', () => stage === 0 ? reveal() : close());
   timer = setTimeout(reveal, mega ? 1800 : 1900);
 }
+
+// ---- Medalla: el líder te la entrega (su sprite, la medalla que gira y brilla, y el nombre). Se cierra sola o al tocar ----
+function badgeCine(L) {
+  if (reduceMotion || document.hidden || window.__noCine) return advToast(`◆ ¡${L.badge}!`);
+  const sp = badgeSpr(L), ls = typeof leaderSprs === 'function' ? leaderSprs(L.leader) : [], c = TYPE_COLORS[L.typeName] || '#ffd84a';
+  const sh = document.createElement('div'); sh.className = 'badge-cine'; sh.style.setProperty('--c', c);
+  sh.innerHTML = `<div class="bc-box"><div class="bc-rays"></div>
+    <div class="bc-leader">${ls.map(u => `<img src="${u}" alt="">`).join('')}</div>
+    <div class="bc-badge">${sp ? `<img src="${sp.u}" alt="">` : '◆'}</div>
+    <p class="bc-tx"><small>${L.leader} te entrega</small><b>${L.badge}</b></p><span class="skip">Toca para seguir</span></div>`;
+  document.body.appendChild(sh);
+  chord([523, 659, 784, 1046]); setTimeout(() => chord([784, 988, 1318, 1568]), 650);
+  const close = () => { if (!sh.isConnected) return; sh.classList.add('out'); setTimeout(() => sh.remove(), 350); };
+  sh.addEventListener('click', close); setTimeout(close, 3400);
+}

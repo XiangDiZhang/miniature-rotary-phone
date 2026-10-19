@@ -257,7 +257,7 @@ function phaseGym() {
   renderCard();
   const foeTeam = L.rivalStarter ? [...L.team, evoAt(rivalStarter(), 2)] : L.team;
   battle(title, who, foeTeam, L.role === 'champ' ? 3 : L.role === 'elite' ? 2 : 1, () => {
-    if (L.badge) { run.badges.push(L.badge); stat('badges'); addPoints(PTS.badge, L.badge); advToast(`◆ ¡${L.badge}!`); }
+    if (L.badge) { run.badges.push(L.badge); stat('badges'); addPoints(PTS.badge, L.badge); badgeCine(L); }
     else { run.eliteWins = (run.eliteWins || 0) + 1; addPoints(L.role === 'champ' ? PTS.champ : PTS.elite, `victoria contra ${L.leader}`); advToast(L.role === 'champ' ? '👑 ¡CAMPEÓN!' : `¡${L.leader} derrotado!`); }
     chord([659, 784, 1046, 1318]); renderAdv(); saveRun();
     if (L.role === 'champ') return advSay(`¡Has derrotado a ${L.leader}! ¡Eres el nuevo Campeón!`, () => { run.stepDone = true; advButtons([{ label: 'Entrar en el Hall de la Fama →', fn: () => hallOfFame(phaseEnd) }]); });

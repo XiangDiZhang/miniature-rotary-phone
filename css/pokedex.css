@@ -144,3 +144,6 @@ html.dexmode { overflow: hidden; }
   .mon .nm { font-size: 13px; }
   .mon .top > span:last-child:not(.no) { display: none; }
 }
+/* formas registradas de la especie (2/4) */
+.mon .nm .fm { font: 600 9.5px var(--f-mono); padding: 1px 6px; border-radius: 999px; vertical-align: middle; color: var(--fg-soft); border: 1px solid var(--line-2); }
+.mon .nm .fm.all { color: #10131c; background: #ffd84a; border-color: #ffd84a; }

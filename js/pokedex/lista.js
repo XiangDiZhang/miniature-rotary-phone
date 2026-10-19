@@ -72,7 +72,7 @@ function dexItem([num, [n, name, g, ty, leg, myth]], label, plainNum) {
     `<span class="bg${shown.length > 3 ? ' d4' : ''}" aria-hidden="true">${shown}</span>` +
     `<span class="top"><span class="no">${label} ${shown}</span>${leg ? '<small>LEG</small>' : myth ? '<small>SING</small>' : plainNum ? `<span>GEN ${ROMAN[g]}</span>` : ''}</span>` +
     cell +
-    `<span class="nm">${name}</span>` +
+    `<span class="nm">${name}${formsChip(n)}</span>` +
     `<span class="ty">${ty.map(typeIcon).join('')}</span></li>`;
 }
 function renderDex() {
@@ -118,3 +118,9 @@ function renderDex() {
 // Filtros en móvil: cajón lateral
 $('sideTab').onclick = () => { document.body.classList.add('side-open'); beep(740, 0.04, 0.02); };
 $('sideClose').onclick = $('sideShade').onclick = () => document.body.classList.remove('side-open');
+// formas de una especie que tienes (normal, regionales, otras formas; sin megas ni Gigamax): «2/4»
+function formsChip(n) {
+  const fl = (FORMS[n] || []).filter(f => f[8] !== 'mega' && f[8] !== 'gmax'); if (!fl.length || devMode) return '';
+  const have = (PDX.f.has(n) ? 1 : 0) + fl.filter(f => PDX.f.has(f[0])).length, tot = fl.length + 1;
+  return ` <small class="fm${have >= tot ? ' all' : ''}" title="Formas registradas: ${have} de ${tot}">${have}/${tot}</small>`;
+}
