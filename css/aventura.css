@@ -763,3 +763,5 @@ img.stone.px { image-rendering: pixelated; }
 @keyframes trBob { 0%, 100% { translate: 0 0; scale: 1 1; } 20% { translate: 0 0; scale: 1.03 .97; } 40% { translate: 0 -3%; scale: .98 1.03; } 60% { translate: 0 0; scale: 1.02 .98; } }
 /* «VS» con un brillo fijo (sin parpadeo) */
 .adv-vs { color: #fffbe0; text-shadow: 0 0 6px #fff, 0 0 18px #ffd84a, 0 0 34px #ff5a46, 3px 3px 0 #ff5a46; }
+/* sin botones de texto (Girar, Continuar…): todo se hace con el botón del centro de la ruleta (GIRAR / SEGUIR) */
+#advBtns { display: none !important; }
