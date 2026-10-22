@@ -622,6 +622,8 @@ function randomStarters() {
 // derrota en un combate se lleva a uno de tus Pokémon para siempre (nuzFaint de combate.js). Sin Pokémon, se acaba la partida.
 const NUZ_GEN = { id: 13, roman: '☠', region: 'Nuzlocke', from: 1, to: 1025, year: '', games: 'Un encuentro por zona y los Pokémon que caen no vuelven', color: '#e04a4a' };
 REGIONS.nuzlocke = Object.defineProperties({}, Object.getOwnPropertyDescriptors(REGIONS.caos));
+// iniciales al azar, como en el Randomlocke (las partidas de antes, sin ellos, siguen con los del Modo Caos)
+Object.defineProperty(REGIONS.nuzlocke, 'starters', { get() { const c = chaosRun(); return c && c.rl ? c.rl : REGIONS.caos.starters; } });
 Object.assign(REGIONS.nuzlocke, { name: 'Nuzlocke', prof: 'un profesor muy serio', league: 'la Liga Nuzlocke', nuzlocke: true,
   end: () => '¡Has superado el Nuzlocke! Has completado la aventura con' });
 

@@ -4,7 +4,7 @@ let run = null, advWheel = null;
 const REG = () => REGIONS[run.region];
 const loc = () => REG().path[run.step];
 const VIL = () => VILLAINS[(run && REG().villain) || 'rocket'];
-function newRun(region = 'kanto') { return { nuzlocke: region === 'nuzlocke' || undefined, daily: region === 'diario' ? todayKey() : undefined, chaos: region === 'diario' ? dailyPlan() : region === 'caos' || region === 'test' || region === 'nuzlocke' ? chaosPlan() : region === 'randomlocke' ? { ...chaosPlan(), rl: randomStarters() } : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: region === 'nuzlocke' ? 0 : (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
+function newRun(region = 'kanto') { return { nuzlocke: region === 'nuzlocke' || undefined, daily: region === 'diario' ? todayKey() : undefined, chaos: region === 'diario' ? dailyPlan() : region === 'caos' || region === 'test' ? chaosPlan() : region === 'randomlocke' || region === 'nuzlocke' ? { ...chaosPlan(), rl: randomStarters() } : undefined, v: 5, kv: 2, ball: 0, sub: 0, extra: 0, pending: [], stolen: null, xatk: 0, region, step: 0, stepDone: false, team: [], box: [], bag: { potion: region === 'nuzlocke' ? 0 : (REGIONS[region] && REGIONS[region].potions) || 1 }, points: 0, badges: [], tea: 0, evoFails: 0, starter: 0, over: false, log: [] }; }
 function saveRun() { run.t = Date.now(); store.setJSON('ruleta-run-' + run.region, run); }   // t: cuándo se jugó por última vez (Partidas en curso)
 function loadRun(region) {
   const r = store.getJSON('ruleta-run-' + region);
