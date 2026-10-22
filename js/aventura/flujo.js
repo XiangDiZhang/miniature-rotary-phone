@@ -39,7 +39,7 @@ function phaseStarter() {
     R.starters.map(n => wseg(n)), 'INICIAL', r => {   // shiny como cualquier otro: 1 %
       run.starter = r.n;
       const sh = !!r.shiny;
-      const sm = addMon(r.n, sh); logm(`🎉 Tu inicial es ${sh ? "✦ " : ""}${pname(r.n)}. Recibes ${run.bag.potion} Poción${run.bag.potion > 1 ? "es" : ""}.`, sm);
+      const sm = addMon(r.n, sh); logm(`🎉 Tu inicial es ${sh ? "✦ " : ""}${pname(r.n)}.${run.bag.potion ? ` Recibes ${run.bag.potion} Poción${run.bag.potion > 1 ? "es" : ""}.` : ""}`, sm);
       if (sh) { addPoints(PTS.shiny, `¡${pname(r.n)} shiny!`); advToast(`✦ ¡${pname(r.n)} SHINY! ✦`); shinySfx(); renderAdv(); const t = $('advTeam').querySelector('.tmw'); const rr = t && t.getBoundingClientRect(); shinyBurst(); if (rr) setTimeout(() => shinyBurst(rr.left + rr.width / 2, rr.top + rr.height / 2), 350); }
       advSay(sh ? `¡INCREÍBLE! ¡Tu ${pname(r.n)} es SHINY! Será tu compañero de viaje.` : `¡${pname(r.n)} será tu compañero de viaje!`, () => advButtons([{ label: `Salir de ${L.name} →`, fn: advNext }]));
     });
@@ -74,6 +74,8 @@ function phaseAdventure() {
     .map(a => a.k === 'tree' && REG().name === 'Kanto' ? { ...a, label: 'Snorlax dormido' } : a.k === 'rocket' ? { ...a, label: VIL().name } : a)
     .map(a => ({ ...a, short: a.place ? EVENTS[a.k].short : shortOf(a.label) }))
     .filter(a => !(a.k === 'trade' && run.team.length + boxList().length < 1))
+    // Nuzlocke: un solo Pokémon por zona (nada de «Capturar dos/tres») y sin pociones (nada de Tienda)
+    .filter(a => !(REG().nuzlocke && NUZ_NO.has(a.k)))
     // el Árbol raro (Sudowoodo) y el Snorlax dormido solo existen en Johto y Kanto
     .filter(a => !(a.k === 'tree' && run.region !== 'kanto' && run.region !== 'johto'));
   spinUI(`${L.name} · Ruleta de aventura ${n}/${tot}`, L.kind === 'prep' ? 'Última parada antes del Alto Mando: cualquier cosa puede pasar.' : `Camino de ${L.to}. La ruleta decide qué pasa por el camino${L.local && L.local.length ? ' (los quesitos naranjas son sitios especiales de esta zona)' : ''}.`,
@@ -117,6 +119,7 @@ function finish() {
 // quesitos de «¿quién evoluciona?»: tus Pokémon (el elegido no se sube al centro: entra directo en la cinemática desde su quesito)
 const evoSegs = list => list.map(m => ({ label: dname(m), n: mid(m), color: TYPE_COLORS[mtypes(m)[0]], short: dname(m), m, noCenter: 1 }));
 function potionInstead(msg) {
+  if (REG().nuzlocke) { log('🔸 Nadie puede evolucionar.'); return advSay('¡Tocaba evolución, pero ningún Pokémon de tu equipo puede evolucionar! (En el Nuzlocke no hay pociones.)', goOn); }
   const k = potionTier(); run.bag[k] = (run.bag[k] || 0) + 1; log(`🧪 Nadie puede evolucionar: recibes ${ITEMS[k].name}.`); renderAdv(); saveRun();
   advSay(`${msg} ${ITEMS[k].name}.`, goOn);
 }
@@ -129,7 +132,7 @@ function phaseEvolve() {
     spinUI('Evolución · ¿Quién?', '¡Alguien va a evolucionar! La ruleta elige quién.', evoSegs(cands), '¿QUIÉN?', r => evolve(r.m), evoNow('¿Quién evoluciona?', cands));
   };
   if (ch >= 1) { run.evoFails = 0; advNow = evoNow('¡Evolución segura!', cands); renderCard(); return advSay('¡Tu equipo ha combatido tanto que esta vez la evolución es segura!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Continuar', fn: who }])); }
-  spinUI('Evolución · ¿Habrá suerte?', 'Si cae en dorado, alguien de tu equipo evolucionará (o, si nadie puede, recibes una poción).',
+  spinUI('Evolución · ¿Habrá suerte?', `Si cae en dorado, alguien de tu equipo evolucionará${REG().nuzlocke ? '' : ' (o, si nadie puede, recibes una poción)'}.`,
     [{ label: '¡Evolución!', short: '¡EVOLUCIÓN!', color: '#ffd84a', w: ch, ok: 1 }, { label: 'Nada', short: 'NADA', color: '#8592ab', w: 1 - ch }], 'EVOLUCIÓN', r => {
       if (r.ok) { run.evoFails = 0; advNow = evoNow('¡Habrá evolución!', cands); renderCard(); return advSay(cands.length ? '¡Algo está pasando! Uno de tus Pokémon empieza a brillar…' : '¡Ha caído en Evolución!', () => advButtons([{ label: cands.length ? '¿Quién evoluciona?' : 'Ver premio', fn: who }])); }
       run.evoFails = fails + 1; log('🔸 Esta vez nadie evoluciona.');

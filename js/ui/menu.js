@@ -103,7 +103,7 @@ function pick(g) {
   show('chosen');
   typeText($('chosenText'), g === CHAOS_GEN ? 'Modo Caos: 8 gimnasios de cualquier región, un Alto Mando y un Campeón al azar. Cada partida es distinta. ¿Te atreves?'
     : g === DAILY_GEN ? `Reto del ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}: hoy todo el mundo juega el mismo camino con los mismos iniciales. Mañana, otro. ¡Saca la mejor puntuación!`
-    : g === NUZ_GEN ? 'Nuzlocke: el camino del Modo Caos con reglas duras. Solo puedes capturar el primer Pokémon de cada zona, y cada vez que pierdas un giro de combate, uno de tus Pokémon cae para siempre. ¿Llegarás a la Liga?'
+    : g === NUZ_GEN ? 'Nuzlocke: el camino del Modo Caos con reglas duras. Solo puedes capturar el primer Pokémon de cada zona y no hay pociones: cada vez que pierdas un giro de combate, uno de tus Pokémon cae para siempre y sigues girando hasta ganar o quedarte sin Pokémon. ¿Llegarás a la Liga?'
     : g === RANDOM_GEN ? 'Randomlocke: el camino del Modo Caos, pero todo al azar. Tus tres iniciales y cada Pokémon salvaje pueden ser cualquiera de los 1025. ¡Suerte!'
     : g === TEST_GEN ? 'Modo Test: el camino del Modo Caos, pero tú eliges los Pokémon de tu equipo y los objetos de tu mochila. No cuenta para la Pokédex ni para los récords.'
     : `Perfecto. Destino fijado: región de ${g.region}. Prepara tu mochila.`);

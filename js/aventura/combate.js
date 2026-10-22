@@ -164,8 +164,9 @@ function battle(title, who, foe, base, onWin, extra = '', onLose = null, types =
       const vs = title.split(' · ').pop(), ace = foe.length ? foe[foe.length - 1] : null;
       if (r.ok) { setNow(`¡Victoria contra ${vs}!`, { n: ace }); end(); return onWin(); }
       setNow(`${vs} te ha ganado`, { n: ace });
-      // Nuzlocke: cada derrota se lleva a uno de tus Pokémon (la ruleta elige quién cae); después, lo de siempre
-      if (REG().nuzlocke) return nuzFaint(lose);
+      // Nuzlocke: no hay pociones; la ruleta elige qué Pokémon cae y se vuelve a girar, hasta ganar o quedarte sin Pokémon
+      // (contra los entrenadores del camino, que no acaban la partida, cae uno y sigues tu camino)
+      if (REG().nuzlocke) return nuzFaint(onLose ? lose : () => { again = true; note = '¡Sigue el combate! Otro de tus Pokémon toma el relevo.'; show(); });
       lose();
     }, { txt: `${again ? 'Revancha' : 'Combatiendo'} contra ${title.split(' · ').pop()}`, n: foe.length ? foe[foe.length - 1] : null });
     const lose = () => {
@@ -205,7 +206,7 @@ function phaseGameOver(cine) {
 }
 
 // ---- Nuzlocke: al perder un giro de combate, uno de tus Pokémon del equipo cae para siempre (la ruleta elige quién) y va al cementerio.
-// Si ya no te queda ninguno (ni en la caja), se acaba la partida. Después sigue el combate como siempre (pociones, revancha…)
+// Si ya no te queda ninguno (ni en la caja), se acaba la partida
 function nuzFaint(cont) {
   const pool = [...run.team]; if (!pool.length) return cont();
   const kill = m => {

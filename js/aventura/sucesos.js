@@ -3,7 +3,7 @@
 function phaseCity() {
   const L = loc();
   spinUI(`${L.name} · Ruleta de evento`, `La ruleta de evento decide qué te pasa en ${L.name}.${L.events.some(k => EVENTS[k].w < 1 && !(k === 'rocket' && L.rocketW)) ? ' Los quesitos pequeños son eventos raros.' : ''}`,
-    L.events.map(k => ({ label: EVENTS[k].label, short: EVENTS[k].short, color: EVENTS[k].color, w: k === 'rocket' && L.rocketW ? L.rocketW : EVENTS[k].w, k })), 'EVENTO',
+    L.events.filter(k => !(REG().nuzlocke && NUZ_NO.has(k))).map(k => ({ label: EVENTS[k].label, short: EVENTS[k].short, color: EVENTS[k].color, w: k === 'rocket' && L.rocketW ? L.rocketW : EVENTS[k].w, k })), 'EVENTO',
     r => ({ shop: doShop, tea: doTea, trainer: doTrainer, egg: doEgg, rocket: doRocket, kurt: doKurt, casino: doCasino, burned: doBurned, lighthouse: doLighthouse, pharmacy: doPharmacy, lake: doLake, dragon: doDragon })[r.k]());
 }
 // la tienda regala una poción gratis, mejor cada 3 medallas (0-2: Poción · 3-5: Superpoción · 6+: Hiperpoción).
@@ -150,9 +150,10 @@ function doTrade() {
 }
 function doItem() {
   const b = badges();
-  spinUI('Objeto', 'Hay algo brillando en el suelo…', [
+  spinUI('Objeto', 'Hay algo brillando en el suelo…', [...[
     { label: 'Poción', short: 'POCIÓN', color: '#b46cff', w: 2, k: 'potion' }, { label: 'Superpoción', short: 'SUPERPOCIÓN', color: '#8f5bd6', w: b >= 2 ? 1 : .3, k: 'super' },
     { label: 'Caramelo raro', short: 'CARAMELO', color: '#5ad1c8', w: 1, k: 'candy' }, { label: 'Cuerda huida', short: 'CUERDA', color: '#c9a36a', w: 1, k: 'rope' },
+    ].filter(s => !(REG().nuzlocke && (s.k === 'potion' || s.k === 'super'))),   // Nuzlocke: sin pociones
     ...(run.bag.shoes ? [] : [{ label: 'Deportivas', short: 'DEPORTIVAS', color: '#4aa3df', w: .5, k: 'shoes' }]),
     ...(run.bag.share ? [] : [{ label: 'Repartir Exp.', short: 'REPARTIR EXP', color: '#ffd84a', w: .5, k: 'share' }]), { label: 'Ball especial', short: 'BALL', color: '#e0a040', w: 1, k: 'ball' }], 'OBJETO', r => {
       if (r.k === 'candy') {

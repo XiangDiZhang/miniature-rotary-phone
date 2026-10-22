@@ -99,6 +99,8 @@ const gmaxForms = m => transformsOf(m, 'gmax');
 
 // ---- Pociones de premio: mejoran con las medallas (0-2: Poción · 3-5: Superpoción · 6+: Hiperpoción) ----
 const potionTier = (b = run.badges.length) => b >= 6 ? 'hyper' : b >= 3 ? 'super' : 'potion';
+// Nuzlocke: quesitos que no existen (un solo Pokémon por zona y nada de pociones)
+const NUZ_NO = new Set(['catchTwo', 'catchThree', 'shop', 'pharmacy', 'lighthouse']);
 
 // ---- Primeros combates más fáciles (hasta la 2.ª medalla, es decir, los dos primeros líderes y lo de antes):
 // quesitos verdes extra y la fuerza del rival cuenta la mitad ----
