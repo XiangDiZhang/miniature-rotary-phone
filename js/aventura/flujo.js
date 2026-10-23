@@ -211,41 +211,41 @@ function evoPlay(list, msg) {
 // ---- Recompensas del gimnasio: megapiedra (para un Pokémon del equipo que pueda megaevolucionar) y Banda Dinamax ----
 function gymRewards(next) {
   const steps = [];
-  // un Pokémon puede acabar llevando la megapiedra y la Banda Dinamax (en cada giro de un combate eliges cuál usar, nunca las dos en el mismo).
-  // Si a uno le pueden tocar las dos y aún no tiene ninguna, la ruleta decide cuál recibe ahora; la otra, en el próximo gimnasio
-  const dual = run.team.filter(m => !m.stone && !m.dmax && megaForms(m).length && gmaxForms(m).length);
-  dual.forEach(m => steps.push(go => {
-    const mg = megaForms(m)[rnd(0, megaForms(m).length - 1)], gm = gmaxForms(m)[0];
-    advSay(`¡${mname(m)} puede megaevolucionar y también gigamaxizarse! La ruleta decide qué recibe ahora; lo otro llegará en el próximo gimnasio.`, () => advButtons([{ label: 'Girar la ruleta', fn: () =>
-      spinUI(`${mname(m)} · ¿Mega o Gigamax?`, `Si sale Megaevolución recibe la ${stoneName(mg)}; si sale Gigamax, la Banda Dinamax. Lo que falte, en el próximo gimnasio.`, [
-        { label: 'Megaevolución', short: 'MEGA', n: mg, shiny: m.shiny, color: '#c9a7ff', k: 'mega' },
-        { label: 'Gigamax', short: 'GIGAMAX', n: gm, shiny: m.shiny, color: '#ff4d6d', k: 'gmax' }], '¿CUÁL?', r => {
-        if (r.k === 'gmax') { m.dmax = 1; logm(`🔴 ${mname(m)} recibe la Banda Dinamax.`, m); advToast('🔴 ¡Banda Dinamax!'); }
-        else { m.stone = mg; logm(`💎 ${mname(m)} recibe la ${stoneName(mg)}.`, m); advToast(`💎 ¡${stoneName(mg)} para ${mname(m)}!`); }
-        renderAdv(); saveRun();
-        advSay(r.k === 'gmax' ? `¡Gigamax! ${mname(m)} recibe la Banda Dinamax. Su megapiedra llegará en el próximo gimnasio.` : `¡Megaevolución! ${mname(m)} recibe la ${stoneName(mg)}. Su Banda Dinamax llegará en el próximo gimnasio.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
-      }, { txt: `${mname(m)}: ¿mega o Gigamax?`, n: mid(m), shiny: m.shiny }) }]));
-  }));
-  // Banda Dinamax: todos tus Pokémon con forma Gigamax que aún no la tengan (equipo y caja), menos los que acaban de pasar por la ruleta
-  const dm = allMine().filter(m => !m.dmax && gmaxForms(m).length && !dual.includes(m));
+  // Una sola megaevolución (o Gigamax) de premio por gimnasio. Si varios Pokémon pueden recibirla, primero la ruleta elige quién;
+  // si el elegido puede megaevolucionar y también gigamaxizarse (y aún no tiene ninguna), otra ruleta decide cuál recibe ahora
+  // (lo otro, en otro gimnasio). Nunca recibe nadie más la megapiedra en ese gimnasio.
+  const isDual = m => !m.stone && !m.dmax && megaForms(m).length && gmaxForms(m).length;
+  // Banda Dinamax: tus Pokémon que solo pueden gigamaxizarse (o ya tienen su megapiedra) y aún no la tienen, equipo y caja
+  const dm = allMine().filter(m => !m.dmax && gmaxForms(m).length && !isDual(m));
   if (dm.length) steps.push(go => {
     dm.forEach(m => m.dmax = 1); logm(`🔴 Banda Dinamax para ${dm.map(mname).join(", ")}.`, dm[0]); advToast('🔴 ¡Banda Dinamax!'); renderAdv(); saveRun();
     advSay(`¡El estadio vibra con energía Dinamax! ${listJoin(dm.map(mname))} ${dm.length > 1 ? 'reciben' : 'recibe'} la Banda Dinamax: en combate, púlsala para que se gigamaxice durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
   });
-  // megapiedra: una por gimnasio, para uno de los Pokémon del equipo que puedan megaevolucionar (si hay varios, la ruleta decide);
-
   steps.push(go => {
     // (el que acaba de recibir la Banda Dinamax en este gimnasio no se lleva también la megapiedra: esa, en otro gimnasio)
-    const opts = run.team.filter(m => !m.stone && !dm.includes(m) && !dual.includes(m)).flatMap(m => megaForms(m).map(f => ({ m, f })));
+    const opts = run.team.filter(m => !m.stone && !dm.includes(m)).flatMap(m => megaForms(m).map(f => ({ m, f })));
     if (!opts.length) return go();
-    const give = ({ m, f }) => {
-      m.stone = f; const nm = mname({ n: m.n, form: f }), st = stoneName(f); logm(`💎 ${mname(m)} recibe la ${st}.`, m); advToast(`💎 ¡${st} para ${mname(m)}!`); renderAdv(); saveRun();
-      advSay(`¡El líder te da la ${st}! ${mname(m)} la lleva equipada: en combate, pulsa la piedra de su ficha para que megaevolucione en ${nm} durante ese giro.`, () => advButtons([{ label: 'Continuar →', fn: go }]));
+    const done = (txt) => { renderAdv(); saveRun(); advSay(txt, () => advButtons([{ label: 'Continuar →', fn: go }])); };
+    const giveStone = ({ m, f }) => {
+      m.stone = f; const nm = mname({ n: m.n, form: f }), st = stoneName(f); logm(`💎 ${mname(m)} recibe la ${st}.`, m); advToast(`💎 ¡${st} para ${mname(m)}!`);
+      done(`¡El líder te da la ${st}! ${mname(m)} la lleva equipada: en combate, pulsa la piedra de su ficha para que megaevolucione en ${nm} durante ese giro.`);
     };
-    if (opts.length === 1) return give(opts[0]);
-    advSay('¡El líder te ofrece una megapiedra! ¿Para quién será?', () => advButtons([{ label: 'Girar la ruleta', fn: () =>
-      spinUI('Megapiedra · ¿Para quién?', 'Uno de tus Pokémon que pueden megaevolucionar se lleva su megapiedra.',
-        opts.map(x => { const nm = mname({ n: x.m.n, form: x.f }); return { label: nm, short: nm, n: x.f, shiny: x.m.shiny, color: TYPE_COLORS[formRec(x.f)[1][2][0]], x }; }), 'MEGA', r => give(r.x)) }]));
+    const giveBand = m => { m.dmax = 1; logm(`🔴 ${mname(m)} recibe la Banda Dinamax.`, m); advToast('🔴 ¡Banda Dinamax!');
+      done(`¡Gigamax! ${mname(m)} recibe la Banda Dinamax: en combate, púlsala para que se gigamaxice durante ese giro. Su megapiedra llegará en otro gimnasio.`); };
+    // el elegido: si puede las dos cosas, ruleta de mega o Gigamax
+    const award = x => {
+      const m = x.m; if (!isDual(m)) return giveStone(x);
+      const gm = gmaxForms(m)[0];
+      advSay(`¡${mname(m)} puede megaevolucionar y también gigamaxizarse! La ruleta decide qué recibe ahora; lo otro llegará en otro gimnasio.`, () => advButtons([{ label: 'Girar la ruleta', fn: () =>
+        spinUI(`${mname(m)} · ¿Mega o Gigamax?`, `Si sale Megaevolución recibe la ${stoneName(x.f)}; si sale Gigamax, la Banda Dinamax. Lo otro, en otro gimnasio.`, [
+          { label: 'Megaevolución', short: 'MEGA', n: x.f, shiny: m.shiny, color: '#c9a7ff', k: 'mega' },
+          { label: 'Gigamax', short: 'GIGAMAX', n: gm, shiny: m.shiny, color: '#ff4d6d', k: 'gmax' }], '¿CUÁL?', r => r.k === 'gmax' ? giveBand(m) : giveStone(x),
+          { txt: `${mname(m)}: ¿mega o Gigamax?`, n: mid(m), shiny: m.shiny }) }]));
+    };
+    if (opts.length === 1) return award(opts[0]);
+    advSay('¡El líder te ofrece una megaevolución! ¿Para quién será?', () => advButtons([{ label: 'Girar la ruleta', fn: () =>
+      spinUI('Megaevolución · ¿Para quién?', 'Solo uno de tus Pokémon que pueden megaevolucionar se la lleva en este gimnasio.',
+        opts.map(x => { const nm = mname({ n: x.m.n, form: x.f }); return { label: nm, short: nm, n: x.f, shiny: x.m.shiny, color: TYPE_COLORS[formRec(x.f)[1][2][0]], x }; }), 'MEGA', r => award(r.x)) }]));
   });
   const runSteps = i => i < steps.length ? steps[i](() => runSteps(i + 1)) : next();
   runSteps(0);
