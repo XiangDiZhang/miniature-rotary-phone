@@ -155,7 +155,8 @@ function doItem() {
     { label: 'Caramelo raro', short: 'CARAMELO', color: '#5ad1c8', w: 1, k: 'candy' }, { label: 'Cuerda huida', short: 'CUERDA', color: '#c9a36a', w: 1, k: 'rope' },
     ].filter(s => !(REG().nuzlocke && (s.k === 'potion' || s.k === 'super'))),   // Nuzlocke: sin pociones
     ...(run.bag.shoes ? [] : [{ label: 'Deportivas', short: 'DEPORTIVAS', color: '#4aa3df', w: .5, k: 'shoes' }]),
-    ...(run.bag.share ? [] : [{ label: 'Repartir Exp.', short: 'REPARTIR EXP', color: '#ffd84a', w: .5, k: 'share' }]), { label: 'Ball especial', short: 'BALL', color: '#e0a040', w: 1, k: 'ball' }], 'OBJETO', r => {
+    ...(run.bag.share ? [] : [{ label: 'Repartir Exp.', short: 'REPARTIR EXP', color: '#ffd84a', w: .5, k: 'share' }]), { label: 'Ball especial', short: 'BALL', color: '#e0a040', w: 1, k: 'ball' },
+    { label: 'Master Ball', short: 'MASTER BALL', color: '#a35bd6', w: .08, k: 'master' }], 'OBJETO', r => {   // muy rara (~1 %)
       if (r.k === 'candy') {
         log('🍬 Encuentras un Caramelo raro.');
         // si nadie puede evolucionar, se guarda en la mochila y se usa solo en cuanto llegue alguien que pueda (finish de flujo.js)
@@ -163,6 +164,8 @@ function doItem() {
           return advSay('¡Un Caramelo raro! Nadie de tu equipo puede evolucionar ahora, así que lo guardas en la mochila: se usará solo en cuanto tengas un Pokémon que pueda.', goOn); }
         return evolveSure('¡Un Caramelo raro!');
       }
+      if (r.k === 'master') { run.bag.master = (run.bag.master || 0) + 1; log('🎒 ¡Encuentras: Master Ball!'); advToast('🟣 ¡MASTER BALL!'); chord([523, 784, 1046, 1568]); renderAdv(); saveRun();
+        return advSay('¡¡Una MASTER BALL!! La guardas en la mochila: en cualquier captura podrás usarla para atrapar al Pokémon sin fallar.', goOn); }
       if (r.k === 'ball') { run.ball = 1; log('⚪ Encuentras una Ball especial: +1 quesito en la próxima captura.'); return advSay('¡Una Ball especial! En tu próxima captura tendrás un quesito verde más.', goOn); }
       run.bag[r.k] = (run.bag[r.k] || 0) + 1; log(`🎒 Encuentras: ${ITEMS[r.k].name}.`); renderAdv();
       advSay(`¡Has encontrado ${ITEMS[r.k].name}! ${ITEMS[r.k].desc}`, goOn);

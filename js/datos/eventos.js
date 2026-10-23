@@ -236,6 +236,7 @@ const ITEMS = {
   shoes: { name: 'Deportivas', color: '#4aa3df', desc: 'Una tirada más de la ruleta de aventura en cada tramo.' },
   share: { name: 'Repartir Exp.', color: '#ffd84a', spr: 'exp-share', desc: 'Cuando un Pokémon evoluciona, otro de tu equipo evoluciona también.' },
   candy: { name: 'Caramelo raro', color: '#5ad1c8', spr: 'rare-candy', desc: 'Guardado porque nadie podía evolucionar: en cuanto tengas un Pokémon que pueda, se usa solo y lo hace evolucionar.' },
+  master: { name: 'Master Ball', color: '#a35bd6', spr: 'master-ball', desc: 'Objeto muy raro: atrapa a cualquier Pokémon sin fallar, legendarios incluidos. Tú decides en qué captura usarla.' },
 };
 // spr: icono del objeto (nombre del archivo de items de PokeAPI, en assets/sprites/objetos.js); sin icono, se dibuja (BAG_ICON)
 const BALL_SPR = { spr: 'level-ball' };   // Ball de Kurt
@@ -252,7 +253,7 @@ const LOG_ICONS = {
   '✨': { mon: 'last', spr: 'rare-candy', c: '#ffd84a' }, '🔸': { spr: 'everstone', c: '#8592ab' },
   '🧪': { item: 1, spr: 'potion', c: '#b46cff' }, '💊': { item: 1, spr: 'potion', c: '#b46cff' },
   '🎒': { item: 1, spr: 'dowsing-machine', c: '#b46cff' }, '🍬': { spr: 'rare-candy', c: '#5ad1c8' }, '🍵': { spr: 'tea', c: '#7ac74c' },
-  '⚪': { spr: 'level-ball', c: '#e0a040' }, '🪢': { spr: 'escape-rope', c: '#c9a36a' },
+  '🟣': { mon: 1, spr: 'master-ball', c: '#a35bd6' }, '⚪': { spr: 'level-ball', c: '#e0a040' }, '🪢': { spr: 'escape-rope', c: '#c9a36a' },
   '💎': { mon: 1, spr: 'key-stone', c: '#5ad1c8' }, '↩️': { mon: 1, spr: 'key-stone', c: '#8592ab' }, '🔴': { mon: 1, spr: 'dynamax-band', c: '#ff2d55' },
   '🥚': { mon: 1, spr: 'mystery-egg', c: '#f2e27a' }, '🌟': { mon: 1, spr: 'master-ball', c: '#ffd84a' },
   '🦒': { mon: 1, spr: 'safari-ball', c: '#7ac74c' }, '🦴': { mon: 1, spr: 'old-amber', c: '#c9b37e' }, '🥋': { mon: 1, spr: 'black-belt', c: '#c22e28' },

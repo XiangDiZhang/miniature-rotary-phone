@@ -53,7 +53,12 @@ function throwBall(n, legend = false, shiny, form = 0, sure = false) {
           logm(`💨 ${nm0}: ${r.label.toLowerCase()}.`, { n, form, shiny }); setNow(`${nm0} se ha escapado`, { n: form || n, shiny });
           advSay(r.say(pname(n)) + (legend ? ' Se ha perdido en el horizonte…' : ''), goOn);
         }, { txt: `Capturando a ${nm0}${shiny ? ' ★' : ''}`, n: form || n, shiny });
-    } }]));
+    } },
+    // Master Ball (si tienes): lo atrapa sin ruleta; tú decides si gastarla en este
+    ...((run.bag.master || 0) > 0 ? [{ label: `Usar Master Ball (${run.bag.master})`, fn: () => {
+      run.bag.master--; logm(`🟣 Usas la Master Ball con ${nm0}.`, { n, form, shiny }); advToast('🟣 ¡Master Ball!'); chord([392, 523, 659, 784]); renderAdv(); saveRun();
+      advSay(`¡Lanzas la Master Ball! ${nm0} no tiene escapatoria…`, () => advButtons([{ label: '¡Atrapado!', fn: () => caught(n, shiny, legend, form) }]));
+    } }] : [])]));
 }
 function caught(n, shiny, legend, form) {
   // si la especie tiene formas regionales u otras variantes, una ruleta decide cuál te toca
