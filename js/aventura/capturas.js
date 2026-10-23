@@ -41,10 +41,9 @@ function throwBall(n, legend = false, shiny, form = 0, sure = false) {
   if (sure) {   // Sudowoodo, Snorlax… si toca capturarlo, se captura sin ruleta
     return advSay(`¡${nm0}${shiny ? ' (¡y es shiny!)' : ''} se deja atrapar sin oponer resistencia!`, () => advButtons([{ label: 'Lanzar la Poké Ball', fn: () => caught(n, shiny, legend, form) }]));
   }
-  // shiny: +2 quesitos verdes, para que no se escape tan fácilmente
-  const green = Math.min(CAP_N - 1, captureGreen(n) + (run.ball ? 1 : 0) + (shiny ? 2 : 0)), kurt = run.ball, rar = rarityOf(n)[0];
+  const green = Math.min(CAP_N - 1, captureGreen(n) + (run.ball ? 1 : 0)), kurt = run.ball, rar = rarityOf(n)[0];
   // la captura es obligatoria: si sale un Pokémon, siempre se lanza la Poké Ball (no se puede dejar ir)
-  const what = shiny ? `¡Un ${nm0} de color distinto! Es shiny ★ (+2 quesitos verdes para atraparlo).` : legend ? `¡Es ${nm0}, un Pokémon legendario! Es muy difícil de atrapar.` : `¡Un ${nm0} salvaje!`;
+  const what = shiny ? `¡Un ${nm0} de color distinto! Es shiny ★.` : legend ? `¡Es ${nm0}, un Pokémon legendario! Es muy difícil de atrapar.` : `¡Un ${nm0} salvaje!`;
   advSay(`${what} ¡Lanza la Poké Ball! Solo tienes una oportunidad.${kurt ? ' Usarás tu Ball especial (+1 quesito verde).' : ''}`, () => advButtons([
     { label: 'Lanzar la Poké Ball', fn: () => {
       run.ball = 0;
