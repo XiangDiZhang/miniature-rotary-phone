@@ -617,6 +617,7 @@ img.stone.px { image-rendering: pixelated; }
   .bag-card .bag-ico { width: 30px; height: 30px; } .bag-card .bag-nm { font-size: 7px; } .bag-card .bag-n { font-size: 8px; top: 1px; right: 1px; }
   .adv-points { padding: 1px 7px; } .adv-points b { font-size: 11px; } .adv-points span { font-size: 7.5px; }
   .adv-badges { padding-top: 4px; gap: 3px; } .adv-badges .bdg { max-width: 22px; }
+  .adv-elite { padding-top: 4px; gap: 6px; } .crw { width: 18px; } .crw.champ { width: 24px; }
   .adv-log { flex: 1; min-height: 0; font-size: 11px; gap: 3px; }
   .lg { gap: 6px; padding: 2px 6px 2px 2px; } .lg-ic { width: 24px; height: 24px; } .lg-ic > img { width: 24px; height: 24px; } .lg-ic > img.lgm { width: 28px; height: 28px; margin-top: -3px; }
   .lg-b { width: 13px; height: 13px; right: -4px; bottom: -3px; } .lg-b img { width: 11px; height: 11px; }
@@ -767,3 +768,18 @@ img.stone.px { image-rendering: pixelated; }
 #advBtns { display: none !important; }
 .lc-tyrow { display: flex; align-items: center; gap: 8px; }
 .lc-wmini { font: 600 10px var(--f-mono); letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--fg-soft); }
+/* coronas del Alto Mando: encima de las medallas al llegar a la Liga; brillan al vencer a cada miembro (la del Campeón, más grande) */
+.adv-elite { display: flex; justify-content: center; align-items: flex-end; gap: 10px; width: 100%; margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--line); }
+.adv-elite:not([hidden]) + .adv-badges { margin-top: 6px; }
+.crw { width: 30px; aspect-ratio: 1; display: grid; place-items: center; }
+.crw.champ { width: 40px; }
+.crw svg { width: 100%; height: 100%; overflow: visible; }
+.crw .cb, .crw .cr { fill: color-mix(in srgb, var(--fg-soft) 35%, transparent); stroke: var(--line-2); stroke-width: .8; stroke-linejoin: round; }
+.crw .cg { fill: var(--line-2); }
+.crw.got .cb, .crw.got .cr { fill: #ffd84a; stroke: #b8860b; }
+.crw.got .cg { fill: #ff5a7a; }
+.crw.got.champ .cg { fill: #5ad1ff; }
+.crw.got svg { filter: drop-shadow(0 0 6px rgba(255,216,74,.55)); animation: crwIn .6s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes crwIn { from { transform: scale(.4) rotate(-12deg); opacity: 0; } }
+/* (en el móvil, más pequeñas: van en la pestaña de la mochila con las medallas) */
+@media (prefers-reduced-motion: reduce) { .crw.got svg { animation: none; } }

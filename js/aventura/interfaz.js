@@ -115,6 +115,8 @@ function bagIcon(k) {
   return r ? `<img class="item" src="${r.u}" alt="">` : BAG_ICON[k] || BAG_ICON.potion;
 }
 // cómo se ve cada fase en la línea: un icono, un nombre corto y qué es
+// corona del Alto Mando (encima de las medallas)
+const CROWN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="cb" d="M3.5 8.5l4.2 3.6L12 5l4.3 7.1 4.2-3.6-1.8 9.5H5.3z"/><rect class="cr" x="5.3" y="18.6" width="13.4" height="2.2" rx=".6"/><circle class="cg" cx="12" cy="4.3" r="1.5"/><circle class="cg" cx="3.3" cy="7.9" r="1.3"/><circle class="cg" cx="20.7" cy="7.9" r="1.3"/></svg>';
 const PH_ICON = {
   home: '<svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8h-5v-5H9v5H4z"/></svg>',
   trail: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6.5a3.5 3.5 0 0 0 0-7h-5a3.5 3.5 0 0 1 0-7H16"/></svg>',
@@ -263,6 +265,14 @@ function renderAdv() {
     $('advBadges')._k = bKey;
     $('advBadges').innerHTML = gyms.map(p => { const got = run.badges.includes(p.badge), sp = badgeSpr(p);
       return `<span class="bdg${got ? ' got' : ''}" title="${p.badge}${got ? '' : ' (por conseguir)'}">${sp ? `<img src="${sp.u}" alt="${p.badge}">` : `<i>◆</i>`}</span>`; }).join('');
+  }
+  // al llegar al Alto Mando, encima de las medallas: una corona por cada miembro y una más grande por el Campeón (brillan al vencerlos)
+  const league = REG().path.map((p, i) => [p, i]).filter(([p]) => p.kind === 'gym' && (p.role === 'elite' || p.role === 'champ')),
+    first = REG().path.findIndex(p => p.kind === 'prep' || p.role === 'elite'), eKey = first >= 0 && run.step >= first ? league.map(([p, i]) => p.leader + (run.step > i || run.step === i && run.stepDone ? 1 : 0)).join() : '';
+  if ($('advElite')._k !== eKey) {
+    $('advElite')._k = eKey; $('advElite').hidden = !eKey;
+    $('advElite').innerHTML = eKey ? league.map(([p, i]) => { const got = run.step > i || run.step === i && run.stepDone, ch = p.role === 'champ';
+      return `<span class="crw${got ? ' got' : ''}${ch ? ' champ' : ''}" title="${ch ? 'Campeón' : 'Alto Mando'} · ${p.leader}${got ? ' (derrotado)' : ''}">${CROWN_SVG}</span>`; }).join('') : '';
   }
   const lg = run.log.join('\n');
   if ($('advLog')._k !== lg) { $('advLog')._k = lg; $('advLog').innerHTML = run.log.map(logHTML).join(''); }
